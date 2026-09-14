@@ -1,0 +1,16 @@
+- id: c-publicacoes
+  target: 20
+  suffix: "+"
+  label: "Scientific Publications"
+- id: c-professores
+  target: 10
+  suffix: ""
+  label: "Professors & Researchers"
+- id: c-parcerias
+  target: 5
+  suffix: ""
+  label: "Industry Partnerships"
+- id: c-egressos
+  target: 50
+  suffix: "+"
+  label: "Alumni"

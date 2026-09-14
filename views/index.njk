@@ -1,0 +1,233 @@
+{% from "_macros.njk" import icon %}
+{% extends "base.njk" %}
+
+{% block head %}
+<style>
+  @keyframes globe-spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+  .globe-spin-icon { animation: globe-spin 14s linear infinite; display:block; }
+  @media (max-width:900px) { .news-featured { grid-template-columns:1fr !important; } .news-cards-row { grid-template-columns:1fr 1fr !important; } }
+  @media (max-width:600px) { .news-cards-row { grid-template-columns:1fr !important; } }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section id="inicio" class="hero-section">
+  <div class="hero-bg-overlay"></div>
+  <div class="container">
+    <div class="hero-inner">
+      <div class="hero-content">
+        <span class="hero-tag">{{ page.hero_tag }}</span>
+        <h1 class="hero-heading">{{ page.hero_title | safe }}</h1>
+        <p class="hero-sub">{{ page.hero_sub }}</p>
+        <div class="hero-ctas">
+          <a href="#pesquisa" class="btn-primary">{{ page.hero_cta_primary }}</a>
+          <a href="{{ base_url }}/contato" class="btn-outline">{{ page.hero_cta_secondary }}</a>
+        </div>
+      </div>
+      <div class="hero-card" data-aos="zoom-in">
+        <img src="{{ base_path }}/images/foto-equipe.png" alt="CSI Lab — Equipe" onerror="this.src='{{ base_path }}/images/about-image-1.jpg'" />
+        <div class="hero-card-body">
+          <h3>{{ page.hero_card_title }}</h3>
+          <p>{{ page.hero_card_text }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="sobre">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-images" data-aos="fade-right">
+        <img src="{{ base_path }}/images/csilab-marca.png" alt="CSI Lab" onerror="this.src='{{ base_path }}/images/about-image-2.jpg'" />
+        <img src="{{ base_path }}/images/evento-2023.png" alt="Evento CSI Lab 2023" onerror="this.src='{{ base_path }}/images/about-image-3.jpg'" />
+        <img src="{{ base_path }}/images/evento-2024.jpg" alt="CSI Lab 2024" onerror="this.src='{{ base_path }}/images/about-image-4.jpg'" />
+        <div class="about-counter-badge">
+          <div class="big">{{ page.about_years }}</div>
+          <div class="small">{{ page.about_years_label }}</div>
+        </div>
+      </div>
+      <div data-aos="fade-left">
+        <span class="section-label">{{ page.about_label }}</span>
+        <h2 class="d2c_title" style="margin-bottom:1.5rem;">{{ page.about_title }}</h2>
+        <p class="text-lavender" style="margin-bottom:1.25rem;font-size:1rem;line-height:1.75;">{{ page.about_p1 | safe }}</p>
+        <p class="text-lavender" style="margin-bottom:2rem;font-size:1rem;line-height:1.75;">{{ page.about_p2 }}</p>
+        <div class="about-features">
+          <div class="about-feature">
+            <h4>{{ page.about_feature1_title }}</h4>
+            <p>{{ page.about_feature1_text }}</p>
+          </div>
+          <div class="about-feature">
+            <h4>{{ page.about_feature2_title }}</h4>
+            <p>{{ page.about_feature2_text }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="numeros">
+  <div class="container">
+    <div class="counter-grid">
+      {% for c in data.counters %}
+      <div class="counter-item" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 100 }}">
+        <div class="number" id="{{ c.id }}" data-target="{{ c.target }}" data-suffix="{{ c.suffix }}">0{{ c.suffix }}</div>
+        <div class="label">{{ c.label }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section id="pesquisa">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:1rem;" data-aos="fade-down">
+      <span class="section-label">{{ page.research_label }}</span>
+      <h2 class="d2c_title">{{ page.research_title }}</h2>
+      <p class="text-lavender" style="max-width:600px;margin:0.75rem auto 0;font-size:1rem;">{{ page.research_sub }}</p>
+    </div>
+    <div class="research-grid">
+      {% for area in data.research %}
+      <div class="research-card scroll-Zoom">
+        <div class="research-icon">{{ icon(area.icon) }}</div>
+        <h3>{{ area.title }}</h3>
+        <p>{{ area.text }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section id="destaque">
+  <div class="container">
+    <div class="cta-video-inner">
+      <div data-aos="fade-right">
+        <span class="section-label" style="display:block;margin-bottom:1.25rem;">{{ data.awards.label }}</span>
+        <h2 class="d2c_title" style="font-size:1.6rem;margin-bottom:1.75rem;">{{ data.awards.title }}</h2>
+        <div style="display:flex;flex-direction:column;gap:1rem;">
+          {% for award in data.awards.items %}
+          <div style="display:flex;gap:1rem;align-items:flex-start;padding:1.25rem 1.5rem;background:var(--color-surface);border-radius:10px;border-left:3px solid var(--color-accent);">
+            <span style="flex-shrink:0;display:flex;align-items:center;margin-top:1px;">{{ icon("trophy", 22, "var(--color-accent)", "2") }}</span>
+            <div>
+              <strong style="color:var(--color-text);display:block;margin-bottom:0.3rem;">{{ award.title }}</strong>
+              <span class="text-lavender" style="font-size:0.875rem;">{{ award.event }}</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div data-aos="fade-left">
+        <span class="section-label">{{ data.awards.about_label }}</span>
+        <h2 class="d2c_title" style="margin-bottom:1.25rem;">{{ data.awards.about_title }}</h2>
+        <p class="text-lavender" style="font-size:1rem;line-height:1.75;margin-bottom:2rem;">{{ data.awards.about_text }}</p>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+          <a href="{{ base_url }}/publicacoes" class="btn-primary">{{ data.awards.cta_publications }}</a>
+          <a href="https://github.com/ufopcsilab" target="_blank" class="btn-outline">{{ data.awards.cta_github }}</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="consultorias">
+  <div class="container">
+    <div class="dual-accordion-grid">
+
+      <div>
+        <div style="margin-bottom:2rem;" data-aos="fade-down">
+          <span class="section-label">{{ data.consultorias.label }}</span>
+          <h2 class="d2c_title" style="margin-top:0.5rem;">{{ data.consultorias.title }}</h2>
+          <p class="text-lavender" style="margin-top:0.75rem;font-size:0.95rem;line-height:1.7;">{{ data.consultorias.sub }}</p>
+        </div>
+        <div class="consult-accordion" data-aos="fade-up">
+          {% for item in data.consultorias.items %}
+          <div class="accordion-item">
+            <button class="accordion-header">
+              {{ item.title }}
+              <span class="accordion-icon">&#8964;</span>
+            </button>
+            <div class="accordion-body">
+              <div class="accordion-body-inner">{{ item.content | safe }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div>
+        <div style="margin-bottom:2rem;" data-aos="fade-down">
+          <span class="section-label">{{ data.faq.label }}</span>
+          <h2 class="d2c_title" style="margin-top:0.5rem;">{{ data.faq.title }}</h2>
+          <p class="text-lavender" style="margin-top:0.75rem;font-size:0.95rem;line-height:1.7;">{{ data.faq.sub }}</p>
+        </div>
+        <div id="faq" data-aos="fade-up">
+          {% for item in data.faq.items %}
+          <div class="faq-item accordion-item">
+            <button class="accordion-header faq-header">
+              {{ item.question }}
+              <span class="accordion-icon">&#8964;</span>
+            </button>
+            <div class="accordion-body faq-body">
+              <div class="accordion-body-inner faq-body-inner">{{ item.answer | safe }}</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section id="noticias">
+  <div class="container">
+    <div style="text-align:center;margin-bottom:3rem;" data-aos="fade-down">
+      <span class="section-label">{{ data.news.label }}</span>
+      <h2 class="d2c_title">{{ data.news.title }}</h2>
+      <p class="text-lavender" style="max-width:560px;margin:0.75rem auto 0;font-size:1rem;line-height:1.7;">{{ data.news.sub }}</p>
+    </div>
+
+    <div class="news-featured" data-aos="fade-up" style="background:var(--color-surface);border:1px solid rgba(255,255,255,0.07);border-radius:16px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;gap:0;margin-bottom:2rem;min-height:340px;">
+      <div style="padding:3rem 2.5rem;display:flex;flex-direction:column;justify-content:space-between;">
+        <div>
+          <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;">
+            <span class="blog-tag" style="font-size:0.8rem;">{{ data.news.featured.tag }}</span>
+            <span style="color:var(--color-muted);font-size:0.82rem;">{{ data.news.featured.date }}</span>
+          </div>
+          <h3 style="font-size:1.5rem;line-height:1.3;margin-bottom:1rem;color:var(--color-text);">{{ data.news.featured.title }}</h3>
+          <p class="text-lavender" style="font-size:0.95rem;line-height:1.7;margin-bottom:1.5rem;">{{ data.news.featured.text | safe }}</p>
+        </div>
+        <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:0.6rem;">
+          {% for paper in data.news.featured.papers %}
+          <li style="display:flex;gap:0.5rem;align-items:flex-start;font-size:0.875rem;color:var(--color-muted);">
+            <span style="color:var(--color-accent);margin-top:2px;">▸</span>
+            <span><strong style="color:var(--color-text);">{{ paper.title }}</strong> — {{ paper.author }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div style="background:linear-gradient(135deg,#1a2840 0%,#0d1a2e 100%);display:flex;align-items:center;justify-content:center;padding:2.5rem;">
+        <div style="text-align:center;">
+          <div style="margin-bottom:1rem;display:flex;justify-content:center;">{{ icon("globe", 64, "var(--color-accent)", "1.2") }}</div>
+          <div style="font-size:0.8rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--color-accent);font-weight:600;margin-bottom:0.5rem;">{{ data.news.featured.badge_text }}</div>
+          <div style="font-size:1.1rem;font-weight:700;color:var(--color-text);">{{ data.news.featured.badge_count }}</div>
+          <div style="font-size:0.85rem;color:var(--color-muted);margin-top:0.4rem;">{{ data.news.featured.badge_sub }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="news-cards-row" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;" data-aos="fade-up" data-aos-delay="100">
+      {% for card in data.news.cards %}
+      <div style="background:var(--color-surface);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:2rem;border-top:3px solid {% if card.accent %}var(--color-accent){% else %}var(--color-steel){% endif %};">
+        <span class="blog-tag" style="font-size:0.78rem;margin-bottom:1rem;display:inline-block;{% if not card.accent %}background:rgba(86,101,115,0.2);color:var(--color-steel);{% endif %}">{{ card.tag }}</span>
+        <h4 style="font-size:1.1rem;line-height:1.4;margin-bottom:0.75rem;color:var(--color-text);">{{ card.title }}</h4>
+        <p class="text-lavender" style="font-size:0.9rem;line-height:1.65;">{{ card.text | safe }}</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% endblock %}

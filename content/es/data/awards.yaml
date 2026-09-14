@@ -1,0 +1,12 @@
+label: "Premios"
+title: "Reconocimientos Recientes"
+items:
+  - title: "Mejor Trabajo de Investigación de Pregrado"
+    event: "Encontro de Saberes UFOP 2023 · Categoría Ciencias Exactas"
+  - title: "Mejor Artículo — ERCAS 2024"
+    event: "IX Escuela Regional de Computación Aplicada a la Salud"
+about_label: "Sobre el Lab"
+about_title: "Un Laboratorio que Entiende la Innovación"
+about_text: "Nuestros proyectos surgen de preguntas reales y producen resultados publicados en los mejores medios internacionales — IEEE, Springer, SBC — además de código abierto disponible para la comunidad vía GitHub."
+cta_publications: "Ver Publicaciones"
+cta_github: "GitHub del Lab"

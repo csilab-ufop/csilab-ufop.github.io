@@ -1,0 +1,44 @@
+name_prefixes:
+  m: "Prof."
+  f: "Prof.ssa"
+
+groups:
+  coordinators:
+    label: "Coordinamento"
+    title: "Professori Coordinatori"
+    sub: "Dipartimento di Informatica — DECOM/UFOP"
+  professors:
+    label: "Corpo Docente"
+    title: "Professori Ricercatori"
+    sub: "Dipartimento di Informatica — DECOM/UFOP"
+  collaborators:
+    label: "Collaboratori Esterni"
+    title: "Collaboratori"
+  phd_students:
+    label: "Studi di Dottorato"
+    title: "Dottorandi"
+    sub: "Programma di Dottorato in Informatica (PPGCC) — UFOP"
+    since_prefix: "Dottorato · dal"
+  masters_students:
+    title: "Magistrali"
+    since_prefix: "Magistrale · dal"
+  undergrads:
+    label: "Ricerca Universitaria"
+    title: "Universitari — Borsisti di Ricerca"
+    since_prefix: "Ricerca · dal"
+  alumni_grad:
+    label: "Alumni"
+    title: "Alumni del Dottorato"
+  alumni_undergrad:
+    title: "Alumni Universitari"
+
+roles:
+  coordinator: "Coordinatore"
+  coordinator_f: "Coordinatrice"
+  associate_professor: "Professore Associato"
+  associate_professor_f: "Professoressa Associata"
+  collaborating_researcher: "Ricercatore Collaboratore"
+  collaborating_researcher_f: "Ricercatrice Collaboratrice"
+
+link_labels:
+  profile: "Profilo →"

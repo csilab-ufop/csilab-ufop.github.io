@@ -1,0 +1,30 @@
+brand_text: "Laboratorio de Computación de Sistemas Inteligentes — DECOM/ICEB"
+nav_heading: "Navegación"
+team_heading: "Equipo"
+social_heading: "Redes Sociales"
+team_links:
+  - text: "Coordinadores"
+    anchor: "#coordenadores"
+  - text: "Colaboradores"
+    anchor: "#colaboradores"
+  - text: "Estudiantes de Posgrado"
+    anchor: "#pos-graduacao"
+  - text: "Estudiantes de Pregrado"
+    anchor: "#graduacao"
+social_links:
+  - text: "Twitter / X — @CSILab_UFOP"
+    href: "https://twitter.com/CSILab_UFOP"
+  - text: "Instagram — @csilab_ufop"
+    href: "https://www.instagram.com/csilab_ufop/"
+  - text: "GitHub — ufopcsilab"
+    href: "https://github.com/ufopcsilab"
+  - text: "Sitio Oficial (UFOP)"
+    href: "https://csilab.ufop.br"
+copyright: "© 2024–2026 Universidad Federal de Ouro Preto · CSI Lab · DECOM/ICEB"
+bottom_links:
+  - text: "UFOP"
+    href: "https://ufop.br"
+    external: true
+  - text: "DECOM"
+    href: "http://www3.decom.ufop.br/decom/inicio/"
+    external: true

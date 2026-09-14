@@ -1,0 +1,44 @@
+name_prefixes:
+  m: "Prof."
+  f: "Prof."
+
+groups:
+  coordinators:
+    label: "Coordination"
+    title: "Coordinating Professors"
+    sub: "Department of Computer Science — DECOM/UFOP"
+  professors:
+    label: "Faculty"
+    title: "Research Professors"
+    sub: "Department of Computer Science — DECOM/UFOP"
+  collaborators:
+    label: "External Collaborators"
+    title: "Collaborators"
+  phd_students:
+    label: "Graduate Studies"
+    title: "PhD Students"
+    sub: "Graduate Program in Computer Science (PPGCC) — UFOP"
+    since_prefix: "PhD · since"
+  masters_students:
+    title: "Master's Students"
+    since_prefix: "Master's · since"
+  undergrads:
+    label: "Undergraduate Research"
+    title: "Undergraduates — Research Grant Students"
+    since_prefix: "Undergrad Research · since"
+  alumni_grad:
+    label: "Alumni"
+    title: "Graduate Alumni"
+  alumni_undergrad:
+    title: "Undergraduate Alumni"
+
+roles:
+  coordinator: "Coordinator"
+  coordinator_f: "Coordinator"
+  associate_professor: "Associate Professor"
+  associate_professor_f: "Associate Professor"
+  collaborating_researcher: "Collaborating Researcher"
+  collaborating_researcher_f: "Collaborating Researcher"
+
+link_labels:
+  profile: "Profile →"

@@ -1,0 +1,24 @@
+- title: "Artificial Intelligence"
+  text: "AI models applied to high-complexity problems in healthcare, finance, language and environmental perception."
+  icon: cpu
+- title: "Computer Vision"
+  text: "Visual pattern recognition, image classification, deepfake detection and biometric identification."
+  icon: eye
+- title: "Machine Learning"
+  text: "Deep neural networks, transfer learning, self-supervised learning and efficient architectures (NAS)."
+  icon: layers
+- title: "Natural Language Processing"
+  text: "Language models for Portuguese, toxic text classification, speech recognition and prompt optimization."
+  icon: message
+- title: "Data Science"
+  text: "Credit risk analysis, fraud detection, churn prediction and epidemiological time series."
+  icon: bar-chart
+- title: "Spatial & Epidemiological Analysis"
+  text: "Spatial cluster detection, COVID-19 modeling with GNN and urban mobility, epidemiological surveillance."
+  icon: map
+- title: "Biomedical Signals"
+  text: "ECG classification, arrhythmia detection, heartbeat segmentation and remote cardiac signals via video (rPPG)."
+  icon: activity
+- title: "Multi-objective Optimization"
+  text: "Evolutionary algorithms, community detection in social networks and Pareto solution dispersion/concentration optimization."
+  icon: sliders

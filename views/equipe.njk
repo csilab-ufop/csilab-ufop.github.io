@@ -1,0 +1,519 @@
+{% extends "base.njk" %}
+
+{% block head %}
+<style>
+.org-chart { max-width: 1080px; margin: 0 auto; }
+
+.org-tier-head {
+  text-align: center;
+  margin-bottom: 1.75rem;
+}
+.org-tier-head .section-label { display: inline-block; }
+.org-tier-head h2 {
+  font-family: var(--font-primary);
+  font-size: 1.375rem;
+  font-weight: 800;
+  color: var(--color-text);
+  margin: 0.4rem 0 0.3rem;
+}
+.org-tier-head p { font-size: 0.875rem; color: var(--color-muted); }
+
+.org-stem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.25rem 0;
+  gap: 0;
+}
+.org-stem-line {
+  width: 2px;
+  height: 48px;
+  background: linear-gradient(to bottom, rgba(233,79,55,0.45), rgba(86,101,115,0.25));
+  border-radius: 1px;
+}
+.org-stem-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(233,79,55,0.55);
+  border: 1.5px solid rgba(233,79,55,0.3);
+  box-shadow: 0 0 8px rgba(233,79,55,0.25);
+}
+
+.org-coordinators {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  max-width: 720px;
+  margin: 0 auto;
+}
+@media (max-width: 560px) { .org-coordinators { grid-template-columns: 1fr; } }
+
+.org-faculty-split {
+  display: grid;
+  grid-template-columns: 3fr 1px 1.6fr;
+  gap: 2.25rem;
+  align-items: start;
+}
+.org-faculty-sep {
+  background: rgba(86,101,115,0.18);
+  align-self: stretch;
+  margin-top: 3.5rem;
+  border-radius: 1px;
+}
+@media (max-width: 820px) {
+  .org-faculty-split { grid-template-columns: 1fr; gap: 2.5rem; }
+  .org-faculty-sep   { display: none; }
+}
+
+.org-prof-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; }
+.org-collab-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+@media (max-width: 480px) { .org-prof-grid { grid-template-columns: 1fr; } }
+@media (min-width: 481px) and (max-width: 820px) {
+  .org-prof-grid   { grid-template-columns: repeat(2,1fr); }
+  .org-collab-grid { grid-template-columns: repeat(2,1fr); }
+}
+
+.org-tabs {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 1.75rem;
+}
+.org-tab-btn {
+  padding: 0.4rem 1.1rem;
+  border-radius: 999px;
+  font-family: var(--font-primary);
+  font-size: 0.8rem;
+  font-weight: 700;
+  border: 1.5px solid rgba(86,101,115,0.3);
+  background: rgba(86,101,115,0.08);
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  letter-spacing: 0.01em;
+}
+.org-tab-btn:hover { border-color: rgba(233,79,55,0.35); color: var(--color-text); }
+.org-tab-btn.active {
+  background: rgba(233,79,55,0.12);
+  border-color: rgba(233,79,55,0.5);
+  color: var(--color-accent);
+}
+.org-tab-panel { display: none; }
+.org-tab-panel.active { display: block; }
+
+.org-student-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; }
+@media (max-width: 820px) { .org-student-grid { grid-template-columns: repeat(3,1fr); } }
+@media (max-width: 560px) { .org-student-grid { grid-template-columns: repeat(2,1fr); } }
+@media (max-width: 380px) { .org-student-grid { grid-template-columns: 1fr; } }
+
+.mc {
+  background: var(--color-surface);
+  border: 1px solid rgba(86,101,115,0.22);
+  border-radius: 12px;
+  padding: 1.25rem 1.375rem 1.125rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  transition: border-color 0.22s, transform 0.22s, box-shadow 0.22s;
+  position: relative;
+  overflow: hidden;
+}
+.mc::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(233,79,55,0.025) 0%, transparent 60%);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.mc:hover::before { opacity: 1; }
+.mc:hover { border-color: rgba(233,79,55,0.45); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.32); }
+.mc--coordinator {
+  border-top: 3px solid var(--color-accent);
+  box-shadow: 0 4px 20px rgba(233,79,55,0.08);
+}
+.mc--collaborator { border-top: 3px solid rgba(86,101,115,0.45); }
+
+.mc-header { display: flex; align-items: center; gap: 0.875rem; margin-bottom: 0.875rem; }
+.mc-avatar {
+  width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(86,101,115,0.12); border: 1.5px solid rgba(86,101,115,0.25);
+  color: var(--color-muted);
+}
+.mc--coordinator .mc-avatar  { background: rgba(233,79,55,0.08); border-color: rgba(233,79,55,0.3); color: var(--color-accent); }
+.mc--collaborator .mc-avatar { background: rgba(86,101,115,0.15); border-color: rgba(86,101,115,0.35); }
+.mc-meta { flex: 1; min-width: 0; }
+.mc-role {
+  font-size: 0.665rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.09em; line-height: 1.2; margin-bottom: 0.2rem;
+  color: var(--color-accent);
+}
+.mc--collaborator .mc-role { color: var(--color-steel); }
+.mc-name { font-family: var(--font-primary); font-size: 0.9375rem; font-weight: 700; color: var(--color-text); line-height: 1.25; }
+
+.mc-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.85rem; }
+.mc-tag {
+  font-size: 0.675rem; color: var(--color-muted);
+  background: rgba(86,101,115,0.1); border: 1px solid rgba(86,101,115,0.2);
+  border-radius: 3px; padding: 0.1rem 0.4rem; line-height: 1.6;
+}
+
+.mc-links { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: auto; padding-top: 0.75rem; border-top: 1px solid rgba(86,101,115,0.1); }
+.mc-link {
+  display: inline-flex; align-items: center; gap: 0.35rem;
+  height: 26px; padding: 0 0.6rem;
+  border: 1px solid rgba(86,101,115,0.28); border-radius: 5px;
+  color: var(--color-muted); font-size: 0.7125rem; font-weight: 600;
+  text-decoration: none; white-space: nowrap;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.mc-link:hover { border-color: rgba(233,79,55,0.5); color: var(--color-accent); background: rgba(233,79,55,0.06); }
+.mc-link svg { flex-shrink: 0; }
+
+.mc-student {
+  background: var(--color-surface);
+  border: 1px solid rgba(86,101,115,0.18);
+  border-radius: 10px;
+  padding: 1rem 1.125rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+.mc-student:hover { border-color: rgba(233,79,55,0.3); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.22); }
+.mc-student-header { display: flex; align-items: center; gap: 0.55rem; margin-bottom: 0.1rem; }
+.mc-student-avatar {
+  width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(86,101,115,0.1); border: 1px solid rgba(86,101,115,0.2);
+  color: rgba(136,146,176,0.55);
+}
+.mc-student-name { font-family: var(--font-primary); font-size: 0.875rem; font-weight: 700; color: var(--color-text); line-height: 1.25; }
+.mc-since { font-size: 0.7375rem; color: rgba(136,146,176,0.5); padding-left: 0.1rem; }
+.mc-student-links { display: flex; gap: 0.4rem; margin-top: 0.4rem; }
+
+.org-alumni-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+@media (max-width: 640px) { .org-alumni-split { grid-template-columns: 1fr; } }
+.org-alumni-col h3 {
+  font-family: var(--font-primary);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 0.875rem;
+}
+.alumni-list { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.alumni-pill {
+  padding: 0.25rem 0.75rem;
+  background: rgba(86,101,115,0.1);
+  border: 1px solid rgba(86,101,115,0.18);
+  border-radius: 999px;
+  font-size: 0.8rem;
+  color: var(--color-muted);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+{% set i18n = data.team_i18n %}
+{% set tags = data.team_tags %}
+{% set team = data.team %}
+
+{% set avatarSVG %}
+<svg width="22" height="22" viewBox="0 0 22 22" fill="currentColor" aria-hidden="true">
+  <circle cx="11" cy="8" r="4.5"/>
+  <path d="M2 20c0-4.97 4.03-9 9-9s9 4.03 9 9" fill-rule="evenodd"/>
+</svg>
+{% endset %}
+
+{% set avatarSVGSm %}
+<svg width="14" height="14" viewBox="0 0 22 22" fill="currentColor" aria-hidden="true">
+  <circle cx="11" cy="8" r="4.5"/>
+  <path d="M2 20c0-4.97 4.03-9 9-9s9 4.03 9 9" fill-rule="evenodd"/>
+</svg>
+{% endset %}
+
+{% set lattesIconSVG %}
+<svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
+  <path d="M2 2h8v8M10 2 2 10"/>
+</svg>
+{% endset %}
+
+{% set emailIconSVG %}
+<svg width="12" height="11" viewBox="0 0 14 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+  <rect x="1" y="1" width="12" height="10" rx="1.5"/>
+  <path d="M1 3l6 4.5L13 3"/>
+</svg>
+{% endset %}
+
+{% macro renderFacultyLinks(links) %}
+  {% if links %}
+  <div class="mc-links">
+    {% for l in links %}
+      {% if l.key != 'profile' %}
+        {% if l.href and 'mailto:' in l.href %}
+        <a href="{{ l.href }}" class="mc-link" title="{{ l.text }}">{{ emailIconSVG | safe }} Email</a>
+        {% elif l.text and 'Lattes' in l.text %}
+        <a href="{{ l.href }}" target="_blank" rel="noopener" class="mc-link">{{ lattesIconSVG | safe }} Lattes</a>
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endmacro %}
+
+{% macro renderStudentLinks(links) %}
+  {% if links %}
+  <div class="mc-student-links">
+    {% for l in links %}
+      {% if l.text and 'Lattes' in l.text %}
+      <a href="{{ l.href }}" target="_blank" rel="noopener" class="mc-link">{{ lattesIconSVG | safe }} Lattes</a>
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endmacro %}
+
+<section style="padding-top:8rem;padding-bottom:3rem;">
+  <div class="container">
+    <span class="section-label">{{ page.page_label }}</span>
+    <h1 class="d2c_title" style="margin-top:0.75rem;margin-bottom:0.75rem;">{{ page.page_title }}</h1>
+    <p class="text-lavender" style="font-size:1rem;max-width:640px;line-height:1.75;">{{ page.page_sub }}</p>
+  </div>
+</section>
+
+<section style="padding-top:0;padding-bottom:5rem;">
+  <div class="container">
+  <div class="org-chart">
+
+    <div data-aos="fade-up">
+      <div class="org-tier-head">
+        <span class="section-label">{{ i18n.groups.coordinators.label }}</span>
+        <h2>{{ i18n.groups.coordinators.title }}</h2>
+        <p>{{ i18n.groups.coordinators.sub }}</p>
+      </div>
+      <div class="org-coordinators">
+        {% for m in team.coordinators.members %}
+        <div class="mc mc--coordinator" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 80 }}">
+          <div class="mc-header">
+            <div class="mc-avatar">{{ avatarSVG | safe }}</div>
+            <div class="mc-meta">
+              <div class="mc-role">{{ i18n.roles[m.role_key] }}</div>
+              <div class="mc-name">{{ i18n.name_prefixes[m.gender or 'm'] }} {{ m.name }}</div>
+            </div>
+          </div>
+          {% if m.tags %}
+          <div class="mc-tags">
+            {% for tagId in m.tags %}<span class="mc-tag">{{ tags[tagId][lang] if tags[tagId] else tagId }}</span>{% endfor %}
+          </div>
+          {% endif %}
+          {{ renderFacultyLinks(m.links) }}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="org-stem" aria-hidden="true">
+      <div class="org-stem-line"></div>
+      <div class="org-stem-dot"></div>
+      <div class="org-stem-line" style="background:linear-gradient(to bottom,rgba(86,101,115,0.3),rgba(86,101,115,0.12));"></div>
+    </div>
+
+    <div class="org-faculty-split" data-aos="fade-up">
+
+      <div>
+        <div class="org-tier-head" style="text-align:left;">
+          <span class="section-label">{{ i18n.groups.professors.label }}</span>
+          <h2>{{ i18n.groups.professors.title }}</h2>
+          <p>{{ i18n.groups.professors.sub }}</p>
+        </div>
+        <div class="org-prof-grid">
+          {% for m in team.professors.members %}
+          <div class="mc" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 60 }}">
+            <div class="mc-header">
+              <div class="mc-avatar">{{ avatarSVG | safe }}</div>
+              <div class="mc-meta">
+                <div class="mc-role">{{ i18n.roles[m.role_key] }}</div>
+                <div class="mc-name">{{ i18n.name_prefixes[m.gender or 'm'] }} {{ m.name }}</div>
+              </div>
+            </div>
+            {% if m.tags %}
+            <div class="mc-tags">
+              {% for tagId in m.tags %}<span class="mc-tag">{{ tags[tagId][lang] if tags[tagId] else tagId }}</span>{% endfor %}
+            </div>
+            {% endif %}
+            {{ renderFacultyLinks(m.links) }}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="org-faculty-sep" aria-hidden="true"></div>
+
+      <div>
+        <div class="org-tier-head" style="text-align:left;">
+          <span class="section-label">{{ i18n.groups.collaborators.label }}</span>
+          <h2>{{ i18n.groups.collaborators.title }}</h2>
+        </div>
+        <div class="org-collab-grid">
+          {% for m in team.collaborators.members %}
+          <div class="mc mc--collaborator" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 80 }}">
+            <div class="mc-header">
+              <div class="mc-avatar">{{ avatarSVG | safe }}</div>
+              <div class="mc-meta">
+                <div class="mc-role">{{ i18n.roles[m.role_key] }}</div>
+                <div class="mc-name">{{ i18n.name_prefixes[m.gender or 'm'] }} {{ m.name }}</div>
+              </div>
+            </div>
+            {% if m.tags %}
+            <div class="mc-tags">
+              {% for tagId in m.tags %}<span class="mc-tag">{{ tags[tagId][lang] if tags[tagId] else tagId }}</span>{% endfor %}
+            </div>
+            {% endif %}
+            {{ renderFacultyLinks(m.links) }}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div>
+
+    <div class="org-stem" aria-hidden="true">
+      <div class="org-stem-line" style="background:linear-gradient(to bottom,rgba(86,101,115,0.2),rgba(86,101,115,0.35));"></div>
+      <div class="org-stem-dot" style="background:rgba(86,101,115,0.5);border-color:rgba(86,101,115,0.3);box-shadow:0 0 6px rgba(86,101,115,0.2);"></div>
+      <div class="org-stem-line" style="background:linear-gradient(to bottom,rgba(86,101,115,0.3),rgba(86,101,115,0.12));"></div>
+    </div>
+
+    <div data-aos="fade-up">
+      <div class="org-tier-head">
+        <span class="section-label">{{ i18n.groups.phd_students.label }}</span>
+        <h2 style="font-size:1.25rem;">Estudantes</h2>
+      </div>
+
+      <div class="org-tabs" role="tablist">
+        <button class="org-tab-btn active" role="tab" aria-controls="tab-phd"      aria-selected="true"  onclick="switchTab('phd')">
+          {{ i18n.groups.phd_students.title }}
+          <span style="font-weight:400;opacity:0.6;margin-left:0.3rem;">({{ team.phd_students.members | length }})</span>
+        </button>
+        <button class="org-tab-btn" role="tab" aria-controls="tab-masters"  aria-selected="false" onclick="switchTab('masters')">
+          {{ i18n.groups.masters_students.title }}
+          <span style="font-weight:400;opacity:0.6;margin-left:0.3rem;">({{ team.masters_students.members | length }})</span>
+        </button>
+        <button class="org-tab-btn" role="tab" aria-controls="tab-undergrad" aria-selected="false" onclick="switchTab('undergrad')">
+          {{ i18n.groups.undergrads.title }}
+          <span style="font-weight:400;opacity:0.6;margin-left:0.3rem;">({{ team.undergrads.members | length }})</span>
+        </button>
+      </div>
+
+      <div id="tab-phd" class="org-tab-panel active" role="tabpanel">
+        <p style="font-size:0.8125rem;color:var(--color-muted);text-align:center;margin-bottom:1.25rem;">{{ i18n.groups.phd_students.sub }}</p>
+        <div class="org-student-grid">
+          {% for m in team.phd_students.members %}
+          <div class="mc-student">
+            <div class="mc-student-header">
+              <div class="mc-student-avatar">{{ avatarSVGSm | safe }}</div>
+              <div class="mc-student-name">{{ m.name }}</div>
+            </div>
+            <div class="mc-since">{{ i18n.groups.phd_students.since_prefix }} {{ m.year }}</div>
+            {{ renderStudentLinks(m.links) }}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div id="tab-masters" class="org-tab-panel" role="tabpanel">
+        <div class="org-student-grid">
+          {% for m in team.masters_students.members %}
+          <div class="mc-student">
+            <div class="mc-student-header">
+              <div class="mc-student-avatar">{{ avatarSVGSm | safe }}</div>
+              <div class="mc-student-name">{{ m.name }}</div>
+            </div>
+            <div class="mc-since">{{ i18n.groups.masters_students.since_prefix }} {{ m.year }}</div>
+            {{ renderStudentLinks(m.links) }}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div id="tab-undergrad" class="org-tab-panel" role="tabpanel">
+        <p style="font-size:0.8125rem;color:var(--color-muted);text-align:center;margin-bottom:1.25rem;">{{ i18n.groups.undergrads.label }}</p>
+        <div class="org-student-grid">
+          {% for m in team.undergrads.members %}
+          <div class="mc-student">
+            <div class="mc-student-header">
+              <div class="mc-student-avatar">{{ avatarSVGSm | safe }}</div>
+              <div class="mc-student-name">{{ m.name }}</div>
+            </div>
+            <div class="mc-since">{{ i18n.groups.undergrads.since_prefix }} {{ m.year }}</div>
+            {{ renderStudentLinks(m.links) }}
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+    </div>
+
+    <div class="org-stem" aria-hidden="true">
+      <div class="org-stem-line" style="background:linear-gradient(to bottom,rgba(86,101,115,0.18),rgba(86,101,115,0.28));"></div>
+      <div class="org-stem-dot" style="background:rgba(86,101,115,0.3);border-color:rgba(86,101,115,0.2);box-shadow:none;"></div>
+      <div class="org-stem-line" style="background:linear-gradient(to bottom,rgba(86,101,115,0.2),transparent);"></div>
+    </div>
+
+    <div data-aos="fade-up">
+      <div class="org-tier-head">
+        <span class="section-label">{{ i18n.groups.alumni_grad.label }}</span>
+        <h2 style="font-size:1.25rem;">Egressos</h2>
+      </div>
+      <div class="org-alumni-split">
+        <div class="org-alumni-col">
+          <h3>{{ i18n.groups.alumni_grad.title }}</h3>
+          <div class="alumni-list">
+            {% for name in team.alumni_grad.members %}
+            <span class="alumni-pill">{{ name }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="org-alumni-col">
+          <h3>{{ i18n.groups.alumni_undergrad.title }}</h3>
+          <div class="alumni-list">
+            {% for name in team.alumni_undergrad.members %}
+            <span class="alumni-pill">{{ name }}</span>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin:4rem 0 2rem;text-align:center;">
+      <p class="text-lavender" style="margin-bottom:1rem;">{{ page.join_text }}</p>
+      <a href="{{ base_url }}/contato" class="btn-primary">{{ page.join_btn }}</a>
+    </div>
+
+  </div>
+  </div>
+</section>
+
+<script>
+function switchTab(id) {
+  document.querySelectorAll('.org-tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.org-tab-btn').forEach(b => {
+    b.classList.remove('active');
+    b.setAttribute('aria-selected', 'false');
+  });
+  const panel = document.getElementById('tab-' + id);
+  if (panel) panel.classList.add('active');
+  const btn = document.querySelector('[aria-controls="tab-' + id + '"]');
+  if (btn) { btn.classList.add('active'); btn.setAttribute('aria-selected', 'true'); }
+}
+</script>
+
+{% endblock %}

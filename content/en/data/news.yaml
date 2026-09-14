@@ -1,0 +1,31 @@
+label: "Updates"
+title: "News & Events"
+sub: "Follow the lab's achievements, conference participations and awards."
+featured:
+  tag: "IEEE LACCI 2024"
+  date: "December 13, 2024 · Bogotá, Colombia"
+  title: "CSI Lab presents 3 papers at IEEE LACCI 2024"
+  text: "The lab was present at the <strong style=\"color:var(--color-text);\">IEEE Latin American Conference on Computational Intelligence</strong> with three works in spatial analysis, periocular biometrics and remote cardiac signals."
+  papers:
+    - title: "Reinforcement Learning for Spatial Cluster Detection"
+      author: "Dênis Oliveira"
+    - title: "Periocular EfficientNet: Deep Model for Recognition"
+      author: "Pablo Coelho"
+    - title: "Remote Cardiac Signals for Biometric Verification"
+      author: "Adriano Andrade"
+  badge_text: "IEEE · LACCI 2024"
+  badge_count: "3 Accepted Papers"
+  badge_sub: "International Conference"
+cards:
+  - tag: "Award · 2024"
+    title: "Best Paper — ERCAS 2024"
+    text: "IX Regional School of Computing Applied to Health — best paper award given to a work advised by Prof. Eduardo Luz."
+    accent: true
+  - tag: "Award · 2023"
+    title: "Best Undergrad Research — Encontro de Saberes UFOP 2023"
+    text: "Exact Sciences category — best undergraduate research work at UFOP, recognizing machine learning research."
+    accent: true
+  - tag: "Open Source"
+    title: "14 Public Repositories on GitHub"
+    text: "Source code for all published papers available at <a href=\"https://github.com/ufopcsilab\" target=\"_blank\" style=\"color:var(--color-accent);\">github.com/ufopcsilab</a>."
+    accent: false

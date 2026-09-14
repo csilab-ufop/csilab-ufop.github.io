@@ -1,0 +1,44 @@
+name_prefixes:
+  m: "Prof."
+  f: "Profa."
+
+groups:
+  coordinators:
+    label: "Coordenação"
+    title: "Professores Coordenadores"
+    sub: "Departamento de Computação — DECOM/UFOP"
+  professors:
+    label: "Corpo Docente"
+    title: "Professores Pesquisadores"
+    sub: "Departamento de Computação — DECOM/UFOP"
+  collaborators:
+    label: "Colaboradores Externos"
+    title: "Colaboradores"
+  phd_students:
+    label: "Pós-Graduação"
+    title: "Doutorandos"
+    sub: "Programa de Pós-Graduação em Ciência da Computação (PPGCC) — UFOP"
+    since_prefix: "Doutorado · desde"
+  masters_students:
+    title: "Mestrandos"
+    since_prefix: "Mestrado · desde"
+  undergrads:
+    label: "Iniciação Científica"
+    title: "Graduandos — Bolsistas de IC"
+    since_prefix: "IC · desde"
+  alumni_grad:
+    label: "Egressos"
+    title: "Egressos da Pós-Graduação"
+  alumni_undergrad:
+    title: "Egressos da Graduação"
+
+roles:
+  coordinator: "Coordenador"
+  coordinator_f: "Coordenadora"
+  associate_professor: "Professor Associado"
+  associate_professor_f: "Professora Associada"
+  collaborating_researcher: "Pesquisador Colaborador"
+  collaborating_researcher_f: "Pesquisadora Colaboradora"
+
+link_labels:
+  profile: "Perfil →"

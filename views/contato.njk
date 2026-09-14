@@ -1,0 +1,350 @@
+{% from "_macros.njk" import icon %}
+{% extends "base.njk" %}
+
+{% block head %}
+<style>
+.contact-cards-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+@media (max-width: 640px) { .contact-cards-row { grid-template-columns: 1fr; } }
+
+.contact-card {
+  background: var(--color-surface);
+  border: 1px solid rgba(86,101,115,0.22);
+  border-top: 3px solid var(--color-accent);
+  border-radius: 12px;
+  padding: 1.75rem 2rem;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.22s, box-shadow 0.22s, border-color 0.22s;
+}
+.contact-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at top left, rgba(233,79,55,0.055) 0%, transparent 65%);
+  pointer-events: none;
+}
+.contact-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.3);
+  border-color: rgba(233,79,55,0.45);
+}
+
+.contact-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: rgba(233,79,55,0.1);
+  border: 1px solid rgba(233,79,55,0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+  margin-bottom: 1.125rem;
+  flex-shrink: 0;
+}
+
+.contact-card-email {
+  font-family: var(--font-primary);
+  font-size: 1.025rem;
+  font-weight: 700;
+  color: var(--color-accent);
+  text-decoration: none;
+  display: block;
+  margin-bottom: 0.3rem;
+  word-break: break-all;
+  transition: opacity 0.15s;
+}
+.contact-card-email:hover { opacity: 0.8; }
+
+.contact-card-person {
+  font-size: 0.875rem;
+  color: var(--color-muted);
+  line-height: 1.5;
+  margin-bottom: 1.375rem;
+}
+
+.contact-card-actions {
+  display: flex;
+  gap: 0.625rem;
+  flex-wrap: wrap;
+}
+
+.contact-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1rem;
+  border-radius: 7px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+.contact-btn--primary {
+  background: var(--color-accent);
+  border: 1px solid var(--color-accent);
+  color: #fff;
+}
+.contact-btn--primary:hover { background: #c93e2a; border-color: #c93e2a; }
+.contact-btn--ghost {
+  background: rgba(86,101,115,0.1);
+  border: 1px solid rgba(86,101,115,0.28);
+  color: var(--color-muted);
+}
+.contact-btn--ghost:hover { border-color: rgba(233,79,55,0.4); color: var(--color-accent); background: rgba(233,79,55,0.06); }
+.contact-btn--ghost.copied {
+  border-color: rgba(72,199,142,0.5);
+  color: #48c78e;
+  background: rgba(72,199,142,0.08);
+}
+
+.contact-info-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+@media (max-width: 820px) { .contact-info-row { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 520px) { .contact-info-row { grid-template-columns: 1fr; } }
+
+.info-card {
+  background: var(--color-surface);
+  border: 1px solid rgba(86,101,115,0.2);
+  border-radius: 12px;
+  padding: 1.5rem 1.625rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.info-card-title {
+  font-family: var(--font-primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-muted);
+  margin-bottom: 1rem;
+}
+.info-card-icon {
+  color: var(--color-muted);
+  margin-bottom: 0.625rem;
+}
+
+.location-line { font-size: 0.9rem; color: var(--color-text); font-weight: 600; margin-bottom: 0.2rem; }
+.location-sub  { font-size: 0.8125rem; color: var(--color-muted); line-height: 1.6; }
+
+.social-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.social-link {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--color-muted);
+  font-size: 0.8375rem;
+  font-weight: 500;
+  border: 1px solid rgba(86,101,115,0.18);
+  background: rgba(86,101,115,0.06);
+  transition: border-color 0.15s, color 0.15s, background 0.15s, transform 0.15s;
+}
+.social-link:hover { transform: translateX(4px); }
+.social-link--twitter:hover   { border-color: rgba(29,161,242,0.4); color: #1DA1F2; background: rgba(29,161,242,0.07); }
+.social-link--instagram:hover { border-color: rgba(225,48,108,0.4); color: #E1306C; background: rgba(225,48,108,0.07); }
+.social-link--github:hover    { border-color: rgba(255,255,255,0.2); color: var(--color-text); background: rgba(255,255,255,0.06); }
+
+.inst-list { display: flex; flex-direction: column; gap: 0.5rem; }
+.inst-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 0.8375rem;
+  color: var(--color-muted);
+  border: 1px solid rgba(86,101,115,0.18);
+  background: rgba(86,101,115,0.06);
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.inst-link:hover { border-color: rgba(233,79,55,0.35); color: var(--color-text); background: rgba(233,79,55,0.05); }
+.inst-link span { font-weight: 600; }
+.inst-link-arrow { opacity: 0.4; font-size: 0.9rem; }
+
+.join-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+@media (max-width: 760px) { .join-grid { grid-template-columns: 1fr; } }
+
+.join-card {
+  background: var(--color-surface);
+  border: 1px solid rgba(86,101,115,0.2);
+  border-radius: 12px;
+  padding: 1.75rem 1.875rem;
+  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.join-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(233,79,55,0.4), transparent);
+  transform: scaleX(0);
+  transition: transform 0.3s;
+}
+.join-card:hover { border-color: rgba(233,79,55,0.35); transform: translateY(-3px); box-shadow: 0 12px 36px rgba(0,0,0,0.26); }
+.join-card:hover::after { transform: scaleX(1); }
+.join-card-icon { margin-bottom: 1rem; }
+.join-card h3 { font-family: var(--font-primary); font-size: 1rem; font-weight: 700; color: var(--color-text); margin-bottom: 0.5rem; }
+.join-card p { font-size: 0.875rem; color: var(--color-muted); line-height: 1.65; }
+
+.contact-section-heading {
+  font-family: var(--font-primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--color-muted);
+  margin-bottom: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.contact-section-heading::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(86,101,115,0.18);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<section style="padding-top:8rem;padding-bottom:2.5rem;">
+  <div class="container">
+    <span class="section-label">{{ page.page_label }}</span>
+    <h1 class="d2c_title" style="margin-top:0.75rem;margin-bottom:1rem;">{{ page.page_title }}</h1>
+    <p class="text-lavender" style="font-size:1rem;max-width:580px;line-height:1.75;">{{ page.page_sub }}</p>
+  </div>
+</section>
+
+<section style="padding-top:0;padding-bottom:6rem;">
+  <div class="container">
+
+    <p class="contact-section-heading">{{ data.contact.info_title }}</p>
+    <div class="contact-cards-row">
+      {% for c in data.contact.contacts %}
+      <div class="contact-card" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 100 }}">
+        <div class="contact-card-icon">
+          {{ icon("mail", 20) }}
+        </div>
+        <a href="mailto:{{ c.email }}" class="contact-card-email">{{ c.email }}</a>
+        <p class="contact-card-person">{{ c.person }}</p>
+        <div class="contact-card-actions">
+          <a href="mailto:{{ c.email }}" class="contact-btn contact-btn--primary">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            {{ page.email_cta or "Send email" }}
+          </a>
+          <button class="contact-btn contact-btn--ghost" onclick="copyEmail(this, '{{ c.email }}')" type="button">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            {{ page.copy_label or "Copy" }}
+          </button>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="contact-info-row" data-aos="fade-up">
+
+      <div class="info-card">
+        <div class="info-card-title">{{ page.location_label or "Location" }}</div>
+        <div class="info-card-icon">{{ icon("location", 22, "var(--color-accent)") }}</div>
+        <div class="location-line">{{ data.contact.location.room }}</div>
+        <div class="location-sub">
+          {{ data.contact.location.dept }}<br>
+          {{ data.contact.location.univ }}
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-card-title">{{ page.social_label or "Social Media" }}</div>
+        <div class="social-list">
+          <a href="https://twitter.com/CSILab_UFOP" target="_blank" rel="noopener" class="social-link social-link--twitter" title="@CSILab_UFOP">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            @CSILab_UFOP
+          </a>
+          <a href="https://www.instagram.com/csilab_ufop/" target="_blank" rel="noopener" class="social-link social-link--instagram" title="@csilab_ufop">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+            @csilab_ufop
+          </a>
+          <a href="https://github.com/ufopcsilab" target="_blank" rel="noopener" class="social-link social-link--github" title="ufopcsilab">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+            ufopcsilab
+          </a>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <div class="info-card-title">{{ page.links_label or "Institutional Links" }}</div>
+        <div class="inst-list">
+          <a href="https://ufop.br" target="_blank" rel="noopener" class="inst-link">
+            <span>UFOP</span>
+            <span class="inst-link-arrow">↗</span>
+          </a>
+          <a href="http://www3.decom.ufop.br/decom/inicio/" target="_blank" rel="noopener" class="inst-link">
+            <span>DECOM</span>
+            <span class="inst-link-arrow">↗</span>
+          </a>
+          <a href="https://ppgcc.decom.ufop.br/" target="_blank" rel="noopener" class="inst-link">
+            <span>PPGCC</span>
+            <span class="inst-link-arrow">↗</span>
+          </a>
+          <a href="https://github.com/ufopcsilab" target="_blank" rel="noopener" class="inst-link">
+            <span>GitHub</span>
+            <span class="inst-link-arrow">↗</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="margin-top:3.5rem;" data-aos="fade-up">
+      <p class="contact-section-heading">{{ data.contact.join_title }}</p>
+      <div class="join-grid">
+        {% for item in data.contact.join_items %}
+        <div class="join-card" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 100 }}">
+          <div class="join-card-icon">{{ icon(item.icon, 28, "var(--color-accent)", "1.6") }}</div>
+          <h3>{{ item.title }}</h3>
+          <p>{{ item.text }}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+function copyEmail(btn, email) {
+  navigator.clipboard.writeText(email).then(() => {
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> {{ page.copied_label or "Copied!" }}';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 2200);
+  }).catch(() => {});
+}
+</script>
+
+{% endblock %}

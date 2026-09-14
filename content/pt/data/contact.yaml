@@ -1,0 +1,23 @@
+info_title: "Informações de Contato"
+contacts:
+  - email: "gladston@ufop.edu.br"
+    person: "Prof. Gladston Moreira (Coordenador)"
+  - email: "eduardoluz@ufop.edu.br"
+    person: "Prof. Eduardo Luz (Co-Coordenador)"
+location:
+  room: "Sala 281 — ICEB II"
+  dept: "Departamento de Computação (DECOM)"
+  univ: "UFOP · Ouro Preto, MG · Brasil"
+website_official: "csilab.ufop.br"
+website_official_label: "Site oficial do laboratório (UFOP)"
+join_title: "Como ingressar no CSI Lab"
+join_items:
+  - icon: graduation
+    title: "Iniciação Científica"
+    text: "Alunos de graduação podem se candidatar a bolsas de IC via CNPq e FAPEMIG. Envie currículo Lattes e área de interesse."
+  - icon: book
+    title: "Mestrado e Doutorado"
+    text: "Acompanhe os editais do PPGCC-UFOP. Entre em contato com o professor da linha de pesquisa de seu interesse antes da candidatura."
+  - icon: briefcase
+    title: "Parcerias Empresariais"
+    text: "Realizamos projetos de P&D via convênio UFOP/Embrapii ou contrato direto. Descreva sua demanda e agendaremos uma reunião."

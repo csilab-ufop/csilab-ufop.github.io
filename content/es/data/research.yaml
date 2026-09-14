@@ -1,0 +1,24 @@
+- title: "Inteligencia Artificial"
+  text: "Modelos de IA aplicados a problemas de alta complejidad en salud, finanzas, lenguaje y percepción ambiental."
+  icon: cpu
+- title: "Visión Computacional"
+  text: "Reconocimiento de patrones visuales, clasificación de imágenes, detección de deepfakes e identificación biométrica."
+  icon: eye
+- title: "Aprendizaje Automático"
+  text: "Redes neuronales profundas, aprendizaje por transferencia, self-supervised learning y arquitecturas eficientes (NAS)."
+  icon: layers
+- title: "Procesamiento del Lenguaje Natural"
+  text: "Modelos de lenguaje para el portugués, clasificación de texto tóxico, reconocimiento de voz y optimización de prompts."
+  icon: message
+- title: "Ciencia de Datos"
+  text: "Análisis de riesgo crediticio, detección de fraude, predicción de churn y series temporales epidemiológicas."
+  icon: bar-chart
+- title: "Análisis Espacial y Epidemiológico"
+  text: "Detección de clústeres espaciales, modelado de COVID-19 con redes GNN y movilidad urbana, vigilancia epidemiológica."
+  icon: map
+- title: "Señales Biomédicas"
+  text: "Clasificación de ECG, detección de arritmias, segmentación de latidos y señales cardíacas remotas por video (rPPG)."
+  icon: activity
+- title: "Optimización Multiobjetivo"
+  text: "Algoritmos evolutivos, detección de comunidades en redes sociales y optimización de dispersión/concentración de soluciones Pareto."
+  icon: sliders

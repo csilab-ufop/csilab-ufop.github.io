@@ -1,0 +1,22 @@
+{
+  "name": "zyvolab-static",
+  "version": "1.0.0",
+  "description": "Zyvolab static website",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "predev": "node scripts/fetch-publications.js",
+    "dev": "nodemon server.js",
+    "build": "node scripts/build-static.js",
+    "fetch:pubs": "node scripts/fetch-publications.js",
+    "validate:pubs": "node scripts/validate-publications.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "js-yaml": "^4.1.1",
+    "nunjucks": "^3.2.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}

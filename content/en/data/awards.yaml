@@ -1,0 +1,12 @@
+label: "Awards"
+title: "Recent Recognition"
+items:
+  - title: "Best Undergraduate Research Work"
+    event: "Encontro de Saberes UFOP 2023 · Exact Sciences Category"
+  - title: "Best Paper — ERCAS 2024"
+    event: "IX Regional School of Computing Applied to Health"
+about_label: "About the Lab"
+about_title: "A Lab That Understands Innovation"
+about_text: "Our projects stem from real-world questions and produce results published in the top international venues — IEEE, Springer, SBC — along with open-source code available to the community via GitHub."
+cta_publications: "View Publications"
+cta_github: "Lab's GitHub"
