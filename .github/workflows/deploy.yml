@@ -21,6 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SITE_URL: https://csilab.ufop.br
+      SCHOLAR_SSH_HOST: jackal
     steps:
       - uses: actions/checkout@v7
 
@@ -30,6 +31,20 @@ jobs:
           cache: npm
 
       - run: npm ci
+
+      # Scholar blocks GitHub's servers, so its requests run on a machine in the
+      # UFOP network (see SCHOLAR_SSH_HOST); host, key and host keys are secrets.
+      - name: Set up SSH to the UFOP network
+        env:
+          SSH_CONFIG: ${{ secrets.SCHOLAR_SSH_CONFIG }}
+          SSH_KEY: ${{ secrets.SCHOLAR_SSH_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SCHOLAR_SSH_KNOWN_HOSTS }}
+        run: |
+          install -d -m 700 ~/.ssh
+          printf '%s\n' "$SSH_CONFIG" > ~/.ssh/config
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/scholar_key
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/config ~/.ssh/scholar_key
 
       # Only the weekly (or manual) run queries Google Scholar; pushes reuse the
       # publications already published on the site.

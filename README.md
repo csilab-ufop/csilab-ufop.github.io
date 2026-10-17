@@ -53,3 +53,5 @@ Publications are not stored in the repo. `npm run fetch:pubs` reads every Google
 Scholar has no API and blocks clients that make too many requests, so each refresh makes one request per profile and reuses the data published at https://csilab.ufop.br/data/publications.json for the "Cited by" lists, re-fetching at most `SCHOLAR_MAX_CITES` (default 20) lists whose citation count changed. If Scholar blocks the run, the previously published data is kept.
 
 `npm run dev` and `npm run build` download the published data instead (`--cached`), so they don't touch Google Scholar.
+
+Scholar refuses GitHub's servers, so in CI every Scholar request runs as `curl` on `jackal`, a machine on the UFOP network (`SCHOLAR_SSH_HOST`), reached through `bridge_ufop`. The SSH setup comes from the repository secrets `SCHOLAR_SSH_CONFIG`, `SCHOLAR_SSH_KEY` and `SCHOLAR_SSH_KNOWN_HOSTS`. Locally, leave `SCHOLAR_SSH_HOST` unset to query Scholar directly.

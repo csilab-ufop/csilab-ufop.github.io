@@ -13,10 +13,14 @@
 // Scholar has no API and blocks clients that make too many requests, so a refresh
 // makes one request per profile and reuses the previously published data for the
 // "Cited by" lists, re-fetching only those whose citation count changed.
+//
+// Scholar also refuses GitHub's servers: with SCHOLAR_SSH_HOST set, every request
+// runs as curl on that SSH host (a machine on the UFOP network) instead.
 
 const fs   = require('fs');
 const path = require('path');
 const yaml = require('js-yaml');
+const { execFile } = require('child_process');
 
 const SCHOLAR    = 'https://scholar.google.com';
 const SITE_URL   = (process.env.SITE_URL || 'https://csilab.ufop.br').replace(/\/$/, '');
@@ -24,6 +28,8 @@ const LIVE_URL   = `${SITE_URL}/data/publications.json`;
 const TEAM_FILE  = path.join(__dirname, '../content/_shared/data/team.yaml');
 const OUT_FILE   = path.join(__dirname, '../content/_shared/data/publications.json');
 const USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64; rv:130.0) Gecko/20100101 Firefox/130.0';
+const HEADERS    = { 'User-Agent': USER_AGENT, 'Accept-Language': 'en-US,en;q=0.9' };
+const SSH_HOST   = process.env.SCHOLAR_SSH_HOST;
 
 const PAGE_SIZE = 100;   // Scholar's maximum rows per profile page
 const MAX_PAGES = 5;
@@ -41,6 +47,28 @@ function warn(msg) {
   console.warn(process.env.GITHUB_ACTIONS ? `::warning::${msg}` : `Warning: ${msg}`);
 }
 
+const shellQuote = s => `'${s.replace(/'/g, `'\\''`)}'`;
+
+function downloadViaSsh(url) {
+  const curl = ['curl', '-sSL', '--max-time', '30',
+    ...Object.entries(HEADERS).flatMap(([k, v]) => ['-H', `${k}: ${v}`]),
+    '-w', '\\n%{http_code} %{url_effective}', url].map(shellQuote).join(' ');
+  return new Promise((resolve, reject) => {
+    execFile('ssh', ['-T', '-o', 'BatchMode=yes', SSH_HOST, curl], { maxBuffer: 50 * 1024 * 1024 }, (err, stdout, stderr) => {
+      if (err) return reject(new Error(`ssh ${SSH_HOST} failed: ${(stderr || err.message).trim()}`));
+      const cut = stdout.lastIndexOf('\n');
+      const [status, finalUrl] = stdout.slice(cut + 1).trim().split(' ');
+      resolve({ status: Number(status), url: finalUrl, html: stdout.slice(0, cut) });
+    });
+  });
+}
+
+async function download(url) {
+  if (SSH_HOST) return downloadViaSsh(url);
+  const res = await fetch(url, { headers: HEADERS });
+  return { status: res.status, url: res.url, html: await res.text() };
+}
+
 let requestCount = 0;
 
 async function scholarGet(url) {
@@ -48,17 +76,14 @@ async function scholarGet(url) {
     const [min, max] = DELAY_MS;
     await sleep(min + Math.random() * (max - min));
   }
-  const res = await fetch(url, {
-    headers: { 'User-Agent': USER_AGENT, 'Accept-Language': 'en-US,en;q=0.9' },
-  });
-  const html = await res.text();
+  const res = await download(url);
   if (res.status === 429 || res.status === 403 ||
-      /\/sorry\/|accounts\.google\.com/.test(res.url) || BLOCK_PAGE.test(html)) {
-    const via = res.redirected ? `, redirected to ${res.url}` : '';
+      /\/sorry\/|accounts\.google\.com/.test(res.url) || BLOCK_PAGE.test(res.html)) {
+    const via = res.url && res.url !== url ? `, redirected to ${res.url}` : '';
     throw new BlockedError(`Google Scholar blocked the request (HTTP ${res.status}${via}) for ${url}`);
   }
-  if (!res.ok) throw new Error(`Google Scholar HTTP ${res.status} for ${url}`);
-  return html;
+  if (res.status < 200 || res.status >= 300) throw new Error(`Google Scholar HTTP ${res.status} for ${url}`);
+  return res.html;
 }
 
 // ── HTML helpers ─────────────────────────────────────────────────────────────
