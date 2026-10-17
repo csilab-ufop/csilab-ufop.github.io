@@ -54,7 +54,8 @@ async function scholarGet(url) {
   const html = await res.text();
   if (res.status === 429 || res.status === 403 ||
       /\/sorry\/|accounts\.google\.com/.test(res.url) || BLOCK_PAGE.test(html)) {
-    throw new BlockedError(`Google Scholar blocked the request (HTTP ${res.status}) for ${url}`);
+    const via = res.redirected ? `, redirected to ${res.url}` : '';
+    throw new BlockedError(`Google Scholar blocked the request (HTTP ${res.status}${via}) for ${url}`);
   }
   if (!res.ok) throw new Error(`Google Scholar HTTP ${res.status} for ${url}`);
   return html;
@@ -333,4 +334,7 @@ async function main() {
   console.log(`Google Scholar requests: ${requestCount}`);
 }
 
-main().catch(err => { console.error('Error:', err.message); process.exit(1); });
+main().catch(err => {
+  console.error(process.env.GITHUB_ACTIONS ? `::error::${err.message}` : `Error: ${err.message}`);
+  process.exit(1);
+});
