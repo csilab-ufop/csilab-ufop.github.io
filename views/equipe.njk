@@ -227,60 +227,66 @@
 {% set tags = data.team_tags %}
 {% set team = data.team %}
 
-{% set avatarSVG %}
-<svg width="22" height="22" viewBox="0 0 22 22" fill="currentColor" aria-hidden="true">
+{% macro avatar(size) %}
+<svg width="{{ size }}" height="{{ size }}" viewBox="0 0 22 22" fill="currentColor" aria-hidden="true">
   <circle cx="11" cy="8" r="4.5"/>
   <path d="M2 20c0-4.97 4.03-9 9-9s9 4.03 9 9" fill-rule="evenodd"/>
 </svg>
-{% endset %}
+{% endmacro %}
 
-{% set avatarSVGSm %}
-<svg width="14" height="14" viewBox="0 0 22 22" fill="currentColor" aria-hidden="true">
-  <circle cx="11" cy="8" r="4.5"/>
-  <path d="M2 20c0-4.97 4.03-9 9-9s9 4.03 9 9" fill-rule="evenodd"/>
-</svg>
-{% endset %}
+{% macro lattesLink(id) %}
+<a href="http://lattes.cnpq.br/{{ id }}" target="_blank" rel="noopener" class="mc-link">
+  <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M2 2h8v8M10 2 2 10"/></svg>
+  Lattes
+</a>
+{% endmacro %}
 
-{% set lattesIconSVG %}
-<svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true">
-  <path d="M2 2h8v8M10 2 2 10"/>
-</svg>
-{% endset %}
-
-{% set emailIconSVG %}
-<svg width="12" height="11" viewBox="0 0 14 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
-  <rect x="1" y="1" width="12" height="10" rx="1.5"/>
-  <path d="M1 3l6 4.5L13 3"/>
-</svg>
-{% endset %}
-
-{% macro renderFacultyLinks(links) %}
-  {% if links %}
+{% macro facultyCard(m, modifier, delay) %}
+{% set i18n = data.team_i18n %}
+{% set tags = data.team_tags %}
+<div class="mc{% if modifier %} mc--{{ modifier }}{% endif %}" data-aos="fade-up" data-aos-delay="{{ delay }}">
+  <div class="mc-header">
+    <div class="mc-avatar">{{ avatar(22) }}</div>
+    <div class="mc-meta">
+      <div class="mc-role">{{ i18n.roles[m.role_key] }}</div>
+      <div class="mc-name">{{ i18n.name_prefixes[m.gender or 'm'] }} {{ m.name }}</div>
+    </div>
+  </div>
+  {% if m.tags %}
+  <div class="mc-tags">
+    {% for tagId in m.tags %}<span class="mc-tag">{{ tags[tagId][lang] if tags[tagId] else tagId }}</span>{% endfor %}
+  </div>
+  {% endif %}
+  {% if m.email or m.lattes %}
   <div class="mc-links">
-    {% for l in links %}
-      {% if l.key != 'profile' %}
-        {% if l.href and 'mailto:' in l.href %}
-        <a href="{{ l.href }}" class="mc-link" title="{{ l.text }}">{{ emailIconSVG | safe }} Email</a>
-        {% elif l.text and 'Lattes' in l.text %}
-        <a href="{{ l.href }}" target="_blank" rel="noopener" class="mc-link">{{ lattesIconSVG | safe }} Lattes</a>
-        {% endif %}
-      {% endif %}
-    {% endfor %}
+    {% if m.email %}
+    <a href="mailto:{{ m.email }}" class="mc-link" title="{{ m.email }}">
+      <svg width="12" height="11" viewBox="0 0 14 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><rect x="1" y="1" width="12" height="10" rx="1.5"/><path d="M1 3l6 4.5L13 3"/></svg>
+      Email
+    </a>
+    {% endif %}
+    {% if m.lattes %}{{ lattesLink(m.lattes) }}{% endif %}
   </div>
   {% endif %}
+</div>
 {% endmacro %}
 
-{% macro renderStudentLinks(links) %}
-  {% if links %}
-  <div class="mc-student-links">
-    {% for l in links %}
-      {% if l.text and 'Lattes' in l.text %}
-      <a href="{{ l.href }}" target="_blank" rel="noopener" class="mc-link">{{ lattesIconSVG | safe }} Lattes</a>
-      {% endif %}
-    {% endfor %}
+{% macro studentCard(m, sincePrefix) %}
+<div class="mc-student">
+  <div class="mc-student-header">
+    <div class="mc-student-avatar">{{ avatar(14) }}</div>
+    <div class="mc-student-name">{{ m.name }}</div>
   </div>
-  {% endif %}
+  <div class="mc-since">{{ sincePrefix }} {{ m.since }}</div>
+  {% if m.lattes %}<div class="mc-student-links">{{ lattesLink(m.lattes) }}</div>{% endif %}
+</div>
 {% endmacro %}
+
+{% set studentTabs = [
+  { id: "phd",       group: "phd_students",     sub: i18n.groups.phd_students.sub },
+  { id: "masters",   group: "masters_students" },
+  { id: "undergrad", group: "undergrads",       sub: i18n.groups.undergrads.label, anchor: "graduacao" }
+] %}
 
 <section style="padding-top:8rem;padding-bottom:3rem;">
   <div class="container">
@@ -294,30 +300,14 @@
   <div class="container">
   <div class="org-chart">
 
-    <div data-aos="fade-up">
+    <div id="coordenadores" data-aos="fade-up">
       <div class="org-tier-head">
         <span class="section-label">{{ i18n.groups.coordinators.label }}</span>
         <h2>{{ i18n.groups.coordinators.title }}</h2>
         <p>{{ i18n.groups.coordinators.sub }}</p>
       </div>
       <div class="org-coordinators">
-        {% for m in team.coordinators.members %}
-        <div class="mc mc--coordinator" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 80 }}">
-          <div class="mc-header">
-            <div class="mc-avatar">{{ avatarSVG | safe }}</div>
-            <div class="mc-meta">
-              <div class="mc-role">{{ i18n.roles[m.role_key] }}</div>
-              <div class="mc-name">{{ i18n.name_prefixes[m.gender or 'm'] }} {{ m.name }}</div>
-            </div>
-          </div>
-          {% if m.tags %}
-          <div class="mc-tags">
-            {% for tagId in m.tags %}<span class="mc-tag">{{ tags[tagId][lang] if tags[tagId] else tagId }}</span>{% endfor %}
-          </div>
-          {% endif %}
-          {{ renderFacultyLinks(m.links) }}
-        </div>
-        {% endfor %}
+        {% for m in team.coordinators.members %}{{ facultyCard(m, "coordinator", loop.index0 * 80) }}{% endfor %}
       </div>
     </div>
 
@@ -336,51 +326,19 @@
           <p>{{ i18n.groups.professors.sub }}</p>
         </div>
         <div class="org-prof-grid">
-          {% for m in team.professors.members %}
-          <div class="mc" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 60 }}">
-            <div class="mc-header">
-              <div class="mc-avatar">{{ avatarSVG | safe }}</div>
-              <div class="mc-meta">
-                <div class="mc-role">{{ i18n.roles[m.role_key] }}</div>
-                <div class="mc-name">{{ i18n.name_prefixes[m.gender or 'm'] }} {{ m.name }}</div>
-              </div>
-            </div>
-            {% if m.tags %}
-            <div class="mc-tags">
-              {% for tagId in m.tags %}<span class="mc-tag">{{ tags[tagId][lang] if tags[tagId] else tagId }}</span>{% endfor %}
-            </div>
-            {% endif %}
-            {{ renderFacultyLinks(m.links) }}
-          </div>
-          {% endfor %}
+          {% for m in team.professors.members %}{{ facultyCard(m, "", loop.index0 * 60) }}{% endfor %}
         </div>
       </div>
 
       <div class="org-faculty-sep" aria-hidden="true"></div>
 
-      <div>
+      <div id="colaboradores">
         <div class="org-tier-head" style="text-align:left;">
           <span class="section-label">{{ i18n.groups.collaborators.label }}</span>
           <h2>{{ i18n.groups.collaborators.title }}</h2>
         </div>
         <div class="org-collab-grid">
-          {% for m in team.collaborators.members %}
-          <div class="mc mc--collaborator" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 80 }}">
-            <div class="mc-header">
-              <div class="mc-avatar">{{ avatarSVG | safe }}</div>
-              <div class="mc-meta">
-                <div class="mc-role">{{ i18n.roles[m.role_key] }}</div>
-                <div class="mc-name">{{ i18n.name_prefixes[m.gender or 'm'] }} {{ m.name }}</div>
-              </div>
-            </div>
-            {% if m.tags %}
-            <div class="mc-tags">
-              {% for tagId in m.tags %}<span class="mc-tag">{{ tags[tagId][lang] if tags[tagId] else tagId }}</span>{% endfor %}
-            </div>
-            {% endif %}
-            {{ renderFacultyLinks(m.links) }}
-          </div>
-          {% endfor %}
+          {% for m in team.collaborators.members %}{{ facultyCard(m, "collaborator", loop.index0 * 80) }}{% endfor %}
         </div>
       </div>
 
@@ -392,74 +350,29 @@
       <div class="org-stem-line" style="background:linear-gradient(to bottom,rgba(86,101,115,0.3),rgba(86,101,115,0.12));"></div>
     </div>
 
-    <div data-aos="fade-up">
+    <div id="pos-graduacao" data-aos="fade-up">
       <div class="org-tier-head">
         <span class="section-label">{{ i18n.groups.phd_students.label }}</span>
-        <h2 style="font-size:1.25rem;">Estudantes</h2>
+        <h2 style="font-size:1.25rem;">{{ i18n.students_title }}</h2>
       </div>
 
       <div class="org-tabs" role="tablist">
-        <button class="org-tab-btn active" role="tab" aria-controls="tab-phd"      aria-selected="true"  onclick="switchTab('phd')">
-          {{ i18n.groups.phd_students.title }}
-          <span style="font-weight:400;opacity:0.6;margin-left:0.3rem;">({{ team.phd_students.members | length }})</span>
+        {% for tab in studentTabs %}
+        <button class="org-tab-btn{% if loop.first %} active{% endif %}" role="tab" aria-controls="tab-{{ tab.id }}" aria-selected="{{ 'true' if loop.first else 'false' }}" onclick="switchTab('{{ tab.id }}')">
+          {{ i18n.groups[tab.group].title }}
+          <span style="font-weight:400;opacity:0.6;margin-left:0.3rem;">({{ team[tab.group].members | length }})</span>
         </button>
-        <button class="org-tab-btn" role="tab" aria-controls="tab-masters"  aria-selected="false" onclick="switchTab('masters')">
-          {{ i18n.groups.masters_students.title }}
-          <span style="font-weight:400;opacity:0.6;margin-left:0.3rem;">({{ team.masters_students.members | length }})</span>
-        </button>
-        <button class="org-tab-btn" role="tab" aria-controls="tab-undergrad" aria-selected="false" onclick="switchTab('undergrad')">
-          {{ i18n.groups.undergrads.title }}
-          <span style="font-weight:400;opacity:0.6;margin-left:0.3rem;">({{ team.undergrads.members | length }})</span>
-        </button>
+        {% endfor %}
       </div>
 
-      <div id="tab-phd" class="org-tab-panel active" role="tabpanel">
-        <p style="font-size:0.8125rem;color:var(--color-muted);text-align:center;margin-bottom:1.25rem;">{{ i18n.groups.phd_students.sub }}</p>
+      {% for tab in studentTabs %}
+      <div id="tab-{{ tab.id }}" class="org-tab-panel{% if loop.first %} active{% endif %}" role="tabpanel"{% if tab.anchor %} data-anchor="{{ tab.anchor }}"{% endif %}>
+        {% if tab.sub %}<p style="font-size:0.8125rem;color:var(--color-muted);text-align:center;margin-bottom:1.25rem;">{{ tab.sub }}</p>{% endif %}
         <div class="org-student-grid">
-          {% for m in team.phd_students.members %}
-          <div class="mc-student">
-            <div class="mc-student-header">
-              <div class="mc-student-avatar">{{ avatarSVGSm | safe }}</div>
-              <div class="mc-student-name">{{ m.name }}</div>
-            </div>
-            <div class="mc-since">{{ i18n.groups.phd_students.since_prefix }} {{ m.since }}</div>
-            {{ renderStudentLinks(m.links) }}
-          </div>
-          {% endfor %}
+          {% for m in team[tab.group].members %}{{ studentCard(m, i18n.groups[tab.group].since_prefix) }}{% endfor %}
         </div>
       </div>
-
-      <div id="tab-masters" class="org-tab-panel" role="tabpanel">
-        <div class="org-student-grid">
-          {% for m in team.masters_students.members %}
-          <div class="mc-student">
-            <div class="mc-student-header">
-              <div class="mc-student-avatar">{{ avatarSVGSm | safe }}</div>
-              <div class="mc-student-name">{{ m.name }}</div>
-            </div>
-            <div class="mc-since">{{ i18n.groups.masters_students.since_prefix }} {{ m.since }}</div>
-            {{ renderStudentLinks(m.links) }}
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-
-      <div id="tab-undergrad" class="org-tab-panel" role="tabpanel">
-        <p style="font-size:0.8125rem;color:var(--color-muted);text-align:center;margin-bottom:1.25rem;">{{ i18n.groups.undergrads.label }}</p>
-        <div class="org-student-grid">
-          {% for m in team.undergrads.members %}
-          <div class="mc-student">
-            <div class="mc-student-header">
-              <div class="mc-student-avatar">{{ avatarSVGSm | safe }}</div>
-              <div class="mc-student-name">{{ m.name }}</div>
-            </div>
-            <div class="mc-since">{{ i18n.groups.undergrads.since_prefix }} {{ m.since }}</div>
-            {{ renderStudentLinks(m.links) }}
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-
+      {% endfor %}
     </div>
 
     <div class="org-stem" aria-hidden="true">
@@ -471,25 +384,17 @@
     <div data-aos="fade-up">
       <div class="org-tier-head">
         <span class="section-label">{{ i18n.groups.alumni_grad.label }}</span>
-        <h2 style="font-size:1.25rem;">Egressos</h2>
+        <h2 style="font-size:1.25rem;">{{ i18n.alumni_title }}</h2>
       </div>
       <div class="org-alumni-split">
+        {% for group in ["alumni_grad", "alumni_undergrad"] %}
         <div class="org-alumni-col">
-          <h3>{{ i18n.groups.alumni_grad.title }}</h3>
+          <h3>{{ i18n.groups[group].title }}</h3>
           <div class="alumni-list">
-            {% for name in team.alumni_grad.members %}
-            <span class="alumni-pill">{{ name }}</span>
-            {% endfor %}
+            {% for name in team[group].members %}<span class="alumni-pill">{{ name }}</span>{% endfor %}
           </div>
         </div>
-        <div class="org-alumni-col">
-          <h3>{{ i18n.groups.alumni_undergrad.title }}</h3>
-          <div class="alumni-list">
-            {% for name in team.alumni_undergrad.members %}
-            <span class="alumni-pill">{{ name }}</span>
-            {% endfor %}
-          </div>
-        </div>
+        {% endfor %}
       </div>
     </div>
 
@@ -513,6 +418,13 @@ function switchTab(id) {
   if (panel) panel.classList.add('active');
   const btn = document.querySelector('[aria-controls="tab-' + id + '"]');
   if (btn) { btn.classList.add('active'); btn.setAttribute('aria-selected', 'true'); }
+}
+
+// Footer links such as /equipe#graduacao open the matching student tab.
+const anchored = location.hash && document.querySelector('[data-anchor="' + location.hash.slice(1) + '"]');
+if (anchored) {
+  switchTab(anchored.id.replace('tab-', ''));
+  anchored.closest('[data-aos]').scrollIntoView();
 }
 </script>
 

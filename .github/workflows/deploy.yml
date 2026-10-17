@@ -1,10 +1,10 @@
 name: Deploy to GitHub Pages
 
+# Google Scholar flags clients that query it often, so the site is only rebuilt
+# from Scholar once a week. Manual runs redeploy with the published data.
 on:
-  push:
-    branches: [main]
   schedule:
-    - cron: '0 6 * * 1'  # Mondays 06:00 UTC: refresh publications from Google Scholar
+    - cron: '0 6 * * 1'  # Mondays 06:00 UTC
   workflow_dispatch:
 
 permissions:
@@ -46,10 +46,8 @@ jobs:
           printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
           chmod 600 ~/.ssh/config ~/.ssh/scholar_key
 
-      # Only the weekly (or manual) run queries Google Scholar; pushes reuse the
-      # publications already published on the site.
       - name: Refresh publications from Google Scholar
-        if: github.event_name != 'push'
+        if: github.event_name == 'schedule'
         run: npm run fetch:pubs
 
       - run: npm run build

@@ -28,7 +28,7 @@
       <div class="hero-card" data-aos="zoom-in">
         <img src="{{ base_path }}/images/foto-equipe.png" alt="CSI Lab — Equipe" onerror="this.src='{{ base_path }}/images/about-image-1.jpg'" />
         <div class="hero-card-body">
-          <h3>{{ page.hero_card_title }}</h3>
+          <h3>{{ data.site.name }}</h3>
           <p>{{ page.hero_card_text }}</p>
         </div>
       </div>
@@ -40,11 +40,11 @@
   <div class="container">
     <div class="about-grid">
       <div class="about-images" data-aos="fade-right">
-        <img src="{{ base_path }}/images/csilab-marca.png" alt="CSI Lab" onerror="this.src='{{ base_path }}/images/about-image-2.jpg'" />
+        <img src="{{ base_path }}/images/csilab-marca.png" alt="CSI Lab" />
         <img src="{{ base_path }}/images/evento-2023.png" alt="Evento CSI Lab 2023" onerror="this.src='{{ base_path }}/images/about-image-3.jpg'" />
         <img src="{{ base_path }}/images/evento-2024.jpg" alt="CSI Lab 2024" onerror="this.src='{{ base_path }}/images/about-image-4.jpg'" />
         <div class="about-counter-badge">
-          <div class="big">{{ page.about_years }}</div>
+          <div class="big">{{ data.site.years }}</div>
           <div class="small">{{ page.about_years_label }}</div>
         </div>
       </div>
@@ -71,9 +71,9 @@
 <section id="numeros">
   <div class="container">
     <div class="counter-grid">
-      {% for c in data.counters %}
+      {% for key, c in data.counters %}
       <div class="counter-item" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 100 }}">
-        <div class="number" id="{{ c.id }}" data-target="{{ c.target }}" data-suffix="{{ c.suffix }}">0{{ c.suffix }}</div>
+        <div class="number" id="c-{{ key }}" data-target="{{ c.target }}" data-suffix="{{ c.suffix }}">0{{ c.suffix }}</div>
         <div class="label">{{ c.label }}</div>
       </div>
       {% endfor %}
@@ -89,7 +89,7 @@
       <p class="text-lavender" style="max-width:600px;margin:0.75rem auto 0;font-size:1rem;">{{ page.research_sub }}</p>
     </div>
     <div class="research-grid">
-      {% for area in data.research %}
+      {% for key, area in data.research %}
       <div class="research-card scroll-Zoom">
         <div class="research-icon">{{ icon(area.icon) }}</div>
         <h3>{{ area.title }}</h3>
@@ -124,7 +124,7 @@
         <p class="text-lavender" style="font-size:1rem;line-height:1.75;margin-bottom:2rem;">{{ data.awards.about_text }}</p>
         <div style="display:flex;gap:1rem;flex-wrap:wrap;">
           <a href="{{ base_url }}/publicacoes" class="btn-primary">{{ data.awards.cta_publications }}</a>
-          <a href="https://github.com/csilab-ufop" target="_blank" class="btn-outline">{{ data.awards.cta_github }}</a>
+          <a href="{{ data.site.social.github.url }}" target="_blank" class="btn-outline">{{ data.awards.cta_github }}</a>
         </div>
       </div>
     </div>
@@ -219,11 +219,11 @@
     </div>
 
     <div class="news-cards-row" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;" data-aos="fade-up" data-aos-delay="100">
-      {% for card in data.news.cards %}
+      {% for key, card in data.news.cards %}
       <div style="background:var(--color-surface);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:2rem;border-top:3px solid {% if card.accent %}var(--color-accent){% else %}var(--color-steel){% endif %};">
         <span class="blog-tag" style="font-size:0.78rem;margin-bottom:1rem;display:inline-block;{% if not card.accent %}background:rgba(86,101,115,0.2);color:var(--color-steel);{% endif %}">{{ card.tag }}</span>
         <h4 style="font-size:1.1rem;line-height:1.4;margin-bottom:0.75rem;color:var(--color-text);">{{ card.title }}</h4>
-        <p class="text-lavender" style="font-size:0.9rem;line-height:1.65;">{{ card.text | safe }}</p>
+        <p class="text-lavender" style="font-size:0.9rem;line-height:1.65;">{{ card.text | safe }}{% if card.github_link %} <a href="{{ data.site.social.github.url }}" target="_blank" style="color:var(--color-accent);">github.com/{{ data.site.social.github.handle }}</a>.{% endif %}</p>
       </div>
       {% endfor %}
     </div>

@@ -90,7 +90,7 @@
     <h1 class="d2c_title" style="margin-top:0.75rem;margin-bottom:1rem;">{{ page.page_title }}</h1>
     <p class="text-lavender" style="font-size:1rem;max-width:640px;line-height:1.75;">
       {{ page.page_sub }}
-      <a href="https://github.com/csilab-ufop" target="_blank" style="color:var(--color-accent);">github.com/csilab-ufop</a>.
+      <a href="{{ data.site.social.github.url }}" target="_blank" style="color:var(--color-accent);">github.com/{{ data.site.social.github.handle }}</a>.
     </p>
   </div>
 </section>
@@ -170,7 +170,7 @@
 
     <div style="margin:4rem 0 2rem;padding:2rem;background:var(--color-surface);border-radius:8px;border:1px solid rgba(86,101,115,0.2);text-align:center;">
       <p class="text-lavender" style="margin-bottom:1rem;">{{ page.github_text }}</p>
-      <a href="https://github.com/csilab-ufop" target="_blank" class="btn-primary">github.com/csilab-ufop</a>
+      <a href="{{ data.site.social.github.url }}" target="_blank" class="btn-primary">github.com/{{ data.site.social.github.handle }}</a>
     </div>
 
   </div>

@@ -4,6 +4,7 @@ const path    = require('path');
 const fs      = require('fs');
 const nunjucks = require('nunjucks');
 const yaml     = require('js-yaml');
+const { LANGUAGES, DEFAULT_LANG, PAGES } = require('./config');
 
 const app  = express();
 const PORT = process.env.PORT || 3001;
@@ -11,8 +12,8 @@ const PORT = process.env.PORT || 3001;
 const BASE_PATH = process.env.BASE_PATH || '';
 const SITE_URL  = (process.env.SITE_URL || 'https://csilab.ufop.br').replace(/\/$/, '');
 
-const LANGS    = ['pt', 'en', 'es', 'it'];
-const LANG_HTML = { pt: 'pt-BR', en: 'en', es: 'es', it: 'it' };
+const LANGS       = Object.keys(LANGUAGES);
+const FACULTY     = ['coordinators', 'professors', 'collaborators'];
 const CONTENT_DIR = path.join(__dirname, 'content');
 
 nunjucks.configure(path.join(__dirname, 'views'), {
@@ -30,13 +31,25 @@ function parseFrontmatter(filePath) {
   return yaml.load(match[1]) || {};
 }
 
+const isObject = v => Object.prototype.toString.call(v) === '[object Object]';
+
+function deepMerge(target, source) {
+  for (const [k, v] of Object.entries(source)) {
+    target[k] = isObject(v) && isObject(target[k]) ? deepMerge(target[k], v) : v;
+  }
+  return target;
+}
+
+// Files with the same name in _shared/data and {lang}/data are merged key by key,
+// so language-independent values live once and only the texts are translated.
 function loadYamlDir(dir, data) {
   if (!fs.existsSync(dir)) return;
   for (const f of fs.readdirSync(dir)) {
     if (/\.(ya?ml|json)$/.test(f)) {
       const key = f.replace(/\.(ya?ml|json)$/, '');
       try {
-        data[key] = yaml.load(fs.readFileSync(path.join(dir, f), 'utf8'));
+        const value = yaml.load(fs.readFileSync(path.join(dir, f), 'utf8'));
+        data[key] = isObject(value) && isObject(data[key]) ? deepMerge(data[key], value) : value;
       } catch (e) {
         console.error(`[content] Error loading ${dir}/${f}:`, e.message);
       }
@@ -53,69 +66,49 @@ function loadContent(lang, page) {
   return { page: pageData, data };
 }
 
-function langUrls(page) {
-  const urls = {};
-  for (const l of LANGS) {
-    if (l === 'pt') {
-      urls.pt = page === 'index' ? (BASE_PATH || '/') : `${BASE_PATH}/${page}`;
-    } else {
-      urls[l] = page === 'index' ? `${BASE_PATH}/${l}` : `${BASE_PATH}/${l}/${page}`;
-    }
-  }
-  return urls;
+function langBase(lang) {
+  return lang === DEFAULT_LANG ? BASE_PATH : `${BASE_PATH}/${lang}`;
+}
+
+function pageUrl(lang, page) {
+  if (page !== 'index') return `${langBase(lang)}/${page}`;
+  return langBase(lang) || '/';
 }
 
 function computeCounterTargets(data) {
-  if (!Array.isArray(data.counters)) return;
-  const team = data.team || {};
-  const overrides = {
-    'c-publicacoes': (data.publications?.years || [])
-      .reduce((s, yg) => s + (yg.items?.length || 0), 0),
-    'c-professores': ['coordinators', 'professors', 'collaborators']
-      .reduce((s, g) => s + (team[g]?.members?.length || 0), 0),
-  };
-  data.counters = data.counters.map(c =>
-    overrides[c.id] !== undefined ? { ...c, target: overrides[c.id] } : c
-  );
+  const { counters, team = {}, publications } = data;
+  if (!counters) return;
+  if (counters.publications) {
+    counters.publications.target = (publications?.years || []).reduce((s, y) => s + y.items.length, 0);
+  }
+  if (counters.professors) {
+    counters.professors.target = FACULTY.reduce((s, g) => s + (team[g]?.members?.length || 0), 0);
+  }
 }
 
-function ctx(lang, page, extra = {}) {
+function ctx(lang, page) {
   const { page: p, data } = loadContent(lang, page);
   computeCounterTargets(data);
-  const base_url = lang === 'pt' ? BASE_PATH : `${BASE_PATH}/${lang}`;
   return {
     lang,
-    lang_html: LANG_HTML[lang],
+    lang_html: LANGUAGES[lang].html,
+    languages: LANGUAGES,
     currentPage: page,
-    base_url,
+    base_url: langBase(lang),
     base_path: BASE_PATH,
     site_url: SITE_URL,
-    lang_urls: langUrls(page),
+    lang_urls: Object.fromEntries(LANGS.map(l => [l, pageUrl(l, page)])),
     page: p,
     data,
-    ...extra,
   };
 }
 
-app.get('/index.html',       (req, res) => res.redirect(301, BASE_PATH || '/'));
-app.get('/equipe.html',       (req, res) => res.redirect(301, `${BASE_PATH}/equipe`));
-app.get('/publicacoes.html',  (req, res) => res.redirect(301, `${BASE_PATH}/publicacoes`));
-app.get('/contato.html',      (req, res) => res.redirect(301, `${BASE_PATH}/contato`));
-app.get('/pt',                (req, res) => res.redirect(301, BASE_PATH || '/'));
-app.get('/pt/equipe',         (req, res) => res.redirect(301, `${BASE_PATH}/equipe`));
-app.get('/pt/publicacoes',    (req, res) => res.redirect(301, `${BASE_PATH}/publicacoes`));
-app.get('/pt/contato',        (req, res) => res.redirect(301, `${BASE_PATH}/contato`));
-
-app.get('/',             (req, res) => res.render('index.njk',       ctx('pt', 'index')));
-app.get('/equipe',       (req, res) => res.render('equipe.njk',      ctx('pt', 'equipe')));
-app.get('/publicacoes',  (req, res) => res.render('publicacoes.njk', ctx('pt', 'publicacoes')));
-app.get('/contato',      (req, res) => res.render('contato.njk',     ctx('pt', 'contato')));
-
-for (const lang of LANGS.filter(l => l !== 'pt')) {
-  app.get(`/${lang}`,             (req, res) => res.render('index.njk',       ctx(lang, 'index')));
-  app.get(`/${lang}/equipe`,      (req, res) => res.render('equipe.njk',      ctx(lang, 'equipe')));
-  app.get(`/${lang}/publicacoes`, (req, res) => res.render('publicacoes.njk', ctx(lang, 'publicacoes')));
-  app.get(`/${lang}/contato`,     (req, res) => res.render('contato.njk',     ctx(lang, 'contato')));
+for (const page of PAGES) {
+  app.get(`/${page}.html`, (req, res) => res.redirect(301, pageUrl(DEFAULT_LANG, page)));
+  app.get(`/${DEFAULT_LANG}${page === 'index' ? '' : `/${page}`}`, (req, res) => res.redirect(301, pageUrl(DEFAULT_LANG, page)));
+  for (const lang of LANGS) {
+    app.get(pageUrl(lang, page).slice(BASE_PATH.length) || '/', (req, res) => res.render(`${page}.njk`, ctx(lang, page)));
+  }
 }
 
 app.use(express.static(path.join(__dirname, 'public')));

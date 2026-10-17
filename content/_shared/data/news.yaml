@@ -1,0 +1,18 @@
+# Texts are in content/{lang}/data/news.yaml under the same keys.
+featured:
+  tag: "IEEE LACCI 2024"
+  badge_text: "IEEE · LACCI 2024"
+  papers:
+    - title: "Reinforcement Learning for Spatial Cluster Detection"
+      author: "Dênis Oliveira"
+    - title: "Periocular EfficientNet: Deep Model for Recognition"
+      author: "Pablo Coelho"
+    - title: "Remote Cardiac Signals for Biometric Verification"
+      author: "Adriano Andrade"
+cards:
+  ercas2024:
+    accent: true
+  ic2023:
+    accent: true
+  open_source:
+    github_link: true

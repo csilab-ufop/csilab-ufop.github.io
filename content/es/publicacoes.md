@@ -8,5 +8,4 @@ access_text: "Acceder →"
 github_text: "Código fuente de todos los artículos publicados disponible en la organización de GitHub."
 chart_papers_label: "Artículos por Año"
 chart_cites_label: "Citas por Año de Publicación"
-chart_world_label: "Colaboraciones Internacionales"
 ---

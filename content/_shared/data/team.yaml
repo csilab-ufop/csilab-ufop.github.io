@@ -4,11 +4,10 @@ coordinators:
       scholar_id: "L4nnrk8AAAAJ"
       role_key: coordinator
       tags: [artificial_intelligence, multiobjective_optimization, spatial_analysis, cluster_detection]
-      links:
-        - text: "✉ gladston@ufop.edu.br"
-          href: "mailto:gladston@ufop.edu.br"
+      email: "gladston@ufop.edu.br"
     - name: "Eduardo Luz"
       scholar_id: "20pViLEAAAAJ"
+      email: "eduardoluz@ufop.edu.br"
       role_key: coordinator
       tags: [computer_vision, biometrics, pattern_recognition, biomedical_signals]
 
@@ -40,9 +39,7 @@ professors:
       scholar_id: "ILpkjHAAAAAJ"
       role_key: associate_professor
       tags: [network_science, data_science, computational_social_science]
-      links:
-        - text: "Lattes →"
-          href: "http://lattes.cnpq.br/0748942455194916"
+      lattes: "0748942455194916"
 
 collaborators:
   members:
@@ -58,38 +55,38 @@ phd_students:
   members:
     - name: "Pedro Castro"
       since: 2022
-      links: [{text: "Lattes →", href: "http://lattes.cnpq.br/1648427683361371"}]
+      lattes: "1648427683361371"
     - name: "Lauro Moraes"
       since: 2022
-      links: [{text: "Lattes →", href: "http://lattes.cnpq.br/7273329679145458"}]
+      lattes: "7273329679145458"
     - name: "Dênis Xavier"
       since: 2022
     - name: "Gabriel Souza"
       since: 2019
-      links: [{text: "Lattes →", href: "http://lattes.cnpq.br/1276963014476347"}]
+      lattes: "1276963014476347"
     - name: "Marcus Almeida"
       since: 2023
-      links: [{text: "Lattes →", href: "http://lattes.cnpq.br/9750853239897719"}]
+      lattes: "9750853239897719"
     - name: "Guilherme Silva"
       scholar_id: "DqnrCA8AAAAJ"
       since: 2023
-      links: [{text: "Lattes →", href: "http://lattes.cnpq.br/4755584696921241"}]
+      lattes: "4755584696921241"
     - name: "Andressa Oliveira"
       since: 2023
     - name: "Fernando Duarte"
       since: 2022
-      links: [{text: "Lattes →", href: "http://lattes.cnpq.br/9331617052785818"}]
+      lattes: "9331617052785818"
 
 masters_students:
   members:
     - name: "Jean Pinheiro"
       since: 2021
-      links: [{text: "Lattes →", href: "http://lattes.cnpq.br/1201524358960754"}]
+      lattes: "1201524358960754"
     - name: "Gabriel Ferreira"
       since: 2023
     - name: "Amanda Oliveira"
       since: 2022
-      links: [{text: "Lattes →", href: "http://lattes.cnpq.br/7187644478574662"}]
+      lattes: "7187644478574662"
 
 undergrads:
   members:
@@ -99,18 +96,18 @@ undergrads:
       since: 2023
     - name: "Luísa Cizilio"
       since: 2021
-      links: [{text: "Lattes →", href: "http://lattes.cnpq.br/0273287843002956"}]
+      lattes: "0273287843002956"
     - name: "Gustavo Vieira"
       since: 2023
     - name: "Vinicius Silva"
       since: 2021
-      links: [{text: "Lattes →", href: "http://lattes.cnpq.br/6046796826385547"}]
+      lattes: "6046796826385547"
     - name: "João Zenóbio"
       since: 2021
-      links: [{text: "Lattes →", href: "http://lattes.cnpq.br/6135972089163105"}]
+      lattes: "6135972089163105"
     - name: "Suleimane Ducure"
       since: 2021
-      links: [{text: "Lattes →", href: "http://lattes.cnpq.br/4547014379251202"}]
+      lattes: "4547014379251202"
 
 alumni_grad:
   members:

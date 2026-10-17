@@ -1,0 +1,21 @@
+name: "CSI Lab · UFOP"
+years: "16+"
+
+social:
+  twitter:
+    name: "Twitter / X"
+    handle: "@CSILab_UFOP"
+    url: "https://twitter.com/CSILab_UFOP"
+  instagram:
+    name: "Instagram"
+    handle: "@csilab_ufop"
+    url: "https://www.instagram.com/csilab_ufop/"
+  github:
+    name: "GitHub"
+    handle: "csilab-ufop"
+    url: "https://github.com/csilab-ufop"
+
+institutions:
+  UFOP: "https://ufop.br"
+  DECOM: "http://www3.decom.ufop.br/decom/inicio/"
+  PPGCC: "https://ppgcc.decom.ufop.br/"

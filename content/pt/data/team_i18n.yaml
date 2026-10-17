@@ -2,6 +2,9 @@ name_prefixes:
   m: "Prof."
   f: "Profa."
 
+students_title: "Estudantes"
+alumni_title: "Egressos"
+
 groups:
   coordinators:
     label: "Coordenação"
@@ -39,6 +42,3 @@ roles:
   associate_professor_f: "Professora Associada"
   collaborating_researcher: "Pesquisador Colaborador"
   collaborating_researcher_f: "Pesquisadora Colaboradora"
-
-link_labels:
-  profile: "Perfil →"

@@ -12,7 +12,7 @@ npm run validate:pubs
 
 ## Deploy
 
-Every push to `main` builds the site and publishes it to GitHub Pages at https://csilab.ufop.br (`.github/workflows/deploy.yml`). Publications are refreshed from Google Scholar only by the weekly run (Mondays 06:00 UTC) or a manual run from the Actions tab; pushes reuse the data already published on the site.
+The site is built and published to GitHub Pages at https://csilab.ufop.br once a week (Mondays 06:00 UTC), refreshing publications from Google Scholar (`.github/workflows/deploy.yml`). Pushes don't deploy, to keep Scholar requests to one run per week. To publish other changes sooner, run the workflow manually from the Actions tab: it redeploys with the publications already on the site and makes no Scholar requests.
 
 ## Where to edit
 
@@ -20,9 +20,12 @@ Every push to `main` builds the site and publishes it to GitHub Pages at https:/
 |---|---|
 | Team members | `content/_shared/data/team.yaml` |
 | Research tags (4 languages) | `content/_shared/data/team_tags.yaml` |
+| Social media, institutional links | `content/_shared/data/site.yaml` |
 | Page titles / descriptions | `content/{lang}/*.md` (frontmatter) |
 | Team section headings, role names | `content/{lang}/data/team_i18n.yaml` |
-| Nav, footer, news, awards | `content/{lang}/data/*.yaml` |
+| Nav, footer, news, awards, research areas | `content/{lang}/data/*.yaml` |
+
+A file in `content/_shared/data/` and one with the same name in `content/{lang}/data/` are merged key by key: language-independent values (icons, numbers, links) live once in the shared file and each language file only has the texts. For example, a new research area needs its icon in `_shared/data/research.yaml` and its title and text under the same key in each `{lang}/data/research.yaml`.
 
 YAML and Markdown edits don't require a server restart.
 
@@ -35,12 +38,11 @@ YAML and Markdown edits don't require a server restart.
   tags: [machine_learning, nlp]  # IDs from team_tags.yaml
   scholar_id: "XXXXXXXXXXXX"     # from scholar.google.com/citations?user=XXXXXXXXXXXX
   since: 2019                    # year they joined the lab
-  links:
-    - text: "Lattes →"
-      href: "http://lattes.cnpq.br/ID"
+  email: "name@ufop.edu.br"      # optional; coordinators' emails also appear on the contact page
+  lattes: "0000000000000000"     # optional; ID from lattes.cnpq.br/ID
 ```
 
-Students only need `name`, `since` and `links` (plus `scholar_id` if they have a profile). Alumni are a plain list of names.
+Students only need `name` and `since` (plus `lattes` and `scholar_id` if they have them). Alumni are a plain list of names.
 
 ## Publications
 

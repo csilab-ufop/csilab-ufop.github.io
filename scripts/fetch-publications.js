@@ -49,18 +49,32 @@ function warn(msg) {
 
 const shellQuote = s => `'${s.replace(/'/g, `'\\''`)}'`;
 
-function downloadViaSsh(url) {
+// All requests share one SSH connection: the UFOP bridge refuses frequent reconnects.
+const SSH_OPTS = ['-T', '-o', 'BatchMode=yes', '-o', 'ControlMaster=auto',
+                  '-o', 'ControlPath=~/.ssh/scholar-%C', '-o', 'ControlPersist=120'];
+
+function ssh(args) {
+  return new Promise((resolve, reject) => {
+    execFile('ssh', [...SSH_OPTS, ...args], { maxBuffer: 50 * 1024 * 1024 }, (err, stdout, stderr) =>
+      (err ? reject(Object.assign(err, { stderr })) : resolve(stdout)));
+  });
+}
+
+async function downloadViaSsh(url) {
   const curl = ['curl', '-sSL', '--max-time', '30',
     ...Object.entries(HEADERS).flatMap(([k, v]) => ['-H', `${k}: ${v}`]),
     '-w', '\\n%{http_code} %{url_effective}', url].map(shellQuote).join(' ');
-  return new Promise((resolve, reject) => {
-    execFile('ssh', ['-T', '-o', 'BatchMode=yes', SSH_HOST, curl], { maxBuffer: 50 * 1024 * 1024 }, (err, stdout, stderr) => {
-      if (err) return reject(new Error(`ssh ${SSH_HOST} failed: ${(stderr || err.message).trim()}`));
-      const cut = stdout.lastIndexOf('\n');
-      const [status, finalUrl] = stdout.slice(cut + 1).trim().split(' ');
-      resolve({ status: Number(status), url: finalUrl, html: stdout.slice(0, cut) });
-    });
-  });
+  let stdout;
+  try {
+    stdout = await ssh([SSH_HOST, curl]);
+  } catch (err) {
+    const msg = `ssh ${SSH_HOST} failed: ${(err.stderr || err.message).trim()}`;
+    // Exit code 255 is ssh itself failing to connect: stop instead of retrying.
+    throw err.code === 255 ? new BlockedError(msg) : new Error(msg);
+  }
+  const cut = stdout.lastIndexOf('\n');
+  const [status, finalUrl] = stdout.slice(cut + 1).trim().split(' ');
+  return { status: Number(status), url: finalUrl, html: stdout.slice(0, cut) };
 }
 
 async function download(url) {
@@ -359,7 +373,9 @@ async function main() {
   console.log(`Google Scholar requests: ${requestCount}`);
 }
 
-main().catch(err => {
-  console.error(process.env.GITHUB_ACTIONS ? `::error::${err.message}` : `Error: ${err.message}`);
-  process.exit(1);
-});
+main()
+  .catch(err => {
+    console.error(process.env.GITHUB_ACTIONS ? `::error::${err.message}` : `Error: ${err.message}`);
+    process.exitCode = 1;
+  })
+  .finally(() => SSH_HOST && requestCount && ssh(['-O', 'exit', SSH_HOST]).catch(() => {}));

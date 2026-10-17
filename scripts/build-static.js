@@ -5,22 +5,18 @@ const fs    = require('fs');
 const fsp   = fs.promises;
 const path  = require('path');
 const { spawn } = require('child_process');
+const { LANGUAGES, DEFAULT_LANG, PAGES } = require('../config');
 
 const PORT   = process.env.BUILD_PORT || 3999;
 const DIST   = path.join(__dirname, '..', 'dist');
 const PUBLIC = path.join(__dirname, '..', 'public');
 const PUBS   = path.join(__dirname, '..', 'content', '_shared', 'data', 'publications.json');
 
-const PAGES = ['equipe', 'publicacoes', 'contato'];
-
-const ROUTES = [
-  ['/', 'index.html'],
-  ...PAGES.map(p => [`/${p}`, `${p}/index.html`]),
-  ...['en', 'es', 'it'].flatMap(lang => [
-    [`/${lang}`, `${lang}/index.html`],
-    ...PAGES.map(p => [`/${lang}/${p}`, `${lang}/${p}/index.html`]),
-  ]),
-];
+// [route, output file], e.g. ['/en/equipe', 'en/equipe/index.html']
+const ROUTES = Object.keys(LANGUAGES).flatMap(lang => PAGES.map(page => {
+  const dir = [lang === DEFAULT_LANG ? '' : lang, page === 'index' ? '' : page].filter(Boolean).join('/');
+  return [`/${dir}`, dir ? `${dir}/index.html` : 'index.html'];
+}));
 
 function fetchPage(route) {
   return new Promise((resolve, reject) => {
