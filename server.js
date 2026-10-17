@@ -33,8 +33,8 @@ function parseFrontmatter(filePath) {
 function loadYamlDir(dir, data) {
   if (!fs.existsSync(dir)) return;
   for (const f of fs.readdirSync(dir)) {
-    if (/\.ya?ml$/.test(f)) {
-      const key = f.replace(/\.ya?ml$/, '');
+    if (/\.(ya?ml|json)$/.test(f)) {
+      const key = f.replace(/\.(ya?ml|json)$/, '');
       try {
         data[key] = yaml.load(fs.readFileSync(path.join(dir, f), 'utf8'));
       } catch (e) {

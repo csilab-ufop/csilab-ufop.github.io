@@ -3,6 +3,8 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  schedule:
+    - cron: '0 6 * * 1'  # Mondays 06:00 UTC: refresh publications from Google Scholar
   workflow_dispatch:
 
 permissions:
@@ -17,6 +19,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      SITE_URL: https://csilab.ufop.br
     steps:
       - uses: actions/checkout@v4
 
@@ -27,9 +31,13 @@ jobs:
 
       - run: npm ci
 
+      # Only the weekly (or manual) run queries Google Scholar; pushes reuse the
+      # publications already published on the site.
+      - name: Refresh publications from Google Scholar
+        if: github.event_name != 'push'
+        run: npm run fetch:pubs
+
       - run: npm run build
-        env:
-          SITE_URL: https://csilab.ufop.br
 
       - uses: actions/upload-pages-artifact@v3
         with:

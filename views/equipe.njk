@@ -422,7 +422,7 @@
               <div class="mc-student-avatar">{{ avatarSVGSm | safe }}</div>
               <div class="mc-student-name">{{ m.name }}</div>
             </div>
-            <div class="mc-since">{{ i18n.groups.phd_students.since_prefix }} {{ m.year }}</div>
+            <div class="mc-since">{{ i18n.groups.phd_students.since_prefix }} {{ m.since }}</div>
             {{ renderStudentLinks(m.links) }}
           </div>
           {% endfor %}
@@ -437,7 +437,7 @@
               <div class="mc-student-avatar">{{ avatarSVGSm | safe }}</div>
               <div class="mc-student-name">{{ m.name }}</div>
             </div>
-            <div class="mc-since">{{ i18n.groups.masters_students.since_prefix }} {{ m.year }}</div>
+            <div class="mc-since">{{ i18n.groups.masters_students.since_prefix }} {{ m.since }}</div>
             {{ renderStudentLinks(m.links) }}
           </div>
           {% endfor %}
@@ -453,7 +453,7 @@
               <div class="mc-student-avatar">{{ avatarSVGSm | safe }}</div>
               <div class="mc-student-name">{{ m.name }}</div>
             </div>
-            <div class="mc-since">{{ i18n.groups.undergrads.since_prefix }} {{ m.year }}</div>
+            <div class="mc-since">{{ i18n.groups.undergrads.since_prefix }} {{ m.since }}</div>
             {{ renderStudentLinks(m.links) }}
           </div>
           {% endfor %}

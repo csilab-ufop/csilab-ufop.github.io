@@ -27,5 +27,5 @@ cards:
     accent: true
   - tag: "Código Abierto"
     title: "14 Repositorios Públicos en GitHub"
-    text: "Código fuente de todos los artículos publicados disponible en <a href=\"https://github.com/ufopcsilab\" target=\"_blank\" style=\"color:var(--color-accent);\">github.com/ufopcsilab</a>."
+    text: "Código fuente de todos los artículos publicados disponible en <a href=\"https://github.com/csilab-ufop\" target=\"_blank\" style=\"color:var(--color-accent);\">github.com/csilab-ufop</a>."
     accent: false

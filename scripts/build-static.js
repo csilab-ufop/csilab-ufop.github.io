@@ -9,6 +9,7 @@ const { spawn } = require('child_process');
 const PORT   = process.env.BUILD_PORT || 3999;
 const DIST   = path.join(__dirname, '..', 'dist');
 const PUBLIC = path.join(__dirname, '..', 'public');
+const PUBS   = path.join(__dirname, '..', 'content', '_shared', 'data', 'publications.json');
 
 const PAGES = ['equipe', 'publicacoes', 'contato'];
 
@@ -91,6 +92,13 @@ async function render() {
 
   await copyDir(PUBLIC, DIST);
   console.log('  copied public/ → dist/');
+
+  // Published so the next fetch can reuse it instead of re-querying Google Scholar.
+  if (fs.existsSync(PUBS)) {
+    await fsp.mkdir(path.join(DIST, 'data'), { recursive: true });
+    await fsp.copyFile(PUBS, path.join(DIST, 'data', 'publications.json'));
+    console.log('  copied publications.json → dist/data/');
+  }
 
   console.log(`\nBuild complete — ${ROUTES.length} pages, assets copied.`);
 }

@@ -7,6 +7,6 @@ page_sub: "Papers published by CSI Lab in high-impact international and national
 access_text: "Access →"
 github_text: "Source code for all published papers is available on the GitHub organization."
 chart_papers_label: "Papers per Year"
-chart_cites_label: "Citations per Year"
+chart_cites_label: "Citations by Publication Year"
 chart_world_label: "Global Collaboration"
 ---

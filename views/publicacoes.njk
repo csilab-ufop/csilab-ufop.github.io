@@ -42,6 +42,7 @@
   background: rgba(86,101,115,0.08);
   color: var(--color-muted);
   cursor: pointer;
+  text-decoration: none;
   transition: border-color 0.15s, color 0.15s, background 0.15s;
 }
 .pub-cite-btn:hover {
@@ -78,25 +79,6 @@
   color: var(--color-muted);
   margin-bottom: 0.6rem;
 }
-
-.pub-access-links {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  align-items: center;
-}
-.pub-access-link {
-  color: var(--color-accent);
-  text-decoration: none;
-  font-style: normal;
-  font-size: 0.8125rem;
-}
-.pub-access-link:hover { text-decoration: underline; }
-.pub-access-sep {
-  color: rgba(86,101,115,0.5);
-  font-style: normal;
-  font-size: 0.75rem;
-}
 </style>
 {% endblock %}
 
@@ -108,7 +90,7 @@
     <h1 class="d2c_title" style="margin-top:0.75rem;margin-bottom:1rem;">{{ page.page_title }}</h1>
     <p class="text-lavender" style="font-size:1rem;max-width:640px;line-height:1.75;">
       {{ page.page_sub }}
-      <a href="https://github.com/ufopcsilab" target="_blank" style="color:var(--color-accent);">github.com/ufopcsilab</a>.
+      <a href="https://github.com/csilab-ufop" target="_blank" style="color:var(--color-accent);">github.com/csilab-ufop</a>.
     </p>
   </div>
 </section>
@@ -122,7 +104,7 @@
         <div class="pub-chart-canvas-wrap"><canvas id="chart-papers"></canvas></div>
       </div>
       <div class="pub-chart-card">
-        <div class="pub-chart-title">{{ page.chart_cites_label or "Citations per Year" }}</div>
+        <div class="pub-chart-title">{{ page.chart_cites_label or "Citations by Publication Year" }}</div>
         <div class="pub-chart-canvas-wrap"><canvas id="chart-citations"></canvas></div>
       </div>
     </div>
@@ -135,31 +117,13 @@
         <div class="pub-authors">{{ pub.authors }}</div>
         <div class="pub-title">{{ pub.title }}</div>
         <div class="pub-venue">
-          {% if pub.venue_prefix %}{{ pub.venue_prefix | safe }}{% endif %}
-
-          {% if pub.url and not pub.access_links %}
-            <em>{{ pub.journal }}</em>{% if pub.venue_suffix %}, {{ pub.venue_suffix }}{% endif %}{% if pub.venue_extra %} {{ pub.venue_extra | safe }}{% endif %}.
-            <a href="{{ pub.url }}" target="_blank">{{ page.access_text or "Access" }}</a>
-            {% if pub.badge %}<span class="pub-badge">{{ pub.badge }}</span>{% endif %}
-
-          {% elif pub.access_links %}
-            <em>{{ pub.journal }}</em>{% if pub.venue_suffix %}, {{ pub.venue_suffix }}{% endif %}{% if pub.venue_extra %} {{ pub.venue_extra | safe }}{% endif %}.
-            <span class="pub-access-links">
-              {% for link in pub.access_links %}
-                {% if not loop.first %}<span class="pub-access-sep">·</span>{% endif %}
-                <a href="{{ link.url }}" target="_blank" class="pub-access-link" title="{{ link.journal }}">
-                  {{ page.access_text or "Access" }}{% if pub.access_links | length > 1 %} {{ loop.index }}{% endif %}
-                </a>
-                {% if link.badge %}<span class="pub-badge">{{ link.badge }}</span>{% endif %}
-              {% endfor %}
-            </span>
-
-          {% else %}
-            <em>{{ pub.journal }}</em>{% if pub.venue_suffix %}, {{ pub.venue_suffix }}{% endif %}{% if pub.venue_extra %} {{ pub.venue_extra | safe }}{% endif %}.
-            {% if pub.badge %}<span class="pub-badge">{{ pub.badge }}</span>{% endif %}
-          {% endif %}
+          {% if pub.journal %}<em>{{ pub.journal }}</em>.{% endif %}
+          {% if pub.url %}<a href="{{ pub.url }}" target="_blank" rel="noopener">{{ page.access_text or "Access" }}</a>{% endif %}
+          {% if pub.badge %}<span class="pub-badge">{{ pub.badge }}</span>{% endif %}
         </div>
 
+        {% if pub.cited_by_count and pub.scholar_cites_id %}
+        {% set scholar_cites_url = "https://scholar.google.com/scholar?cites=" + pub.scholar_cites_id %}
         {% if pub.citing_papers and pub.citing_papers | length > 0 %}
         <div>
           <button class="pub-cite-btn" aria-expanded="false" onclick="
@@ -177,7 +141,7 @@
               <li>
                 <strong>{{ cp.title }}</strong>
                 {{ cp.authors }}{% if cp.year %} ({{ cp.year }}){% endif %}
-                {% if cp.url %}<a href="{{ cp.url }}" target="_blank" rel="noopener">DOI ↗</a>{% endif %}
+                {% if cp.url %}<a href="{{ cp.url }}" target="_blank" rel="noopener">Link ↗</a>{% endif %}
                 {% if cp.cited_by_count %}<span style="opacity:0.5;margin-left:0.5rem;">{{ cp.cited_by_count }} citations</span>{% endif %}
               </li>
               {% endfor %}
@@ -185,11 +149,19 @@
             {% if pub.cited_by_count > pub.citing_papers | length %}
             <p style="margin-top:0.6rem;font-size:0.775rem;color:var(--color-muted);">
               +{{ pub.cited_by_count - (pub.citing_papers | length) }} more —
-              <a href="https://openalex.org/works?filter=cites:{{ pub.oa_id }}&sort=cited_by_count:desc" target="_blank" rel="noopener" style="color:var(--color-accent);">view all on OpenAlex ↗</a>
+              <a href="{{ scholar_cites_url }}" target="_blank" rel="noopener" style="color:var(--color-accent);">view all on Google Scholar ↗</a>
             </p>
             {% endif %}
           </div>
         </div>
+        {% else %}
+        <div>
+          <a class="pub-cite-btn" href="{{ scholar_cites_url }}" target="_blank" rel="noopener">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm.75 12h-1.5V7h1.5v5zm0-6.5h-1.5v-1.5h1.5v1.5z"/></svg>
+            Cited by {{ pub.cited_by_count }} ↗
+          </a>
+        </div>
+        {% endif %}
         {% endif %}
       </div>
       {% endfor %}
@@ -198,7 +170,7 @@
 
     <div style="margin:4rem 0 2rem;padding:2rem;background:var(--color-surface);border-radius:8px;border:1px solid rgba(86,101,115,0.2);text-align:center;">
       <p class="text-lavender" style="margin-bottom:1rem;">{{ page.github_text }}</p>
-      <a href="https://github.com/ufopcsilab" target="_blank" class="btn-primary">github.com/ufopcsilab</a>
+      <a href="https://github.com/csilab-ufop" target="_blank" class="btn-primary">github.com/csilab-ufop</a>
     </div>
 
   </div>
@@ -207,12 +179,12 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script>
 (function () {
-  const _pubData = {{ data.publications.years | dump | safe }};
+  const _pubData = {{ (data.publications.years or []) | dump | safe }};
   const sorted   = [..._pubData].sort((a, b) => a.year - b.year);
   const years    = sorted.map(g => String(g.year));
   const perYear  = sorted.map(g => (g.items || []).length);
 
-  const _citeRaw  = {{ data.publications.citations_by_year | dump | safe }} || {};
+  const _citeRaw  = {{ (data.publications.citations_by_pub_year or {}) | dump | safe }};
   const citeYears  = Object.keys(_citeRaw).map(Number).sort((a, b) => a - b).map(String);
   const citeValues = citeYears.map(y => _citeRaw[y] || 0);
 

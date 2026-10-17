@@ -27,5 +27,5 @@ cards:
     accent: true
   - tag: "Open Source"
     title: "14 Public Repositories on GitHub"
-    text: "Source code for all published papers available at <a href=\"https://github.com/ufopcsilab\" target=\"_blank\" style=\"color:var(--color-accent);\">github.com/ufopcsilab</a>."
+    text: "Source code for all published papers available at <a href=\"https://github.com/csilab-ufop\" target=\"_blank\" style=\"color:var(--color-accent);\">github.com/csilab-ufop</a>."
     accent: false

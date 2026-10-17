@@ -5,8 +5,9 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "predev": "node scripts/fetch-publications.js",
+    "predev": "node scripts/fetch-publications.js --cached",
     "dev": "nodemon server.js",
+    "prebuild": "node scripts/fetch-publications.js --cached",
     "build": "node scripts/build-static.js",
     "fetch:pubs": "node scripts/fetch-publications.js",
     "validate:pubs": "node scripts/validate-publications.js"

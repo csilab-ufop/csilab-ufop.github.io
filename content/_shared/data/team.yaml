@@ -1,45 +1,43 @@
 coordinators:
   members:
     - name: "Gladston Moreira"
-      orcid: "0000-0001-7747-5926"
+      scholar_id: "L4nnrk8AAAAJ"
       role_key: coordinator
       tags: [artificial_intelligence, multiobjective_optimization, spatial_analysis, cluster_detection]
       links:
         - text: "✉ gladston@ufop.edu.br"
           href: "mailto:gladston@ufop.edu.br"
     - name: "Eduardo Luz"
-      orcid: "0000-0001-5249-1559"
+      scholar_id: "20pViLEAAAAJ"
       role_key: coordinator
       tags: [computer_vision, biometrics, pattern_recognition, biomedical_signals]
 
 professors:
   members:
     - name: "Vander Freitas"
-      orcid: "0000-0001-7989-0816"
+      scholar_id: "XX3euXkAAAAJ"
       role_key: associate_professor
       tags: [machine_learning, nlp, time_series]
     - name: "Pedro Silva"
-      orcid: "0000-0002-5525-6121"
+      scholar_id: "JZt9ClYAAAAJ"
       role_key: associate_professor
       tags: [computer_vision, periocular_biometrics, deep_learning, metric_learning]
     - name: "Jadson Castro"
-      orcid: "0000-0002-0861-6681"
       role_key: associate_professor
       tags: [databases, pattern_recognition, biological_signal_analysis]
     - name: "Valéria Santos"
-      orcid: "0000-0002-7892-4954"
       gender: f
       role_key: associate_professor_f
       tags: [nlp, machine_learning, text_classification]
     - name: "Rodrigo Silva"
-      orcid: "0000-0003-2547-3835"
+      scholar_id: "Ki1CGw4AAAAJ"
       role_key: associate_professor
       tags: [data_science, artificial_intelligence, applied_ml]
     - name: "Ivair Silva"
       role_key: associate_professor
       tags: [statistical_methods, sequential_tests, sampler_convergence]
     - name: "Carlos Henrique G. Ferreira"
-      orcid: "0000-0001-9107-6884"
+      scholar_id: "ILpkjHAAAAAJ"
       role_key: associate_professor
       tags: [network_science, data_science, computational_social_science]
       links:
@@ -59,58 +57,59 @@ collaborators:
 phd_students:
   members:
     - name: "Pedro Castro"
-      year: 2022
+      since: 2022
       links: [{text: "Lattes →", href: "http://lattes.cnpq.br/1648427683361371"}]
     - name: "Lauro Moraes"
-      year: 2022
+      since: 2022
       links: [{text: "Lattes →", href: "http://lattes.cnpq.br/7273329679145458"}]
     - name: "Dênis Xavier"
-      year: 2022
+      since: 2022
     - name: "Gabriel Souza"
-      year: 2019
+      since: 2019
       links: [{text: "Lattes →", href: "http://lattes.cnpq.br/1276963014476347"}]
     - name: "Marcus Almeida"
-      year: 2023
+      since: 2023
       links: [{text: "Lattes →", href: "http://lattes.cnpq.br/9750853239897719"}]
     - name: "Guilherme Silva"
-      year: 2023
+      scholar_id: "DqnrCA8AAAAJ"
+      since: 2023
       links: [{text: "Lattes →", href: "http://lattes.cnpq.br/4755584696921241"}]
     - name: "Andressa Oliveira"
-      year: 2023
+      since: 2023
     - name: "Fernando Duarte"
-      year: 2022
+      since: 2022
       links: [{text: "Lattes →", href: "http://lattes.cnpq.br/9331617052785818"}]
 
 masters_students:
   members:
     - name: "Jean Pinheiro"
-      year: 2021
+      since: 2021
       links: [{text: "Lattes →", href: "http://lattes.cnpq.br/1201524358960754"}]
     - name: "Gabriel Ferreira"
-      year: 2023
+      since: 2023
     - name: "Amanda Oliveira"
-      year: 2022
+      since: 2022
       links: [{text: "Lattes →", href: "http://lattes.cnpq.br/7187644478574662"}]
 
 undergrads:
   members:
     - name: "Rafael Alto"
-      year: 2022
+      since: 2022
     - name: "Artur Bermond"
-      year: 2023
+      since: 2023
     - name: "Luísa Cizilio"
-      year: 2021
+      since: 2021
       links: [{text: "Lattes →", href: "http://lattes.cnpq.br/0273287843002956"}]
     - name: "Gustavo Vieira"
-      year: 2023
+      since: 2023
     - name: "Vinicius Silva"
-      year: 2021
+      since: 2021
       links: [{text: "Lattes →", href: "http://lattes.cnpq.br/6046796826385547"}]
     - name: "João Zenóbio"
-      year: 2021
+      since: 2021
       links: [{text: "Lattes →", href: "http://lattes.cnpq.br/6135972089163105"}]
     - name: "Suleimane Ducure"
-      year: 2021
+      since: 2021
       links: [{text: "Lattes →", href: "http://lattes.cnpq.br/4547014379251202"}]
 
 alumni_grad:
