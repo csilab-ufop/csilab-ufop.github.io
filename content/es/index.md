@@ -1,5 +1,5 @@
 ---
-title: "CSI Lab — Computación de Sistemas Inteligentes · UFOP"
+title: "Computación de Sistemas Inteligentes"
 description: "Laboratorio de Computación de Sistemas Inteligentes (UFOP): investigación en IA, visión computacional, aprendizaje automático y ciencia de datos."
 hero_eyebrow: "Universidad Federal de Ouro Preto · DECOM"
 hero_title: "Laboratorio de Computación de Sistemas Inteligentes"
