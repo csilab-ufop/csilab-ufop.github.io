@@ -1,8 +1,11 @@
 name: Deploy to GitHub Pages
 
-# Google Scholar flags clients that query it often, so the site is only rebuilt
-# from Scholar once a week. Manual runs redeploy with the published data.
+# Every push to main (including CMS saves) and every manual run redeploys with the
+# published data. Google Scholar flags clients that query it often, so publications
+# are refreshed from Scholar only by the weekly scheduled run.
 on:
+  push:
+    branches: [main]
   schedule:
     - cron: '0 6 * * 1'  # Mondays 06:00 UTC
   workflow_dispatch:
@@ -35,6 +38,7 @@ jobs:
       # Scholar blocks GitHub's servers, so its requests run on a machine in the
       # UFOP network (see SCHOLAR_SSH_HOST); host, key and host keys are secrets.
       - name: Set up SSH to the UFOP network
+        if: github.event_name == 'schedule'
         env:
           SSH_CONFIG: ${{ secrets.SCHOLAR_SSH_CONFIG }}
           SSH_KEY: ${{ secrets.SCHOLAR_SSH_KEY }}

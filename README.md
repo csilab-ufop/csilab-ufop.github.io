@@ -13,7 +13,7 @@ npm run validate:pubs
 
 ## Deploy
 
-The site is built and published to GitHub Pages at https://csilab.ufop.br once a week (Mondays 06:00 UTC), refreshing publications from Google Scholar (`.github/workflows/deploy.yml`). Pushes don't deploy, to keep Scholar requests to one run per week. To publish other changes sooner, run the workflow manually from the Actions tab: it redeploys with the publications already on the site and makes no Scholar requests.
+The site is built and published to GitHub Pages at https://csilab.ufop.br on every push to `main` (including CMS saves) and on manual runs from the Actions tab, using the publications already on the site (`.github/workflows/deploy.yml`). Publications are refreshed from Google Scholar only by the weekly scheduled run (Mondays 06:00 UTC), because Scholar flags clients that query it often.
 
 ## Editing content
 
@@ -65,7 +65,7 @@ Publications are not in the CMS: they come from the members' Google Scholar prof
 
 **Photos.** Equipe › Membros › a person › Foto. Face photos work best, square ones in particular, since the site shows them in a square. On save, the CMS converts the photo to WebP, at most 800 px wide (and 1000 px tall), gives it a lowercase file name without accents or spaces (`João Silva (1).jpg` → `joao-silva-1.webp`), stores it in `public/images/team/` and writes `/images/team/joao-silva-1.webp` in `team.yaml`. Without a photo the site shows the person's initials. News images work the same way, in `public/images/news/` (at most 1600 px).
 
-**Publishing.** Each save is a commit to `main`, made with your GitHub account. The site is not rebuilt on push: changes go live with the weekly deploy (Mondays 06:00 UTC), or sooner if someone runs the deploy workflow by hand (Actions › Deploy to GitHub Pages › Run workflow). Until then, "View on Live Site" ("Ver no Site Ativo") shows the published version. See [Deploy](#deploy).
+**Publishing.** Each save is a commit to `main`, made with your GitHub account. Each save triggers the deploy workflow, so changes go live a few minutes later (watch Actions › Deploy to GitHub Pages). Until then, "View on Live Site" ("Ver no Site Ativo") shows the previous version. See [Deploy](#deploy).
 
 **Working locally.** Run `npm run dev`, open http://localhost:3001/admin/ in Chrome, Edge or another Chromium-based browser, click "Work with Local Repository" ("Trabalhar com Repositório Local") and select this repository's folder (the one that contains `.git`). No token is needed: the CMS writes straight into your working copy, the dev server shows the change on reload, and you commit with Git as usual. This mode only works on `localhost`, and Firefox and Safari don't support it.
 
