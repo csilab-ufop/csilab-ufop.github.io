@@ -56,6 +56,16 @@ jobs:
           SCHOLAR_SSH_HOST: jackal
         run: npm run fetch:pubs
 
+      # Pushes and manual runs reuse the published data. Download it with retries so a
+      # brief failure (e.g. right after the previous deploy) never makes the build
+      # fall back to querying Google Scholar, which blocks GitHub's servers.
+      - name: Download the published publications
+        if: github.event_name != 'schedule'
+        run: >-
+          curl -fsSL --retry 6 --retry-all-errors --retry-delay 10
+          -o content/_shared/data/publications.json
+          https://csilab.ufop.br/data/publications.json
+
       - run: npm run build
 
       - uses: actions/upload-pages-artifact@v5
