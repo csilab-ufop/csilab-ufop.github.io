@@ -16,6 +16,7 @@ coordinators:
       role: "coordinator"
       email: "eduardoluz@ufop.edu.br"
       scholar_id: "20pViLEAAAAJ"
+      photo: "/images/team/citations-2.webp"
       tags:
         - "computer_vision"
         - "biometrics"
@@ -27,6 +28,7 @@ professors:
       gender: "m"
       role: "associate_professor"
       scholar_id: "XX3euXkAAAAJ"
+      photo: "/images/team/citations-3.webp"
       tags:
         - "machine_learning"
         - "nlp"
@@ -35,6 +37,7 @@ professors:
       gender: "m"
       role: "associate_professor"
       scholar_id: "JZt9ClYAAAAJ"
+      photo: "/images/team/citations-4.webp"
       tags:
         - "computer_vision"
         - "periocular_biometrics"
@@ -58,6 +61,7 @@ professors:
       gender: "m"
       role: "associate_professor"
       scholar_id: "Ki1CGw4AAAAJ"
+      photo: "/images/team/citations-5.webp"
       tags:
         - "data_science"
         - "artificial_intelligence"
@@ -74,6 +78,7 @@ professors:
       role: "associate_professor"
       scholar_id: "ILpkjHAAAAAJ"
       lattes: "0748942455194916"
+      photo: "/images/team/citations-6.webp"
       tags:
         - "network_science"
         - "data_science"
@@ -132,6 +137,10 @@ masters_students:
       lattes: "7187644478574662"
 undergrads:
   members:
+    - name: "Guilherme Santos"
+      since: 2024
+      scholar_id: "hAxFeikAAAAJ"
+      photo: "/images/team/citations.webp"
     - name: "Rafael Alto"
       since: 2022
     - name: "Artur Bermond"
@@ -150,10 +159,6 @@ undergrads:
     - name: "Suleimane Ducure"
       since: 2021
       lattes: "4547014379251202"
-    - name: "Guilherme Santos"
-      since: 2024
-      scholar_id: "hAxFeikAAAAJ"
-      photo: "/images/team/citations.webp"
 alumni_grad:
   members:
     - "Rafael Oliveira"
