@@ -1,22 +1,29 @@
 name_prefixes:
   m: "Prof."
   f: "Prof."
-
-students_title: "Students"
-alumni_title: "Alumni"
-
+roles:
+  coordinator:
+    m: "Coordinator"
+    f: "Coordinator"
+  associate_professor:
+    m: "Associate Professor"
+    f: "Associate Professor"
+  collaborating_researcher:
+    m: "Collaborating Researcher"
+    f: "Collaborating Researcher"
 groups:
   coordinators:
     label: "Coordination"
     title: "Coordinating Professors"
-    sub: "Department of Computer Science — DECOM/UFOP"
+    sub: "They lead the lab's research themes and R&D projects."
   professors:
     label: "Faculty"
     title: "Research Professors"
-    sub: "Department of Computer Science — DECOM/UFOP"
+    sub: "DECOM/UFOP faculty who supervise research in the lab."
   collaborators:
     label: "External Collaborators"
     title: "Collaborators"
+    sub: "Researchers from other institutions who collaborate with the lab."
   phd_students:
     label: "Graduate Studies"
     title: "PhD Students"
@@ -27,18 +34,16 @@ groups:
     since_prefix: "Master's · since"
   undergrads:
     label: "Undergraduate Research"
-    title: "Undergraduates — Research Grant Students"
-    since_prefix: "Undergrad Research · since"
+    title: "Undergraduate Researchers"
+    since_prefix: "Undergraduate research · since"
+    sub: "Undergraduate students carrying out research projects in the lab."
   alumni_grad:
     label: "Alumni"
     title: "Graduate Alumni"
   alumni_undergrad:
     title: "Undergraduate Alumni"
-
-roles:
-  coordinator: "Coordinator"
-  coordinator_f: "Coordinator"
-  associate_professor: "Associate Professor"
-  associate_professor_f: "Associate Professor"
-  collaborating_researcher: "Collaborating Researcher"
-  collaborating_researcher_f: "Collaborating Researcher"
+students_title: "Students"
+students_sub: "Graduate students and undergraduate researchers supervised by the lab's faculty."
+graduate_title: "Graduate Students"
+alumni_title: "Former Lab Members"
+alumni_sub: "People who were part of the lab during their undergraduate or graduate studies."

@@ -1,24 +1,66 @@
 ai:
+  icon: "cpu"
+  tags:
+    - "artificial_intelligence"
+    - "computational_intelligence"
+    - "applied_ml"
   title: "Artificial Intelligence"
   text: "AI models applied to high-complexity problems in healthcare, finance, language and environmental perception."
 vision:
+  icon: "eye"
+  tags:
+    - "computer_vision"
+    - "biometrics"
+    - "periocular_biometrics"
+    - "pattern_recognition"
   title: "Computer Vision"
   text: "Visual pattern recognition, image classification, deepfake detection and biometric identification."
 ml:
+  icon: "layers"
+  tags:
+    - "machine_learning"
+    - "deep_learning"
+    - "metric_learning"
+    - "applied_ml"
   title: "Machine Learning"
   text: "Deep neural networks, transfer learning, self-supervised learning and efficient architectures (NAS)."
 nlp:
+  icon: "message"
+  tags:
+    - "nlp"
+    - "text_classification"
   title: "Natural Language Processing"
   text: "Language models for Portuguese, toxic text classification, speech recognition and prompt optimization."
 data_science:
+  icon: "bar-chart"
+  tags:
+    - "data_science"
+    - "statistical_methods"
+    - "time_series"
+    - "databases"
+    - "network_science"
   title: "Data Science"
   text: "Credit risk analysis, fraud detection, churn prediction and epidemiological time series."
 spatial:
+  icon: "map"
+  tags:
+    - "spatial_analysis"
+    - "cluster_detection"
   title: "Spatial & Epidemiological Analysis"
   text: "Spatial cluster detection, COVID-19 modeling with GNN and urban mobility, epidemiological surveillance."
 biosignals:
+  icon: "activity"
+  tags:
+    - "biomedical_signals"
+    - "biological_signal_analysis"
   title: "Biomedical Signals"
   text: "ECG classification, arrhythmia detection, heartbeat segmentation and remote cardiac signals via video (rPPG)."
 optimization:
-  title: "Multi-objective Optimization"
+  icon: "sliders"
+  tags:
+    - "multiobjective_optimization"
+    - "evolutionary_algorithms"
+    - "community_detection"
+    - "social_network_analysis"
+  title: "Multi-Objective Optimization"
   text: "Evolutionary algorithms, community detection in social networks and Pareto solution dispersion/concentration optimization."

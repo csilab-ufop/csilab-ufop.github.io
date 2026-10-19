@@ -1,339 +1,197 @@
-{% from "_macros.njk" import icon, brand %}
+{#-
+  Contact (spec/pages.md "Contact"). Page header, then the static in-page nav (page_toc) and four
+  ruled sections. Each section opens on the foundation hairline with registration ticks
+  (.section--ruled) and a split section head; its content runs full width below the head.
+    #coordenacao  coordinator cards ([data-person]): e-mail (mailto) in a field with a copy
+                  button, the primary e-mail button, research areas as chips (who to write to)
+    #informacoes  location (+ map link), social profiles, institutional links (+ GitHub)
+    #ingresso     ways in (data.contact.join_items); each card links to its next step
+    #faq          native details/summary accordion, all closed. The home page's legacy #faq
+                  links land here; each item has id="faq-<id>" and opens when it is the target.
+  Copy buttons need site.js ([data-copy]): without it they are hidden (contact.css).
+  Styles: public/css/pages/contact.css (scoped under .page-contato).
+-#}
 {% extends "base.njk" %}
+{%- from "_macros.njk" import icon, brand, section_head, page_header, page_toc, btn, link_arrow, chip, avatar, person_id with context -%}
+{%- set ui = data.ui or {} -%}
+{%- set common = ui.common or {} -%}
+{%- set site = data.site or {} -%}
+{%- set social = site.social or {} -%}
+{%- set institutions = site.institutions or {} -%}
+{%- set contact = data.contact or {} -%}
+{%- set location = contact.location or {} -%}
+{%- set coordinators = (data.people.groups.coordinators if (data.people and data.people.groups) else []) or [] -%}
+{%- set faq = (data.faq.items if data.faq else []) or [] -%}
+{%- set brands = ["twitter", "instagram", "github", "scholar", "lattes", "orcid"] -%}
+{#- next step of each way in (join_items keys are fixed ids; a key without an entry gets no link) -#}
+{%- set join_links = {
+  undergrad_research: { href: "#coordenacao", label: page.join_link_undergrad, icon: "arrow-up" },
+  graduate: { href: institutions.PPGCC, label: page.join_link_graduate, external: true },
+  industry: { href: urls.pesquisa ~ "#consultorias", label: page.join_link_industry }
+} -%}
+
+{%- macro pad(n) -%}{{ ("0" ~ n) if n < 10 else n }}{%- endmacro -%}
+{#- "http://www3.decom.ufop.br/decom/inicio/" → "decom.ufop.br" -#}
+{%- macro host(url) -%}
+{%- set h = ((url | string).split("//")[1] or (url | string)).split("/")[0] -%}
+{{ h.replace("www3.", "").replace("www.", "") }}
+{%- endmacro -%}
+{#- one row of the social / institutional lists: icon tile, name, mono detail, arrow -#}
+{%- macro link_row(href, name, meta, glyph, no_translate=true) -%}
+<li><a class="ct-link" href="{{ href }}" target="_blank" rel="noopener">
+  <span class="ct-link__icon">{{ glyph }}</span>
+  <span class="ct-link__text"><span class="ct-link__name"{% if no_translate %} translate="no"{% endif %}>{{ name }}</span>{% if meta %} <span class="ct-link__meta" translate="no">{{ meta }}</span>{% endif %}</span>
+  {{- icon("arrow-up-right", 16, "ct-link__arrow") -}}
+  <span class="sr-only"> {{ common.new_tab }}</span>
+</a></li>
+{%- endmacro -%}
 
 {% block head %}
-<style>
-.contact-cards-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
-  margin-bottom: 1.25rem;
-}
-@media (max-width: 640px) { .contact-cards-row { grid-template-columns: 1fr; } }
-
-.contact-card {
-  background: var(--color-surface);
-  border: 1px solid rgba(86,101,115,0.22);
-  border-top: 3px solid var(--color-accent);
-  border-radius: 12px;
-  padding: 1.75rem 2rem;
-  position: relative;
-  overflow: hidden;
-  transition: transform 0.22s, box-shadow 0.22s, border-color 0.22s;
-}
-.contact-card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at top left, rgba(233,79,55,0.055) 0%, transparent 65%);
-  pointer-events: none;
-}
-.contact-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 48px rgba(0,0,0,0.3);
-  border-color: rgba(233,79,55,0.45);
-}
-
-.contact-card-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  background: rgba(233,79,55,0.1);
-  border: 1px solid rgba(233,79,55,0.22);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-accent);
-  margin-bottom: 1.125rem;
-  flex-shrink: 0;
-}
-
-.contact-card-email {
-  font-family: var(--font-primary);
-  font-size: 1.025rem;
-  font-weight: 700;
-  color: var(--color-accent);
-  text-decoration: none;
-  display: block;
-  margin-bottom: 0.3rem;
-  word-break: break-all;
-  transition: opacity 0.15s;
-}
-.contact-card-email:hover { opacity: 0.8; }
-
-.contact-card-person {
-  font-size: 0.875rem;
-  color: var(--color-muted);
-  line-height: 1.5;
-  margin-bottom: 1.375rem;
-}
-
-.contact-card-actions {
-  display: flex;
-  gap: 0.625rem;
-  flex-wrap: wrap;
-}
-
-.contact-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.45rem 1rem;
-  border-radius: 7px;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
-  white-space: nowrap;
-}
-.contact-btn--primary {
-  background: var(--color-accent);
-  border: 1px solid var(--color-accent);
-  color: #fff;
-}
-.contact-btn--primary:hover { background: #c93e2a; border-color: #c93e2a; }
-.contact-btn--ghost {
-  background: rgba(86,101,115,0.1);
-  border: 1px solid rgba(86,101,115,0.28);
-  color: var(--color-muted);
-}
-.contact-btn--ghost:hover { border-color: rgba(233,79,55,0.4); color: var(--color-accent); background: rgba(233,79,55,0.06); }
-.contact-btn--ghost.copied {
-  border-color: rgba(72,199,142,0.5);
-  color: #48c78e;
-  background: rgba(72,199,142,0.08);
-}
-
-.contact-info-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 1.25rem;
-  margin-bottom: 1.25rem;
-}
-@media (max-width: 820px) { .contact-info-row { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 520px) { .contact-info-row { grid-template-columns: 1fr; } }
-
-.info-card {
-  background: var(--color-surface);
-  border: 1px solid rgba(86,101,115,0.2);
-  border-radius: 12px;
-  padding: 1.5rem 1.625rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-.info-card-title {
-  font-family: var(--font-primary);
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--color-muted);
-  margin-bottom: 1rem;
-}
-.info-card-icon {
-  color: var(--color-muted);
-  margin-bottom: 0.625rem;
-}
-
-.location-line { font-size: 0.9rem; color: var(--color-text); font-weight: 600; margin-bottom: 0.2rem; }
-.location-sub  { font-size: 0.8125rem; color: var(--color-muted); line-height: 1.6; }
-
-.social-list { display: flex; flex-direction: column; gap: 0.5rem; }
-.social-link {
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
-  padding: 0.55rem 0.75rem;
-  border-radius: 8px;
-  text-decoration: none;
-  color: var(--color-muted);
-  font-size: 0.8375rem;
-  font-weight: 500;
-  border: 1px solid rgba(86,101,115,0.18);
-  background: rgba(86,101,115,0.06);
-  transition: border-color 0.15s, color 0.15s, background 0.15s, transform 0.15s;
-}
-.social-link:hover { transform: translateX(4px); }
-.social-link--twitter:hover   { border-color: rgba(29,161,242,0.4); color: #1DA1F2; background: rgba(29,161,242,0.07); }
-.social-link--instagram:hover { border-color: rgba(225,48,108,0.4); color: #E1306C; background: rgba(225,48,108,0.07); }
-.social-link--github:hover    { border-color: rgba(255,255,255,0.2); color: var(--color-text); background: rgba(255,255,255,0.06); }
-
-.inst-list { display: flex; flex-direction: column; gap: 0.5rem; }
-.inst-link {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.55rem 0.75rem;
-  border-radius: 8px;
-  text-decoration: none;
-  font-size: 0.8375rem;
-  color: var(--color-muted);
-  border: 1px solid rgba(86,101,115,0.18);
-  background: rgba(86,101,115,0.06);
-  transition: border-color 0.15s, color 0.15s, background 0.15s;
-}
-.inst-link:hover { border-color: rgba(233,79,55,0.35); color: var(--color-text); background: rgba(233,79,55,0.05); }
-.inst-link span { font-weight: 600; }
-.inst-link-arrow { opacity: 0.4; font-size: 0.9rem; }
-
-.join-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1.25rem;
-}
-@media (max-width: 760px) { .join-grid { grid-template-columns: 1fr; } }
-
-.join-card {
-  background: var(--color-surface);
-  border: 1px solid rgba(86,101,115,0.2);
-  border-radius: 12px;
-  padding: 1.75rem 1.875rem;
-  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
-  position: relative;
-  overflow: hidden;
-}
-.join-card::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(233,79,55,0.4), transparent);
-  transform: scaleX(0);
-  transition: transform 0.3s;
-}
-.join-card:hover { border-color: rgba(233,79,55,0.35); transform: translateY(-3px); box-shadow: 0 12px 36px rgba(0,0,0,0.26); }
-.join-card:hover::after { transform: scaleX(1); }
-.join-card-icon { margin-bottom: 1rem; }
-.join-card h3 { font-family: var(--font-primary); font-size: 1rem; font-weight: 700; color: var(--color-text); margin-bottom: 0.5rem; }
-.join-card p { font-size: 0.875rem; color: var(--color-muted); line-height: 1.65; }
-
-.contact-section-heading {
-  font-family: var(--font-primary);
-  font-size: 0.75rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.09em;
-  color: var(--color-muted);
-  margin-bottom: 0.875rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.contact-section-heading::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: rgba(86,101,115,0.18);
-}
-</style>
+<link rel="stylesheet" href="{{ base_path }}/css/pages/contact.css">
 {% endblock %}
 
 {% block content %}
+{{ page_header(page.page_label, page.page_title, page.page_sub) }}
+{{ page_toc([
+  { href: "#coordenacao", label: page.coordinators_label },
+  { href: "#informacoes", label: page.info_label },
+  { href: "#ingresso", label: page.join_label },
+  { href: "#faq", label: page.faq_title }
+], page.nav_label) }}
 
-<section style="padding-top:8rem;padding-bottom:2.5rem;">
+{#- 01 — coordination: right under the header, so its head does not wait for a reveal -#}
+<section class="section section--ruled ct-section" id="coordenacao" aria-labelledby="coordenacao-title">
   <div class="container">
-    <span class="section-label">{{ page.page_label }}</span>
-    <h1 class="d2c_title" style="margin-top:0.75rem;margin-bottom:1rem;">{{ page.page_title }}</h1>
-    <p class="text-lavender" style="font-size:1rem;max-width:580px;line-height:1.75;">{{ page.page_sub }}</p>
-  </div>
-</section>
-
-<section style="padding-top:0;padding-bottom:6rem;">
-  <div class="container">
-
-    <p class="contact-section-heading">{{ data.contact.info_title }}</p>
-    <div class="contact-cards-row">
-      {% set i18n = data.team_i18n %}
-      {% for c in data.team.coordinators.members | selectattr("email") %}
-      <div class="contact-card" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 100 }}">
-        <div class="contact-card-icon">
-          {{ icon("mail", 20) }}
+    {{ section_head(1, page.coordinators_label, page.coordinators_title, page.coordinators_sub, id="coordenacao-title", layout="split", reveal=false) }}
+    <ul class="ct-people" role="list">
+      {%- for p in coordinators %}
+      <li class="card card--interactive ct-person" data-person>
+        <div class="ct-person__head">
+          {{ avatar(p, "lg") }}
+          {{ person_id(p) }}
         </div>
-        <a href="mailto:{{ c.email }}" class="contact-card-email">{{ c.email }}</a>
-        <p class="contact-card-person">{{ i18n.name_prefixes[c.gender or "m"] }} {{ c.name }} ({{ i18n.roles[c.role_key] }})</p>
-        <div class="contact-card-actions">
-          <a href="mailto:{{ c.email }}" class="contact-btn contact-btn--primary">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-            {{ page.email_cta or "Send email" }}
-          </a>
-          <button class="contact-btn contact-btn--ghost" onclick="copyEmail(this, '{{ c.email }}')" type="button">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            {{ page.copy_label or "Copy" }}
+        {%- if p.email %}
+        {%- set at = p.email.indexOf("@") + 1 %}
+        <div class="ct-email">
+          <a class="ct-email__link" href="mailto:{{ p.email }}">{{ icon("mail", 18) }}<span translate="no">{{ p.email.slice(0, at) }}<wbr>{{ p.email.slice(at) }}</span></a>
+          <button class="ct-copy" type="button" data-copy="{{ p.email }}" data-copied="{{ common.copied }}">
+            {{- icon("copy", 18) }}{{ icon("check", 18) -}}
+            <span class="ct-copy__label"><span data-copy-label>{{ common.copy }}</span><span class="ct-copy__alt" aria-hidden="true">{{ common.copied }}</span></span>
+            <span class="sr-only" translate="no"> {{ p.email }}</span>
           </button>
         </div>
-      </div>
-      {% endfor %}
-    </div>
-
-    <div class="contact-info-row" data-aos="fade-up">
-
-      <div class="info-card">
-        <div class="info-card-title">{{ page.location_label or "Location" }}</div>
-        <div class="info-card-icon">{{ icon("location", 22, "var(--color-accent)") }}</div>
-        <div class="location-line">{{ data.contact.location.room }}</div>
-        <div class="location-sub">
-          {{ data.contact.location.dept }}<br>
-          {{ data.contact.location.univ }}
+        {#- the accessible name uses the plain name: "Enviar E-mail para Gladston Moreira" -#}
+        {{ btn("mailto:" ~ p.email, page.email_cta, "primary", "arrow-up-right", aria_label=((page.email_cta_label or page.email_cta) | replace("{name}", p.name))) }}
+        {%- endif %}
+        {%- if p.tag_items and p.tag_items.length %}
+        <div class="ct-person__areas">
+          <p class="ct-person__areas-label" id="ct-areas-{{ loop.index }}">{{ page.coordinators_areas }}</p>
+          <ul class="chip-list ct-areas" role="list" aria-labelledby="ct-areas-{{ loop.index }}">
+            {%- for t in p.tag_items %}
+            <li>{{ chip(t.label | replace("-", "‑")) }}</li>
+            {%- endfor %}
+          </ul>
         </div>
-      </div>
-
-      <div class="info-card">
-        <div class="info-card-title">{{ page.social_label or "Social Media" }}</div>
-        <div class="social-list">
-          {% for key, sm in data.site.social %}
-          <a href="{{ sm.url }}" target="_blank" rel="noopener" class="social-link social-link--{{ key }}" title="{{ sm.handle }}">
-            {{ brand(key, 15) }}
-            {{ sm.handle }}
-          </a>
-          {% endfor %}
-        </div>
-      </div>
-
-      <div class="info-card">
-        <div class="info-card-title">{{ page.links_label or "Institutional Links" }}</div>
-        <div class="inst-list">
-          {% for name, url in data.site.institutions %}
-          <a href="{{ url }}" target="_blank" rel="noopener" class="inst-link">
-            <span>{{ name }}</span>
-            <span class="inst-link-arrow">↗</span>
-          </a>
-          {% endfor %}
-          <a href="{{ data.site.social.github.url }}" target="_blank" rel="noopener" class="inst-link">
-            <span>{{ data.site.social.github.name }}</span>
-            <span class="inst-link-arrow">↗</span>
-          </a>
-        </div>
-      </div>
-
-    </div>
-
-    <div style="margin-top:3.5rem;" data-aos="fade-up">
-      <p class="contact-section-heading">{{ data.contact.join_title }}</p>
-      <div class="join-grid">
-        {% for key, item in data.contact.join_items %}
-        <div class="join-card" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 100 }}">
-          <div class="join-card-icon">{{ icon(item.icon, 28, "var(--color-accent)", "1.6") }}</div>
-          <h3>{{ item.title }}</h3>
-          <p>{{ item.text }}</p>
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-
+        {%- endif %}
+      </li>
+      {%- endfor %}
+    </ul>
+    {%- if page.team_link %}
+    <p class="ct-more">{{ link_arrow(urls.equipe, page.team_link) }}</p>
+    {%- endif %}
   </div>
 </section>
 
-<script>
-function copyEmail(btn, email) {
-  navigator.clipboard.writeText(email).then(() => {
-    const orig = btn.innerHTML;
-    btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg> {{ page.copied_label or "Copied!" }}';
-    btn.classList.add('copied');
-    setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 2200);
-  }).catch(() => {});
-}
-</script>
+{#- 02 — where to find us -#}
+<section class="section section--ruled ct-section" id="informacoes" aria-labelledby="informacoes-title">
+  <div class="container">
+    {{ section_head(2, page.info_label, page.info_title, none, id="informacoes-title", layout="split") }}
+    <div class="ct-info" data-reveal style="--i: 1">
+      <div class="ct-info__cell ct-info__cell--location">
+        <div class="ct-location">
+          <h3 class="ct-info__title">{{ icon("location", 18) }}<span>{{ page.location_label }}</span></h3>
+          <address class="ct-address">
+            {%- if location.room %}<span class="ct-address__room">{{ location.room }}</span>{% endif -%}
+            {%- if location.dept %}<span>{{ location.dept }}</span>{% endif -%}
+            {%- if location.univ %}<span>{{ location.univ }}</span>{% endif -%}
+          </address>
+        </div>
+        {%- if site.map_url and page.map_link %}
+        {#- map tile: the lab's grid with a pin that pings twice when it scrolls in. The whole tile is
+            the link, so the label only looks like a link-arrow (its last word keeps the arrow) -#}
+        {%- set ml = page.map_link | string | trim %}
+        {%- set mcut = ml.lastIndexOf(" ") %}
+        <a class="ct-map" href="{{ site.map_url }}" target="_blank" rel="noopener">
+          <span class="ct-map__pin" aria-hidden="true"></span>
+          <span class="link-arrow ct-map__label"><span class="link-arrow__text">{% if mcut > 0 %}{{ ml.slice(0, mcut) }} {% endif %}<span class="link-arrow__tail">{{ ml.slice(mcut + 1) }}{{ icon("arrow-up-right", 18) }}</span></span><span class="sr-only"> {{ common.new_tab }}</span></span>
+        </a>
+        {%- endif %}
+      </div>
+      <div class="ct-info__cell">
+        <h3 class="ct-info__title">{{ icon("message", 18) }}<span>{{ page.social_label }}</span></h3>
+        <ul class="ct-links" role="list">
+          {%- for key, s in social %}
+          {{ link_row(s.url, s.name, s.handle, brand(key, 18) if key in brands else icon("globe", 18)) }}
+          {%- endfor %}
+        </ul>
+      </div>
+      <div class="ct-info__cell">
+        <h3 class="ct-info__title">{{ icon("link", 18) }}<span>{{ page.links_label }}</span></h3>
+        <ul class="ct-links" role="list">
+          {%- for name, url in institutions %}
+          {%- set official = (name == "UFOP" and ui.footer and ui.footer.official_site) %}
+          {{ link_row(url, ui.footer.official_site if official else name, host(url), icon("building", 18), not official) }}
+          {%- endfor %}
+          {%- if social.github %}
+          {{ link_row(social.github.url, social.github.name, host(social.github.url) ~ "/" ~ social.github.handle, brand("github", 18)) }}
+          {%- endif %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
 
+{#- 03 — ways in -#}
+<section class="section section--ruled ct-section" id="ingresso" aria-labelledby="ingresso-title">
+  <div class="container">
+    {{ section_head(3, page.join_label, page.join_title, page.join_sub, id="ingresso-title", layout="split") }}
+    <ul class="ct-paths" role="list">
+      {%- for key, item in contact.join_items %}
+      {%- set link = join_links[key] %}
+      {%- set linked = link and link.href and link.label %}
+      <li class="card ct-path{{ ' card--interactive' if linked }}" data-reveal style="--i: {{ loop.index }}">
+        <span class="tile-icon">{{ icon(item.icon or "sparkles", 22) }}</span>
+        <h3 class="card__title">{{ item.title }}</h3>
+        <p class="card__text">{{ item.text }}</p>
+        {%- if linked %}
+        <p class="card__foot ct-path__foot">{{ link_arrow(link.href, link.label, link.external, link.icon, "card__link") }}</p>
+        {%- endif %}
+      </li>
+      {%- endfor %}
+    </ul>
+  </div>
+</section>
+
+{#- 04 — FAQ -#}
+<section class="section section--ruled ct-section" id="faq" aria-labelledby="faq-title">
+  <div class="container">
+    {{ section_head(4, page.faq_label, page.faq_title, page.faq_sub, id="faq-title", layout="split") }}
+    <div class="accordion-group ct-faq">
+      {%- for item in faq %}
+      <details class="accordion ct-faq__item"{% if item.id %} id="faq-{{ item.id }}"{% endif %} data-reveal style="--i: {{ loop.index }}">
+        <summary><span class="ct-faq__num" aria-hidden="true">{{ pad(loop.index) }}</span><span class="ct-faq__q">{{ item.question }}</span><span class="accordion__chevron" aria-hidden="true">{{ icon("chevron-down", 18) }}</span></summary>
+        <div class="accordion__body prose">{{ item.answer_html | safe }}</div>
+      </details>
+      {%- endfor %}
+    </div>
+    {%- if page.faq_more %}
+    <p class="ct-more">{{ link_arrow("#coordenacao", page.faq_more, false, "arrow-up", "ct-up") }}</p>
+    {%- endif %}
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{#- a link to /contato/#faq-<id> opens that question (also on later hash changes) -#}
+<script>(function(){function o(){var i=location.hash.slice(1),e;try{i=decodeURIComponent(i)}catch(_){}e=i&&document.getElementById(i);if(e&&e.tagName==="DETAILS")e.open=true}o();addEventListener("hashchange",o)})()</script>
 {% endblock %}

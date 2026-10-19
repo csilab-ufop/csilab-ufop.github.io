@@ -1,22 +1,29 @@
 name_prefixes:
   m: "Prof."
   f: "Profa."
-
-students_title: "Estudantes"
-alumni_title: "Egressos"
-
+roles:
+  coordinator:
+    m: "Coordenador"
+    f: "Coordenadora"
+  associate_professor:
+    m: "Professor Associado"
+    f: "Professora Associada"
+  collaborating_researcher:
+    m: "Pesquisador Colaborador"
+    f: "Pesquisadora Colaboradora"
 groups:
   coordinators:
     label: "Coordenação"
     title: "Professores Coordenadores"
-    sub: "Departamento de Computação — DECOM/UFOP"
+    sub: "Lideram as linhas de pesquisa e os projetos de P&D do laboratório."
   professors:
     label: "Corpo Docente"
     title: "Professores Pesquisadores"
-    sub: "Departamento de Computação — DECOM/UFOP"
+    sub: "Professores do DECOM/UFOP que orientam pesquisas no laboratório."
   collaborators:
     label: "Colaboradores Externos"
     title: "Colaboradores"
+    sub: "Pesquisadores de outras instituições que colaboram com o laboratório."
   phd_students:
     label: "Pós-Graduação"
     title: "Doutorandos"
@@ -29,16 +36,14 @@ groups:
     label: "Iniciação Científica"
     title: "Graduandos — Bolsistas de IC"
     since_prefix: "IC · desde"
+    sub: "Estudantes de graduação que desenvolvem projetos de iniciação científica no laboratório."
   alumni_grad:
     label: "Egressos"
     title: "Egressos da Pós-Graduação"
   alumni_undergrad:
     title: "Egressos da Graduação"
-
-roles:
-  coordinator: "Coordenador"
-  coordinator_f: "Coordenadora"
-  associate_professor: "Professor Associado"
-  associate_professor_f: "Professora Associada"
-  collaborating_researcher: "Pesquisador Colaborador"
-  collaborating_researcher_f: "Pesquisadora Colaboradora"
+students_title: "Estudantes"
+students_sub: "Pós-graduandos e bolsistas de iniciação científica orientados pelos professores do laboratório."
+graduate_title: "Pós-Graduandos"
+alumni_title: "Ex-integrantes do Laboratório"
+alumni_sub: "Pessoas que fizeram parte do laboratório durante a graduação ou a pós-graduação."

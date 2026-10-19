@@ -1,431 +1,314 @@
+{#-
+  People (spec/pages.md "People"; anchors from spec/ia.md), drawn as the lab's organization tree.
+  - Levels, top-down: 01 #coordenadores (the root: two feature cards) → a trunk that splits into
+    02 #docentes | 03 #colaboradores → 04 Estudantes, which splits into 04.1 #pos-graduacao
+    (itself split into #doutorado | #mestrado) | 04.2 #graduacao → 05 #egressos (two registers).
+    Every group is shown; there are no tabs.
+  - The DOM is the hierarchy: top-level groups are h2 sections, sub-groups h3 (h4 under
+    Pós-graduação), faculty names h3; the member lists are lists. Tab order follows it top-down.
+  - Connectors are decoration (aria-hidden spans, borders only, people.css): .org-wire--stem
+    (a trunk segment between levels, junction dots at its ends), --arm (half of a split bar plus
+    the drop into a branch's head), --tail (a branch's riser down to the bar that merges the
+    level back into the trunk). They connect levels and groups, never single people, so the
+    ruled member grids wrap freely. Below 768px they give way to a file-tree: a spine with an
+    elbow to every group and person (pseudo-elements of .org-group and .org-item).
+  - The sticky page_toc links to the six groups (labels: the footer's ui.footer.people_links,
+    keyed by the same anchors, so both name a group the same way).
+  - Every person has id="{{ p.slug }}" (the research page links to it) and a :target cue.
+  Styles: public/css/pages/people.css (scoped under .page-equipe).
+-#}
 {% extends "base.njk" %}
+{%- from "_macros.njk" import icon, brand, section_head, page_header, page_toc, btn, avatar, person_id with context -%}
+{%- set ti = data.team_i18n or {} -%}
+{%- set gt = ti.groups or {} -%}
+{%- set groups = data.people.groups -%}
+{%- set ui = data.ui or {} -%}
+{%- set nav_labels = (ui.footer.people_links if ui.footer else none) or {} -%}
+{%- set new_tab = ui.common.new_tab if ui.common else "" -%}
+{%- set n_grad = (groups.phd_students | length) + (groups.masters_students | length) -%}
+{%- set n_students = n_grad + (groups.undergrads | length) -%}
+{%- set n_alumni = (groups.alumni_grad | length) + (groups.alumni_undergrad | length) -%}
+
+{#- "{name}" / "{n}" placeholders in page keys -#}
+{%- macro named(text, name) -%}{{ (text or "") | replace("{name}", name) }}{%- endmacro -%}
+{%- macro count_text(n) -%}{{ ((page.count_one if n == 1 else page.count_other) or "{n}") | replace("{n}", n) }}{%- endmacro -%}
+
+{#- Profile links, always with a visible label: the full one on the coordinator cards (the e-mail
+    address, "Google Scholar"…), a short one elsewhere ("Lattes", "Scholar"). The accessible
+    name names the person by the plain name (no "Prof." prefix, which would need an article in
+    pt/es/it) and contains the visible label; external links say they open a new tab. -#}
+{%- macro person_links(p, labelled=false) -%}
+{%- set name = p.name or p.display_name -%}
+{%- if p.email or p.scholar_url or p.lattes_url or p.website %}
+<ul class="person__links{{ ' person__links--labelled' if labelled }}" role="list">
+  {%- if p.email %}
+  <li><a class="plink plink--email" href="mailto:{{ p.email }}" aria-label="{{ (p.email if labelled else page.email_short) }} — {{ named(page.email_label, name) }}">{{ icon("mail", 16) }}<span class="plink__text"{% if labelled %} translate="no"{% endif %}>{{ p.email if labelled else page.email_short }}</span></a></li>
+  {%- endif %}
+  {%- for l in [
+    { url: p.scholar_url, label: page.scholar_label, text: "Google Scholar" if labelled else "Scholar", glyph: "scholar" },
+    { url: p.lattes_url, label: page.lattes_label, text: "Lattes", glyph: "lattes" },
+    { url: p.website, label: page.website_label, text: page.website_short, glyph: "web" }
+  ] %}
+  {%- if l.url %}
+  <li><a class="plink" href="{{ l.url }}" target="_blank" rel="noopener" aria-label="{{ named(l.label, name) }} {{ new_tab }}">
+    {{- icon("web", 16) if l.glyph == "web" else brand(l.glyph, 16) -}}
+    <span class="plink__text">{{ l.text }}</span>{{ icon("arrow-up-right", 14, "plink__ext") }}
+  </a></li>
+  {%- endif %}
+  {%- endfor %}
+</ul>
+{%- endif %}
+{%- endmacro -%}
+
+{#- research interests: chips on the coordinator cards, a keyword line in the roster cells.
+    In the line, a keyword of up to 20 characters never breaks inside (no-break spaces: it
+    fits the narrowest cell, ~190px at 768–959px); a longer one wraps like text. -#}
+{%- macro keyword(label) -%}
+{%- if (label | length) <= 20 -%}{{ label | escape | replace(" ", "&nbsp;") | safe }}{%- else -%}{{ label }}{%- endif -%}
+{%- endmacro -%}
+{%- macro person_tags(p, as_chips=false) -%}
+{%- if p.tag_items and p.tag_items.length %}
+<ul class="{{ 'chip-list person__tags' if as_chips else 'person__kw' }}" role="list" aria-label="{{ page.tags_label }}">
+  {%- for t in p.tag_items %}
+  <li>{% if as_chips %}<span class="chip">{{ t.label }}</span>{% else %}{{ keyword(t.label) }}{% endif %}</li>
+  {%- endfor %}
+</ul>
+{%- endif %}
+{%- endmacro -%}
+
+{#- "Doutorado · desde 2022": lines break after the separator; short parts (up to 12
+    characters, e.g. "desde 2022") never break inside -#}
+{%- macro since(label) -%}
+{%- for part in (label | string).split(" · ") %}{{ (part | escape | replace(" ", "&nbsp;") | safe) if (part | length) <= 12 else part }}{% if not loop.last %}&nbsp;· {% endif %}{% endfor -%}
+{%- endmacro -%}
+
+{#- one person = one tree node (li.org-item: the elbow on phones) holding the person's cell
+    ([data-person], the id, the row-hover/:target cue) -#}
+{%- macro lead_card(p, i) -%}
+<li class="org-item">
+  <div class="card person person--lead" id="{{ p.slug }}" data-person data-reveal style="--i: {{ i }}">
+    <div class="lead__body">
+      {{ avatar(p, "xl") }}
+      {{ person_id(p) }}
+      {{ person_tags(p, true) }}
+    </div>
+    {%- set links = person_links(p, true) | trim %}
+    {%- if links %}
+    <div class="lead__foot">{{ links | safe }}</div>
+    {%- endif %}
+  </div>
+</li>
+{%- endmacro -%}
+
+{%- macro faculty_cell(p, i) -%}
+<li class="org-item">
+  <div class="person person--faculty row-hover" id="{{ p.slug }}" data-person data-reveal style="--i: {{ i }}">
+    <div class="person__body">
+      {{ avatar(p, "md") }}
+      {{ person_id(p) }}
+      {{ person_tags(p) }}
+      {{ person_links(p) }}
+    </div>
+  </div>
+</li>
+{%- endmacro -%}
+
+{%- macro student_cell(p, i) -%}
+<li class="org-item">
+  <div class="person person--student row-hover" id="{{ p.slug }}" data-person data-reveal style="--i: {{ i }}">
+    {{ avatar(p, "sm") }}
+    <div class="person__id">
+      <p class="person__name" translate="no">{{ p.display_name or p.name }}</p>
+      {%- if p.since_label %}
+      <p class="person__since">{{ since(p.since_label) }}</p>
+      {%- endif %}
+    </div>
+    {{ person_links(p) }}
+  </div>
+</li>
+{%- endmacro -%}
+
+{#- Ruled member grid. Faculty: 2 columns from 960px in a two-column branch, otherwise one per
+    row; students: always one per row (the branches are the columns). A hatched cell closes
+    an odd last row (people.css, data-fill). -#}
+{%- macro roster(items, kind, cols=1) -%}
+{%- set n = items | length -%}
+{%- if n %}
+<ul class="roster roster--{{ kind }}" role="list" data-cols="{{ cols }}" data-fill="{{ (cols - n % cols) % cols }}">
+  {%- for p in items %}
+  {{ faculty_cell(p, loop.index0 % cols) if kind == "faculty" else student_cell(p, loop.index0 % 3) }}
+  {%- endfor %}
+</ul>
+{%- endif %}
+{%- endmacro -%}
+
+{#- a group's node: the pin (where its connector lands), then the section head, centred
+    (the head's meta is the headcount) -#}
+{%- macro node_head(index, eyebrow, title, sub, n, title_id, level=2, kind="branch") -%}
+<div class="org-head org-head--{{ kind }}">
+  {{ section_head(index, eyebrow, title, sub, id=title_id, align="center", level=level, meta=count_text(n)) }}
+</div>
+{%- endmacro -%}
+
+{#- connectors (decoration): the outer span is the box that reveals (data-reveal), the inner one
+    draws. stem: top/bottom = which ends get a junction dot; root: the red one -#}
+{%- macro stem(top=true, bottom=true, root=false) -%}
+<span class="org-wire org-wire--stem" aria-hidden="true" data-reveal><span class="org-wire__line{{ ' has-top' if top }}{{ ' has-bottom' if bottom }}{{ ' is-root' if root }}"></span></span>
+{%- endmacro -%}
+{%- macro arm() -%}<span class="org-wire org-wire--arm" aria-hidden="true" data-reveal><span class="org-wire__line"></span></span>{%- endmacro -%}
+{%- macro tail(joint=false) -%}<span class="org-wire org-wire--tail" aria-hidden="true" data-reveal><span class="org-wire__line{{ ' has-joint' if joint }}"></span></span>{%- endmacro -%}
 
 {% block head %}
-<style>
-.org-chart { max-width: 1080px; margin: 0 auto; }
-
-.org-tier-head {
-  text-align: center;
-  margin-bottom: 1.75rem;
-}
-.org-tier-head .section-label { display: inline-block; }
-.org-tier-head h2 {
-  font-family: var(--font-primary);
-  font-size: 1.375rem;
-  font-weight: 800;
-  color: var(--color-text);
-  margin: 0.4rem 0 0.3rem;
-}
-.org-tier-head p { font-size: 0.875rem; color: var(--color-muted); }
-
-.org-stem {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0.25rem 0;
-  gap: 0;
-}
-.org-stem-line {
-  width: 2px;
-  height: 48px;
-  background: linear-gradient(to bottom, rgba(233,79,55,0.45), rgba(86,101,115,0.25));
-  border-radius: 1px;
-}
-.org-stem-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: rgba(233,79,55,0.55);
-  border: 1.5px solid rgba(233,79,55,0.3);
-  box-shadow: 0 0 8px rgba(233,79,55,0.25);
-}
-
-.org-coordinators {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
-  max-width: 720px;
-  margin: 0 auto;
-}
-@media (max-width: 560px) { .org-coordinators { grid-template-columns: 1fr; } }
-
-.org-faculty-split {
-  display: grid;
-  grid-template-columns: 3fr 1px 1.6fr;
-  gap: 2.25rem;
-  align-items: start;
-}
-.org-faculty-sep {
-  background: rgba(86,101,115,0.18);
-  align-self: stretch;
-  margin-top: 3.5rem;
-  border-radius: 1px;
-}
-@media (max-width: 820px) {
-  .org-faculty-split { grid-template-columns: 1fr; gap: 2.5rem; }
-  .org-faculty-sep   { display: none; }
-}
-
-.org-prof-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; }
-.org-collab-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
-@media (max-width: 480px) { .org-prof-grid { grid-template-columns: 1fr; } }
-@media (min-width: 481px) and (max-width: 820px) {
-  .org-prof-grid   { grid-template-columns: repeat(2,1fr); }
-  .org-collab-grid { grid-template-columns: repeat(2,1fr); }
-}
-
-.org-tabs {
-  display: flex;
-  gap: 0.5rem;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin-bottom: 1.75rem;
-}
-.org-tab-btn {
-  padding: 0.4rem 1.1rem;
-  border-radius: 999px;
-  font-family: var(--font-primary);
-  font-size: 0.8rem;
-  font-weight: 700;
-  border: 1.5px solid rgba(86,101,115,0.3);
-  background: rgba(86,101,115,0.08);
-  color: var(--color-muted);
-  cursor: pointer;
-  transition: border-color 0.15s, background 0.15s, color 0.15s;
-  letter-spacing: 0.01em;
-}
-.org-tab-btn:hover { border-color: rgba(233,79,55,0.35); color: var(--color-text); }
-.org-tab-btn.active {
-  background: rgba(233,79,55,0.12);
-  border-color: rgba(233,79,55,0.5);
-  color: var(--color-accent);
-}
-.org-tab-panel { display: none; }
-.org-tab-panel.active { display: block; }
-
-.org-student-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; }
-@media (max-width: 820px) { .org-student-grid { grid-template-columns: repeat(3,1fr); } }
-@media (max-width: 560px) { .org-student-grid { grid-template-columns: repeat(2,1fr); } }
-@media (max-width: 380px) { .org-student-grid { grid-template-columns: 1fr; } }
-
-.mc {
-  background: var(--color-surface);
-  border: 1px solid rgba(86,101,115,0.22);
-  border-radius: 12px;
-  padding: 1.25rem 1.375rem 1.125rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  transition: border-color 0.22s, transform 0.22s, box-shadow 0.22s;
-  position: relative;
-  overflow: hidden;
-}
-.mc::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, rgba(233,79,55,0.025) 0%, transparent 60%);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.3s;
-}
-.mc:hover::before { opacity: 1; }
-.mc:hover { border-color: rgba(233,79,55,0.45); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.32); }
-.mc--coordinator {
-  border-top: 3px solid var(--color-accent);
-  box-shadow: 0 4px 20px rgba(233,79,55,0.08);
-}
-.mc--collaborator { border-top: 3px solid rgba(86,101,115,0.45); }
-
-.mc-header { display: flex; align-items: center; gap: 0.875rem; margin-bottom: 0.875rem; }
-.mc-avatar {
-  width: 48px; height: 48px; border-radius: 50%; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  background: rgba(86,101,115,0.12); border: 1.5px solid rgba(86,101,115,0.25);
-  color: var(--color-muted);
-}
-.mc--coordinator .mc-avatar  { background: rgba(233,79,55,0.08); border-color: rgba(233,79,55,0.3); color: var(--color-accent); }
-.mc--collaborator .mc-avatar { background: rgba(86,101,115,0.15); border-color: rgba(86,101,115,0.35); }
-.mc-meta { flex: 1; min-width: 0; }
-.mc-role {
-  font-size: 0.665rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.09em; line-height: 1.2; margin-bottom: 0.2rem;
-  color: var(--color-accent);
-}
-.mc--collaborator .mc-role { color: var(--color-steel); }
-.mc-name { font-family: var(--font-primary); font-size: 0.9375rem; font-weight: 700; color: var(--color-text); line-height: 1.25; }
-
-.mc-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.85rem; }
-.mc-tag {
-  font-size: 0.675rem; color: var(--color-muted);
-  background: rgba(86,101,115,0.1); border: 1px solid rgba(86,101,115,0.2);
-  border-radius: 3px; padding: 0.1rem 0.4rem; line-height: 1.6;
-}
-
-.mc-links { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: auto; padding-top: 0.75rem; border-top: 1px solid rgba(86,101,115,0.1); }
-.mc-link {
-  display: inline-flex; align-items: center; gap: 0.35rem;
-  height: 26px; padding: 0 0.6rem;
-  border: 1px solid rgba(86,101,115,0.28); border-radius: 5px;
-  color: var(--color-muted); font-size: 0.7125rem; font-weight: 600;
-  text-decoration: none; white-space: nowrap;
-  transition: border-color 0.15s, color 0.15s, background 0.15s;
-}
-.mc-link:hover { border-color: rgba(233,79,55,0.5); color: var(--color-accent); background: rgba(233,79,55,0.06); }
-.mc-link svg { flex-shrink: 0; }
-
-.mc-student {
-  background: var(--color-surface);
-  border: 1px solid rgba(86,101,115,0.18);
-  border-radius: 10px;
-  padding: 1rem 1.125rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
-}
-.mc-student:hover { border-color: rgba(233,79,55,0.3); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.22); }
-.mc-student-header { display: flex; align-items: center; gap: 0.55rem; margin-bottom: 0.1rem; }
-.mc-student-avatar {
-  width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  background: rgba(86,101,115,0.1); border: 1px solid rgba(86,101,115,0.2);
-  color: rgba(136,146,176,0.55);
-}
-.mc-student-name { font-family: var(--font-primary); font-size: 0.875rem; font-weight: 700; color: var(--color-text); line-height: 1.25; }
-.mc-since { font-size: 0.7375rem; color: rgba(136,146,176,0.5); padding-left: 0.1rem; }
-.mc-student-links { display: flex; gap: 0.4rem; margin-top: 0.4rem; }
-
-.org-alumni-split {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-}
-@media (max-width: 640px) { .org-alumni-split { grid-template-columns: 1fr; } }
-.org-alumni-col h3 {
-  font-family: var(--font-primary);
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--color-text);
-  margin-bottom: 0.875rem;
-}
-.alumni-list { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-.alumni-pill {
-  padding: 0.25rem 0.75rem;
-  background: rgba(86,101,115,0.1);
-  border: 1px solid rgba(86,101,115,0.18);
-  border-radius: 999px;
-  font-size: 0.8rem;
-  color: var(--color-muted);
-}
-</style>
+<link rel="stylesheet" href="{{ base_path }}/css/pages/people.css">
 {% endblock %}
 
 {% block content %}
+{{ page_header(page.page_label, page.page_title, page.page_sub) }}
+{{ page_toc([
+  { href: "#coordenadores", label: nav_labels.coordenadores or gt.coordinators.label, count: groups.coordinators | length },
+  { href: "#docentes", label: nav_labels.docentes or gt.professors.label, count: groups.professors | length },
+  { href: "#colaboradores", label: nav_labels.colaboradores or gt.collaborators.label, count: groups.collaborators | length },
+  { href: "#pos-graduacao", label: page.nav_graduate or nav_labels["pos-graduacao"] or ti.graduate_title, count: n_grad },
+  { href: "#graduacao", label: page.nav_undergrad or nav_labels.graduacao or gt.undergrads.label, count: groups.undergrads | length },
+  { href: "#egressos", label: nav_labels.egressos or gt.alumni_grad.label, count: n_alumni }
+], page.nav_label, true) }}
 
-{% set i18n = data.team_i18n %}
-{% set tags = data.team_tags %}
-{% set team = data.team %}
+<div class="org">
+  <div class="container org__inner">
 
-{% macro avatar(size) %}
-<svg width="{{ size }}" height="{{ size }}" viewBox="0 0 22 22" fill="currentColor" aria-hidden="true">
-  <circle cx="11" cy="8" r="4.5"/>
-  <path d="M2 20c0-4.97 4.03-9 9-9s9 4.03 9 9" fill-rule="evenodd"/>
-</svg>
-{% endmacro %}
+    {#- 01 — the root -#}
+    <section class="org-group org-root" id="coordenadores" aria-labelledby="coordenadores-title">
+      {{ node_head(1, gt.coordinators.label, gt.coordinators.title, gt.coordinators.sub, groups.coordinators | length, "coordenadores-title", 2, "root") }}
+      {%- if groups.coordinators | length %}
+      <ul class="org-leads" role="list">
+        {%- for p in groups.coordinators %}
+        {{ lead_card(p, loop.index0 % 2) }}
+        {%- endfor %}
+      </ul>
+      {%- endif %}
+    </section>
 
-{% macro lattesLink(id) %}
-<a href="http://lattes.cnpq.br/{{ id }}" target="_blank" rel="noopener" class="mc-link">
-  <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M2 2h8v8M10 2 2 10"/></svg>
-  Lattes
-</a>
-{% endmacro %}
-
-{% macro facultyCard(m, modifier, delay) %}
-{% set i18n = data.team_i18n %}
-{% set tags = data.team_tags %}
-<div class="mc{% if modifier %} mc--{{ modifier }}{% endif %}" data-aos="fade-up" data-aos-delay="{{ delay }}">
-  <div class="mc-header">
-    <div class="mc-avatar">{{ avatar(22) }}</div>
-    <div class="mc-meta">
-      <div class="mc-role">{{ i18n.roles[m.role_key] }}</div>
-      <div class="mc-name">{{ i18n.name_prefixes[m.gender or 'm'] }} {{ m.name }}</div>
-    </div>
-  </div>
-  {% if m.tags %}
-  <div class="mc-tags">
-    {% for tagId in m.tags %}<span class="mc-tag">{{ tags[tagId][lang] if tags[tagId] else tagId }}</span>{% endfor %}
-  </div>
-  {% endif %}
-  {% if m.email or m.lattes %}
-  <div class="mc-links">
-    {% if m.email %}
-    <a href="mailto:{{ m.email }}" class="mc-link" title="{{ m.email }}">
-      <svg width="12" height="11" viewBox="0 0 14 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><rect x="1" y="1" width="12" height="10" rx="1.5"/><path d="M1 3l6 4.5L13 3"/></svg>
-      Email
-    </a>
-    {% endif %}
-    {% if m.lattes %}{{ lattesLink(m.lattes) }}{% endif %}
-  </div>
-  {% endif %}
-</div>
-{% endmacro %}
-
-{% macro studentCard(m, sincePrefix) %}
-<div class="mc-student">
-  <div class="mc-student-header">
-    <div class="mc-student-avatar">{{ avatar(14) }}</div>
-    <div class="mc-student-name">{{ m.name }}</div>
-  </div>
-  <div class="mc-since">{{ sincePrefix }} {{ m.since }}</div>
-  {% if m.lattes %}<div class="mc-student-links">{{ lattesLink(m.lattes) }}</div>{% endif %}
-</div>
-{% endmacro %}
-
-{% set studentTabs = [
-  { id: "phd",       group: "phd_students",     sub: i18n.groups.phd_students.sub },
-  { id: "masters",   group: "masters_students" },
-  { id: "undergrad", group: "undergrads",       sub: i18n.groups.undergrads.label, anchor: "graduacao" }
-] %}
-
-<section style="padding-top:8rem;padding-bottom:3rem;">
-  <div class="container">
-    <span class="section-label">{{ page.page_label }}</span>
-    <h1 class="d2c_title" style="margin-top:0.75rem;margin-bottom:0.75rem;">{{ page.page_title }}</h1>
-    <p class="text-lavender" style="font-size:1rem;max-width:640px;line-height:1.75;">{{ page.page_sub }}</p>
-  </div>
-</section>
-
-<section style="padding-top:0;padding-bottom:5rem;">
-  <div class="container">
-  <div class="org-chart">
-
-    <div id="coordenadores" data-aos="fade-up">
-      <div class="org-tier-head">
-        <span class="section-label">{{ i18n.groups.coordinators.label }}</span>
-        <h2>{{ i18n.groups.coordinators.title }}</h2>
-        <p>{{ i18n.groups.coordinators.sub }}</p>
-      </div>
-      <div class="org-coordinators">
-        {% for m in team.coordinators.members %}{{ facultyCard(m, "coordinator", loop.index0 * 80) }}{% endfor %}
-      </div>
+    {#- 02 | 03 — faculty and collaborators, split from the trunk -#}
+    <div class="org-level org-level--faculty">
+      {{ stem(true, true, true) }}
+      <section class="org-group org-branch org-branch--wide" id="docentes" aria-labelledby="docentes-title">
+        {{ arm() }}
+        {{ node_head(2, gt.professors.label, gt.professors.title, gt.professors.sub, groups.professors | length, "docentes-title") }}
+        {{ roster(groups.professors, "faculty", 2) }}
+        {{ tail() }}
+      </section>
+      <section class="org-group org-branch" id="colaboradores" aria-labelledby="colaboradores-title">
+        {{ arm() }}
+        {{ node_head(3, gt.collaborators.label, gt.collaborators.title, gt.collaborators.sub, groups.collaborators | length, "colaboradores-title") }}
+        {{ roster(groups.collaborators, "faculty") }}
+        {{ tail() }}
+      </section>
     </div>
 
-    <div class="org-stem" aria-hidden="true">
-      <div class="org-stem-line"></div>
-      <div class="org-stem-dot"></div>
-      <div class="org-stem-line" style="background:linear-gradient(to bottom,rgba(86,101,115,0.3),rgba(86,101,115,0.12));"></div>
-    </div>
-
-    <div class="org-faculty-split" data-aos="fade-up">
-
-      <div>
-        <div class="org-tier-head" style="text-align:left;">
-          <span class="section-label">{{ i18n.groups.professors.label }}</span>
-          <h2>{{ i18n.groups.professors.title }}</h2>
-          <p>{{ i18n.groups.professors.sub }}</p>
-        </div>
-        <div class="org-prof-grid">
-          {% for m in team.professors.members %}{{ facultyCard(m, "", loop.index0 * 60) }}{% endfor %}
-        </div>
-      </div>
-
-      <div class="org-faculty-sep" aria-hidden="true"></div>
-
-      <div id="colaboradores">
-        <div class="org-tier-head" style="text-align:left;">
-          <span class="section-label">{{ i18n.groups.collaborators.label }}</span>
-          <h2>{{ i18n.groups.collaborators.title }}</h2>
-        </div>
-        <div class="org-collab-grid">
-          {% for m in team.collaborators.members %}{{ facultyCard(m, "collaborator", loop.index0 * 80) }}{% endfor %}
-        </div>
-      </div>
-
-    </div>
-
-    <div class="org-stem" aria-hidden="true">
-      <div class="org-stem-line" style="background:linear-gradient(to bottom,rgba(86,101,115,0.2),rgba(86,101,115,0.35));"></div>
-      <div class="org-stem-dot" style="background:rgba(86,101,115,0.5);border-color:rgba(86,101,115,0.3);box-shadow:0 0 6px rgba(86,101,115,0.2);"></div>
-      <div class="org-stem-line" style="background:linear-gradient(to bottom,rgba(86,101,115,0.3),rgba(86,101,115,0.12));"></div>
-    </div>
-
-    <div id="pos-graduacao" data-aos="fade-up">
-      <div class="org-tier-head">
-        <span class="section-label">{{ i18n.groups.phd_students.label }}</span>
-        <h2 style="font-size:1.25rem;">{{ i18n.students_title }}</h2>
-      </div>
-
-      <div class="org-tabs" role="tablist">
-        {% for tab in studentTabs %}
-        <button class="org-tab-btn{% if loop.first %} active{% endif %}" role="tab" aria-controls="tab-{{ tab.id }}" aria-selected="{{ 'true' if loop.first else 'false' }}" onclick="switchTab('{{ tab.id }}')">
-          {{ i18n.groups[tab.group].title }}
-          <span style="font-weight:400;opacity:0.6;margin-left:0.3rem;">({{ team[tab.group].members | length }})</span>
-        </button>
-        {% endfor %}
-      </div>
-
-      {% for tab in studentTabs %}
-      <div id="tab-{{ tab.id }}" class="org-tab-panel{% if loop.first %} active{% endif %}" role="tabpanel"{% if tab.anchor %} data-anchor="{{ tab.anchor }}"{% endif %}>
-        {% if tab.sub %}<p style="font-size:0.8125rem;color:var(--color-muted);text-align:center;margin-bottom:1.25rem;">{{ tab.sub }}</p>{% endif %}
-        <div class="org-student-grid">
-          {% for m in team[tab.group].members %}{{ studentCard(m, i18n.groups[tab.group].since_prefix) }}{% endfor %}
-        </div>
-      </div>
-      {% endfor %}
-    </div>
-
-    <div class="org-stem" aria-hidden="true">
-      <div class="org-stem-line" style="background:linear-gradient(to bottom,rgba(86,101,115,0.18),rgba(86,101,115,0.28));"></div>
-      <div class="org-stem-dot" style="background:rgba(86,101,115,0.3);border-color:rgba(86,101,115,0.2);box-shadow:none;"></div>
-      <div class="org-stem-line" style="background:linear-gradient(to bottom,rgba(86,101,115,0.2),transparent);"></div>
-    </div>
-
-    <div data-aos="fade-up">
-      <div class="org-tier-head">
-        <span class="section-label">{{ i18n.groups.alumni_grad.label }}</span>
-        <h2 style="font-size:1.25rem;">{{ i18n.alumni_title }}</h2>
-      </div>
-      <div class="org-alumni-split">
-        {% for group in ["alumni_grad", "alumni_undergrad"] %}
-        <div class="org-alumni-col">
-          <h3>{{ i18n.groups[group].title }}</h3>
-          <div class="alumni-list">
-            {% for name in team[group].members %}<span class="alumni-pill">{{ name }}</span>{% endfor %}
+    {#- 04 — students: graduate (PhD | master's) and undergraduate research -#}
+    <section class="org-group org-tier" aria-labelledby="estudantes-title">
+      {{ stem(true, false) }}
+      {{ node_head(4, none, ti.students_title, ti.students_sub, n_students, "estudantes-title", 2, "tier") }}
+      <div class="org-level org-level--students">
+        {{ stem(false, true) }}
+        <section class="org-group org-branch org-branch--wide org-branch--parent" id="pos-graduacao" aria-labelledby="pos-graduacao-title">
+          {{ arm() }}
+          {{ node_head("04.1", gt.phd_students.label, ti.graduate_title, gt.phd_students.sub, n_grad, "pos-graduacao-title", 3, "tier") }}
+          <div class="org-level org-level--sub">
+            {{ stem(false, true) }}
+            {%- for sg in [{ key: "phd_students", id: "doutorado", index: "04.1.1" }, { key: "masters_students", id: "mestrado", index: "04.1.2" }] %}
+            <section class="org-group org-branch{{ ' is-last' if loop.last }}" id="{{ sg.id }}" aria-labelledby="{{ sg.id }}-title">
+              {{ arm() }}
+              {{ node_head(sg.index, none, gt[sg.key].title, none, groups[sg.key] | length, sg.id ~ "-title", 4) }}
+              {{ roster(groups[sg.key], "student") }}
+              {{ tail() }}
+            </section>
+            {%- endfor %}
           </div>
-        </div>
-        {% endfor %}
+          {{ tail(true) }}
+        </section>
+        <section class="org-group org-branch is-last" id="graduacao" aria-labelledby="graduacao-title">
+          {{ arm() }}
+          {{ node_head("04.2", gt.undergrads.label, gt.undergrads.title, gt.undergrads.sub, groups.undergrads | length, "graduacao-title", 3) }}
+          {{ roster(groups.undergrads, "student") }}
+          {{ tail() }}
+        </section>
       </div>
-    </div>
+    </section>
 
-    <div style="margin:4rem 0 2rem;text-align:center;">
-      <p class="text-lavender" style="margin-bottom:1rem;">{{ page.join_text }}</p>
-      <a href="{{ base_url }}/contato" class="btn-primary">{{ page.join_btn }}</a>
-    </div>
+    {#- 05 — alumni: the last level, two name registers -#}
+    <section class="org-group org-tier is-last" id="egressos" aria-labelledby="egressos-title">
+      {{ stem(true, false) }}
+      {{ node_head(5, gt.alumni_grad.label, ti.alumni_title, ti.alumni_sub, n_alumni, "egressos-title", 2, "tier") }}
+      <div class="org-level org-level--alumni">
+        {{ stem(false, true) }}
+        {%- for key in ["alumni_grad", "alumni_undergrad"] %}
+        <section class="org-group org-branch{{ ' org-branch--wide is-last' if loop.last }}" aria-labelledby="{{ key }}-title">
+          {{ arm() }}
+          <div class="org-head org-head--register" data-reveal>
+            <h3 class="org-register__title" id="{{ key }}-title">{{ gt[key].title }}</h3>
+            <p class="org-register__count">{{ count_text(groups[key] | length) }}</p>
+          </div>
+          {%- if groups[key] | length %}
+          <ul class="alumni__list" role="list">
+            {%- for p in groups[key] %}
+            <li class="org-item"><span class="alumni__name" translate="no">{{ p.display_name or p.name }}</span></li>
+            {%- endfor %}
+          </ul>
+          {%- endif %}
+        </section>
+        {%- endfor %}
+      </div>
+    </section>
 
   </div>
+</div>
+
+{#- how students start research here (IC, master's, PhD); the contact page's #ingresso has the
+    ways in for everyone -#}
+<section class="section people-join" aria-labelledby="join-title">
+  <div class="container">
+    <div class="cta-band" data-reveal>
+      <div>
+        <h2 class="cta-band__title" id="join-title">{{ page.join_text }}</h2>
+        {%- if page.join_sub %}
+        <p class="cta-band__text">{{ page.join_sub }}</p>
+        {%- endif %}
+        <ol class="join-steps" role="list">
+          {%- for s in [{ t: page.join_ic_title, x: page.join_ic_text }, { t: page.join_ms_title, x: page.join_ms_text }, { t: page.join_phd_title, x: page.join_phd_text }] %}
+          {%- if s.t %}
+          <li class="join-steps__item"><span class="join-steps__index" aria-hidden="true">0{{ loop.index }}</span><h3 class="join-steps__title">{{ s.t }}</h3><p class="join-steps__text">{{ s.x }}</p></li>
+          {%- endif %}
+          {%- endfor %}
+        </ol>
+      </div>
+      {{ btn(urls.contato ~ "#ingresso", page.join_btn, "primary", "arrow-right") }}
+    </div>
   </div>
 </section>
+{% endblock %}
 
-<script>
-function switchTab(id) {
-  document.querySelectorAll('.org-tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.org-tab-btn').forEach(b => {
-    b.classList.remove('active');
-    b.setAttribute('aria-selected', 'false');
-  });
-  const panel = document.getElementById('tab-' + id);
-  if (panel) panel.classList.add('active');
-  const btn = document.querySelector('[aria-controls="tab-' + id + '"]');
-  if (btn) { btn.classList.add('active'); btn.setAttribute('aria-selected', 'true'); }
-}
-
-// Footer links such as /equipe#graduacao open the matching student tab.
-const anchored = location.hash && document.querySelector('[data-anchor="' + location.hash.slice(1) + '"]');
-if (anchored) {
-  switchTab(anchored.id.replace('tab-', ''));
-  anchored.closest('[data-aos]').scrollIntoView();
-}
+{% block scripts %}
+{#- From 768px, sibling groups sit side by side (Docentes | Colaboradores, Pós-graduação |
+    Graduação) and share a top, so the shared scroll-spy (site.js, by section tops) would always
+    mark the later one. Within such a row the mark goes to the chip the reader chose last, else
+    to the first group of the row. Only aria-current moves; nothing depends on it. -#}
+<script type="module">
+const list = document.querySelector('.page-toc--sticky ul');
+const chips = list ? [...list.querySelectorAll('a[href^="#"]')] : [];
+const top = (a) => document.getElementById(decodeURIComponent(a.hash.slice(1)))?.getBoundingClientRect().top;
+let chosen = null;
+list?.addEventListener('click', (e) => { chosen = e.target.closest('a'); }, true);
+const spy = new MutationObserver((records) => {
+  const set = records.map((r) => r.target).filter((a) => a.getAttribute('aria-current') === 'true').pop();
+  if (!set) return;
+  const y = top(set);
+  const row = chips.filter((a) => Math.abs(top(a) - y) < 4);
+  if (chosen && !row.includes(chosen)) chosen = null;
+  const pick = row.length > 1 ? (chosen || row[0]) : set;
+  chips.forEach((a) => (a === pick ? a.setAttribute('aria-current', 'true') : a.removeAttribute('aria-current')));
+  spy.takeRecords(); // our own changes
+});
+if (chips.length) spy.observe(list, { subtree: true, attributes: true, attributeFilter: ['aria-current'] });
 </script>
-
 {% endblock %}

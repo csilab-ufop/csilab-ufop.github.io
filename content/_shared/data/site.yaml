@@ -1,6 +1,7 @@
 name: "CSI Lab · UFOP"
+short_name: "CSI Lab"
 years: "16+"
-
+map_url: "https://www.google.com/maps/search/?api=1&query=ICEB+II+UFOP+Ouro+Preto"
 social:
   twitter:
     name: "Twitter / X"
@@ -14,7 +15,6 @@ social:
     name: "GitHub"
     handle: "csilab-ufop"
     url: "https://github.com/csilab-ufop"
-
 institutions:
   UFOP: "https://ufop.br"
   DECOM: "http://www3.decom.ufop.br/decom/inicio/"

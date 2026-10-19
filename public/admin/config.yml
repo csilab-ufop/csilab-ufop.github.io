@@ -1,0 +1,991 @@
+# yaml-language-server: $schema=https://unpkg.com/@sveltia/cms/schema/sveltia-cms.json
+#
+# Sveltia CMS for csilab.ufop.br, served at /admin/ (tested with @sveltia/cms 0.248.0, pinned in
+# index.html). How editors sign in and how saving works: README.md, "Editing content".
+#
+# Rules for whoever edits this file:
+# - Sveltia rewrites a whole file on save and writes its keys in the order of the fields below.
+#   Keep the fields in the same order as the keys in the content files and cover every key, so a
+#   save changes nothing but the edited value. Keys missing here are kept, but moved to the end of
+#   their object in alphabetical order on the first save, and they can't be edited in the CMS.
+#   Page files list their keys in page order, top to bottom. `npm run check:content` verifies
+#   coverage and order (section 10 of scripts/check-content.js).
+# - Texts with a placeholder ({n}, {name}, {total}, {date}, {year}, {source}, {first}, {last})
+#   carry a `pattern` that requires it, so a save can't drop it in any language.
+# - Lists have a `summary` and `collapsed: auto`.
+# - One file per language (content/{{locale}}/...). Translated fields need `i18n: true`, nested
+#   ones included (it is not inherited). `i18n: duplicate` = same value in all four files, edited
+#   in Portuguese only and read-only in the other languages. A list with a duplicated subfield is
+#   "paired": adding, removing or moving an item in Portuguese does the same in every language.
+# - Labels and hints are in Portuguese (the editors are Brazilian). Hints are inline Markdown, so
+#   Markdown examples go between backticks.
+# - content/_shared/data/publications.json is generated weekly from Google Scholar
+#   (scripts/fetch-publications.js) and is deliberately not editable here.
+
+backend:
+  name: github
+  repo: csilab-ufop/csilab-ufop.github.io
+  branch: main
+  auth_methods: [token]
+
+app_title: CSI Lab · CMS
+logo:
+  src: /favicon.svg
+
+media_folder: public/images
+public_folder: /images
+media_libraries:
+  all:
+    slugify_filename: true
+    transformations:
+      raster_image: {format: webp, quality: 85, width: 2000, height: 2000}
+      svg: {optimize: true}
+
+slug:
+  encoding: ascii
+  clean_accents: true
+  maxlength: 60
+
+i18n:
+  locales: [pt, en, es, it]
+  default_locale: pt
+  omit_default_locale_from_preview_path: true
+
+editor:
+  preview: false
+
+output:
+  omit_empty_optional_fields: true
+  yaml:
+    quote: double
+    indent_size: 2
+    indent_sequences: true
+
+collections:
+  # ── Páginas: front matter of content/{{locale}}/<page>.md ─────────────────────────────────────
+  - name: paginas
+    label: Páginas
+    label_singular: Página
+    icon: web
+    description: "Textos fixos de cada página do site: títulos, subtítulos, rótulos das seções, botões e SEO. O português fica à esquerda e cada tradução à direita."
+    i18n: true
+    files:
+      - name: index
+        label: Início
+        icon: home
+        file: content/{{locale}}/index.md
+        preview_path: /{{locale}}/
+        i18n: true
+        fields:
+          - {name: title, label: "Título da página (SEO)", hint: "Aparece na aba do navegador e nos resultados de busca.", i18n: true}
+          - {name: description, label: "Descrição (SEO)", widget: text, hint: "Resumo de uma ou duas frases para buscadores e redes sociais (até ~160 caracteres). Também é a descrição do laboratório nos dados estruturados da página inicial.", i18n: true}
+          - {name: hero_eyebrow, label: "Abertura › linha acima do título", i18n: true}
+          - {name: hero_title, label: "Abertura › título", hint: "Título principal (h1) da página inicial; também é o nome do laboratório nos dados estruturados para buscadores.", i18n: true}
+          - {name: hero_sub, label: "Abertura › subtítulo", widget: text, i18n: true}
+          - {name: hero_cta_primary, label: "Abertura › botão principal", hint: "Leva à página Pesquisa.", i18n: true}
+          - {name: hero_cta_secondary, label: "Abertura › botão secundário", hint: "Leva à página Contato.", i18n: true}
+          - {name: stats_title, label: "Números › título (leitor de tela)", hint: "Título da faixa de números, lido só por leitores de tela. Os números ficam em Conteúdo › Números da página inicial.", i18n: true}
+          - {name: about_label, label: "Sobre › rótulo", hint: "Texto curto acima do título da seção.", i18n: true}
+          - {name: about_title, label: "Sobre › título", i18n: true}
+          - {name: about_p1, label: "Sobre › 1º parágrafo", widget: markdown, buttons: [bold, italic, link], editor_components: [], minimal: true, hint: "Um parágrafo. Markdown: `**negrito**`, `_itálico_`, `[link](https://…)`.", i18n: true}
+          - {name: about_p2, label: "Sobre › 2º parágrafo", widget: text, i18n: true}
+          - {name: about_feature1_title, label: "Sobre › destaque 1 › título", i18n: true}
+          - {name: about_feature1_text, label: "Sobre › destaque 1 › texto", widget: text, i18n: true}
+          - {name: about_feature2_title, label: "Sobre › destaque 2 › título", i18n: true}
+          - {name: about_feature2_text, label: "Sobre › destaque 2 › texto", widget: text, i18n: true}
+          - {name: about_cta, label: "Sobre › link para a página Equipe", i18n: true}
+          - {name: about_photo_alt, label: "Sobre › descrição da foto da equipe", widget: text, hint: "Texto alternativo para leitores de tela: descreva o que a foto mostra.", i18n: true}
+          - {name: about_years_label, label: "Sobre › legenda do selo de anos", hint: "O número vem de Configurações › Site › Anos de pesquisa.", i18n: true}
+          - {name: about_event1_alt, label: "Sobre › descrição da foto do Encontro de Saberes 2023", widget: text, hint: "Texto alternativo para leitores de tela.", i18n: true}
+          - {name: about_event2_alt, label: "Sobre › descrição da foto do ERCAS 2024", widget: text, hint: "Texto alternativo para leitores de tela.", i18n: true}
+          - {name: research_label, label: "Pesquisa › rótulo", hint: "As áreas ficam em Conteúdo › Áreas de pesquisa.", i18n: true}
+          - {name: research_title, label: "Pesquisa › título", i18n: true}
+          - {name: research_sub, label: "Pesquisa › subtítulo", widget: text, i18n: true}
+          - {name: research_cta, label: "Pesquisa › link para a página Pesquisa", i18n: true}
+          - {name: pubs_label, label: "Publicações › rótulo", hint: "As publicações vêm do Google Scholar, atualizadas toda semana.", i18n: true}
+          - {name: pubs_title, label: "Publicações › título", i18n: true}
+          - {name: pubs_sub, label: "Publicações › subtítulo", widget: text, i18n: true}
+          - {name: pubs_latest, label: "Publicações › título da coluna “mais recentes”", i18n: true}
+          - {name: pubs_fig_label, label: "Publicações › marcador do gráfico", hint: "Ex.: FIG. 03.", i18n: true}
+          - {name: pubs_fig_caption, label: "Publicações › legenda do gráfico de artigos por ano", pattern: ['^(?=.*[{]first[}])(?=.*[{]last[}])', "Mantenha {first} e {last}"], hint: "Mantenha `{first}` e `{last}`: o site troca pelo primeiro e pelo último ano do gráfico.", i18n: true}
+          - {name: pubs_fig_partial, label: "Publicações › aviso do ano em curso no gráfico", pattern: ['[{]year[}]', "Mantenha {year}"], hint: "Mantenha `{year}`: o site troca pelo ano atual, cujos dados ainda são parciais.", i18n: true}
+          - {name: pubs_papers, label: "Publicações › palavra depois do total de artigos", hint: "Ex.: artigos (o site mostra “250 artigos”).", i18n: true}
+          - {name: pubs_citations, label: "Publicações › palavra depois do total de citações", hint: "Ex.: citações. Também aparece depois do número de citações de cada artigo da coluna “mais citados”.", i18n: true}
+          - {name: pubs_source, label: "Publicações › fonte e data da atualização", pattern: ['[{]date[}]', "Mantenha {date}"], hint: "Mantenha `{date}`: o site troca pela data da última atualização.", i18n: true}
+          - {name: pubs_cta, label: "Publicações › link para a página Publicações", i18n: true}
+          - {name: pubs_cited, label: "Publicações › título da coluna “mais citados”", i18n: true}
+          - {name: news_label, label: "Notícias › rótulo", hint: "A seção mostra a notícia em destaque e as mais recentes do menu Notícias.", i18n: true}
+          - {name: news_title, label: "Notícias › título", i18n: true}
+          - {name: news_sub, label: "Notícias › subtítulo", widget: text, i18n: true}
+          - {name: news_cta, label: "Notícias › link para a página Notícias", i18n: true}
+          - {name: partners_label, label: "Parceiros › rótulo", hint: "Os parceiros vêm de Conteúdo › Projetos de P&D.", i18n: true}
+          - {name: partners_title, label: "Parceiros › título", i18n: true}
+          - {name: partners_sub, label: "Parceiros › subtítulo", widget: text, i18n: true}
+          - {name: partners_cta, label: "Parceiros › link para os projetos de P&D", hint: "Leva à seção Projetos da página Pesquisa.", i18n: true}
+          - {name: join_title, label: "Chamada final › título", i18n: true}
+          - {name: join_text, label: "Chamada final › texto", widget: text, i18n: true}
+          - {name: join_cta, label: "Chamada final › botão", hint: "Leva à página Contato.", i18n: true}
+
+      - name: pesquisa
+        label: Pesquisa
+        icon: science
+        file: content/{{locale}}/pesquisa.md
+        preview_path: /{{locale}}/pesquisa/
+        i18n: true
+        fields:
+          - {name: title, label: "Título da página (SEO)", hint: "Aparece na aba do navegador e nos resultados de busca.", i18n: true}
+          - {name: description, label: "Descrição (SEO)", widget: text, hint: "Resumo de uma ou duas frases para buscadores e redes sociais (até ~160 caracteres).", i18n: true}
+          - {name: page_label, label: "Cabeçalho › rótulo", hint: "Texto curto acima do título da página.", i18n: true}
+          - {name: page_title, label: "Cabeçalho › título", i18n: true}
+          - {name: page_sub, label: "Cabeçalho › subtítulo", widget: text, i18n: true}
+          - {name: nav_label, label: "Atalhos da página › nome (leitor de tela)", hint: "Nome da barra de atalhos para as seções, lido por leitores de tela.", i18n: true}
+          - {name: nav_areas, label: "Atalhos da página › Áreas", i18n: true}
+          - {name: nav_projects, label: "Atalhos da página › Projetos", i18n: true}
+          - {name: nav_open, label: "Atalhos da página › Ciência aberta", i18n: true}
+          - {name: areas_label, label: "Áreas › rótulo", hint: "As áreas ficam em Conteúdo › Áreas de pesquisa. Também é o título do índice no cabeçalho (telas largas).", i18n: true}
+          - {name: areas_title, label: "Áreas › título", i18n: true}
+          - {name: areas_sub, label: "Áreas › subtítulo", widget: text, i18n: true}
+          - {name: area_topics_label, label: "Áreas › rótulo acima das tags de cada área", i18n: true}
+          - {name: area_people_label, label: "Áreas › rótulo acima dos pesquisadores de cada área", hint: "Os pesquisadores aparecem pelas tags em comum (Equipe › Membros e Conteúdo › Áreas de pesquisa).", i18n: true}
+          - {name: projects_label, label: "Projetos › rótulo", hint: "Os projetos ficam em Conteúdo › Projetos de P&D.", i18n: true}
+          - {name: projects_title, label: "Projetos › título", i18n: true}
+          - {name: projects_sub, label: "Projetos › subtítulo", widget: text, i18n: true}
+          - {name: open_label, label: "Ciência aberta › rótulo", i18n: true}
+          - {name: open_title, label: "Ciência aberta › título", i18n: true}
+          - {name: open_text, label: "Ciência aberta › texto", widget: text, i18n: true}
+          - {name: open_cta_publications, label: "Ciência aberta › botão para Publicações", i18n: true}
+          - {name: open_cta_github, label: "Ciência aberta › botão para o GitHub", hint: "O endereço vem de Configurações › Site › Redes sociais (GitHub).", i18n: true}
+          - {name: open_stat_value, label: "Ciência aberta › número em destaque", pattern: ['^[0-9]+$', "Só o número, ex.: 14"], hint: "Só o número, igual em todos os idiomas, ex.: 14.", i18n: duplicate}
+          - {name: open_stat_label, label: "Ciência aberta › legenda do número", i18n: true}
+          - {name: open_pubs_label, label: "Ciência aberta › legenda do total de publicações", hint: "O número vem do Google Scholar.", i18n: true}
+          - {name: open_cites_label, label: "Ciência aberta › legenda do total de citações", hint: "O número vem do Google Scholar.", i18n: true}
+          - {name: open_chart_label, label: "Ciência aberta › legenda do gráfico", i18n: true}
+          - {name: open_chart_partial, label: "Ciência aberta › marca do ano em curso no gráfico", hint: "Palavra curta, ex.: parcial (os dados do ano atual ainda estão incompletos).", i18n: true}
+          - {name: cta_title, label: "Chamada final › título", i18n: true}
+          - {name: cta_text, label: "Chamada final › texto", widget: text, i18n: true}
+          - {name: cta_button, label: "Chamada final › botão", hint: "Leva à página Contato.", i18n: true}
+
+      - name: equipe
+        label: Equipe
+        icon: groups
+        file: content/{{locale}}/equipe.md
+        preview_path: /{{locale}}/equipe/
+        i18n: true
+        fields:
+          - {name: title, label: "Título da página (SEO)", hint: "Aparece na aba do navegador e nos resultados de busca.", i18n: true}
+          - {name: description, label: "Descrição (SEO)", widget: text, hint: "Resumo de uma ou duas frases para buscadores e redes sociais (até ~160 caracteres).", i18n: true}
+          - {name: page_label, label: "Cabeçalho › rótulo", hint: "Texto curto acima do título da página.", i18n: true}
+          - {name: page_title, label: "Cabeçalho › título", i18n: true}
+          - {name: page_sub, label: "Cabeçalho › subtítulo", widget: text, i18n: true}
+          - {name: nav_label, label: "Barra de grupos › nome (leitor de tela)", hint: "Nome da barra de atalhos para os grupos, lido por leitores de tela. Os atalhos Coordenadores, Docentes, Colaboradores e Egressos usam os nomes de Conteúdo › Textos da interface › Rodapé › Links para os grupos.", i18n: true}
+          - {name: nav_graduate, label: "Barra de grupos › atalho Pós-graduandos", i18n: true}
+          - {name: nav_undergrad, label: "Barra de grupos › atalho Graduandos", i18n: true}
+          - {name: count_one, label: "Contagem › 1 pessoa (singular)", pattern: ['[{]n[}]', "Mantenha {n}"], hint: "Mantenha `{n}`: o site troca pelo número de pessoas do grupo.", i18n: true}
+          - {name: count_other, label: "Contagem › pessoas (plural)", pattern: ['[{]n[}]', "Mantenha {n}"], hint: "Mantenha `{n}`: o site troca pelo número de pessoas do grupo.", i18n: true}
+          - {name: email_short, label: "Links dos membros › “E-mail” (dica do ícone)", hint: "Aparece ao passar o mouse sobre o ícone.", i18n: true}
+          - {name: email_label, label: "Links dos membros › e-mail (leitor de tela)", pattern: ['[{]name[}]', "Mantenha {name}"], hint: "Mantenha `{name}`: o site troca pelo nome da pessoa.", i18n: true}
+          - {name: scholar_label, label: "Links dos membros › Google Scholar (leitor de tela)", pattern: ['[{]name[}]', "Mantenha {name}"], hint: "Mantenha `{name}`: o site troca pelo nome da pessoa.", i18n: true}
+          - {name: lattes_label, label: "Links dos membros › Lattes (leitor de tela)", pattern: ['[{]name[}]', "Mantenha {name}"], hint: "Mantenha `{name}`: o site troca pelo nome da pessoa.", i18n: true}
+          - {name: website_short, label: "Links dos membros › “Site” (dica do ícone)", hint: "Aparece ao passar o mouse sobre o ícone e ao lado do link nos cartões dos coordenadores.", i18n: true}
+          - {name: website_label, label: "Links dos membros › site pessoal (leitor de tela)", pattern: ['[{]name[}]', "Mantenha {name}"], hint: "Mantenha `{name}`: o site troca pelo nome da pessoa.", i18n: true}
+          - {name: tags_label, label: "Tags dos membros › nome da lista (leitor de tela)", hint: "Ex.: Interesses de pesquisa.", i18n: true}
+          - {name: join_text, label: "Chamada final › título", i18n: true}
+          - {name: join_sub, label: "Chamada final › texto", widget: text, i18n: true}
+          - {name: join_ic_title, label: "Chamada final › passo 1 › título", hint: "Ex.: Iniciação Científica.", i18n: true}
+          - {name: join_ic_text, label: "Chamada final › passo 1 › texto", widget: text, i18n: true}
+          - {name: join_ms_title, label: "Chamada final › passo 2 › título", hint: "Ex.: Mestrado.", i18n: true}
+          - {name: join_ms_text, label: "Chamada final › passo 2 › texto", widget: text, i18n: true}
+          - {name: join_phd_title, label: "Chamada final › passo 3 › título", hint: "Ex.: Doutorado.", i18n: true}
+          - {name: join_phd_text, label: "Chamada final › passo 3 › texto", widget: text, i18n: true}
+          - {name: join_btn, label: "Chamada final › botão", hint: "Leva à seção Como ingressar da página Contato.", i18n: true}
+
+      - name: publicacoes
+        label: Publicações
+        icon: menu_book
+        file: content/{{locale}}/publicacoes.md
+        preview_path: /{{locale}}/publicacoes/
+        i18n: true
+        fields:
+          - {name: title, label: "Título da página (SEO)", hint: "Aparece na aba do navegador e nos resultados de busca.", i18n: true}
+          - {name: description, label: "Descrição (SEO)", widget: text, hint: "Resumo de uma ou duas frases para buscadores e redes sociais (até ~160 caracteres).", i18n: true}
+          - {name: page_label, label: "Cabeçalho › rótulo", hint: "Texto curto acima do título da página.", i18n: true}
+          - {name: page_title, label: "Cabeçalho › título", i18n: true}
+          - {name: page_sub, label: "Cabeçalho › subtítulo", widget: text, hint: "As publicações vêm do Google Scholar e são atualizadas toda semana; não há como editá-las aqui.", i18n: true}
+          - {name: meta_source, label: "Cabeçalho › fonte dos dados", pattern: ['[{]source[}]', "Mantenha {source}"], hint: "Mantenha `{source}`: o site troca por “Google Scholar”.", i18n: true}
+          - {name: meta_updated, label: "Cabeçalho › data da atualização", pattern: ['[{]date[}]', "Mantenha {date}"], hint: "Mantenha `{date}`: o site troca pela data da última atualização.", i18n: true}
+          - {name: code_note, label: "Cabeçalho › nota sobre o código-fonte", hint: "Frase que vem antes do link para o GitHub, sem ponto final.", i18n: true}
+          - {name: stat_papers_label, label: "Números › legenda dos artigos", i18n: true}
+          - {name: stat_citations_label, label: "Números › legenda das citações", i18n: true}
+          - {name: stat_period_label, label: "Números › legenda do período", i18n: true}
+          - {name: overview_label, label: "Panorama › rótulo", i18n: true}
+          - {name: overview_title, label: "Panorama › título", i18n: true}
+          - {name: overview_sub, label: "Panorama › subtítulo", widget: text, i18n: true}
+          - {name: chart_papers_label, label: "Gráficos › título do gráfico de artigos por ano", i18n: true}
+          - {name: chart_cites_label, label: "Gráficos › título do gráfico de citações", i18n: true}
+          - {name: chart_partial, label: "Gráficos › aviso do ano em curso", pattern: ['[{]year[}]', "Mantenha {year}"], hint: "Mantenha `{year}`: o site troca pelo ano atual.", i18n: true}
+          - {name: partial_short, label: "Gráficos › marca do ano em curso", hint: "Palavra curta, ex.: parcial. Aparece na tabela de dados e na descrição das barras para leitores de tela.", i18n: true}
+          - {name: bar_hint, label: "Gráficos › dica das barras (leitor de tela)", hint: "Explica que cada barra leva às publicações daquele ano.", i18n: true}
+          - {name: year_label, label: "Busca › “Ano”", hint: "Nome do filtro de ano.", i18n: true}
+          - {name: archive_label, label: "Arquivo › rótulo", i18n: true}
+          - {name: archive_title, label: "Arquivo › título", i18n: true}
+          - {name: archive_sub, label: "Arquivo › subtítulo", widget: text, i18n: true}
+          - {name: search_label, label: "Busca › nome do campo (leitor de tela)", i18n: true}
+          - {name: search_placeholder, label: "Busca › texto de exemplo dentro do campo", i18n: true}
+          - {name: year_all, label: "Busca › opção “todos os anos”", i18n: true}
+          - {name: clear_label, label: "Busca › botão “limpar filtros”", i18n: true}
+          - {name: results_all, label: "Busca › contagem sem filtro", pattern: ['[{]total[}]', "Mantenha {total}"], hint: "Mantenha `{total}`: o número de publicações.", i18n: true}
+          - {name: results_some, label: "Busca › contagem com filtro", pattern: ['^(?=.*[{]n[}])(?=.*[{]total[}])', "Mantenha {n} e {total}"], hint: "Mantenha `{n}` (encontradas) e `{total}` (todas).", i18n: true}
+          - {name: results_none, label: "Busca › nenhum resultado (título)", i18n: true}
+          - {name: empty_text, label: "Busca › nenhum resultado (texto)", widget: text, i18n: true}
+          - {name: empty_data, label: "Aviso quando a lista de publicações não está disponível", widget: text, i18n: true}
+          - {name: count_of, label: "Contagem › “n de total”", pattern: ['^(?=.*[{]n[}])(?=.*[{]total[}])', "Mantenha {n} e {total}"], hint: "Mantenha `{n}` e `{total}`.", i18n: true}
+          - {name: papers_one, label: "Contagem › 1 artigo (singular)", pattern: ['[{]n[}]', "Mantenha {n}"], hint: "Mantenha `{n}`: o site troca pelo número.", i18n: true}
+          - {name: papers_other, label: "Contagem › artigos (plural)", pattern: ['[{]n[}]', "Mantenha {n}"], hint: "Mantenha `{n}`: o site troca pelo número.", i18n: true}
+          - {name: citations_one, label: "Contagem › 1 citação (singular)", pattern: ['[{]n[}]', "Mantenha {n}"], hint: "Mantenha `{n}`: o site troca pelo número.", i18n: true}
+          - {name: citations_other, label: "Contagem › citações (plural)", pattern: ['[{]n[}]', "Mantenha {n}"], hint: "Mantenha `{n}`: o site troca pelo número.", i18n: true}
+          - {name: cited_by, label: "Artigo › “citado por”", pattern: ['[{]n[}]', "Mantenha {n}"], hint: "Mantenha `{n}`: o número de citações do artigo.", i18n: true}
+          - {name: cites_heading, label: "Artigo › título da lista de trabalhos que o citam", i18n: true}
+          - {name: cites_more_one, label: "Artigo › mais 1 trabalho no Google Scholar (singular)", pattern: ['[{]n[}]', "Mantenha {n}"], hint: "Mantenha `{n}`: o site troca pelo número.", i18n: true}
+          - {name: cites_more_other, label: "Artigo › mais trabalhos no Google Scholar (plural)", pattern: ['[{]n[}]', "Mantenha {n}"], hint: "Mantenha `{n}`: o site troca pelo número.", i18n: true}
+          - {name: github_title, label: "Chamada para o GitHub › título", i18n: true}
+          - {name: github_text, label: "Chamada para o GitHub › texto", widget: text, hint: "O endereço do GitHub vem de Configurações › Site › Redes sociais.", i18n: true}
+          - {name: chart_summary, label: "Gráficos › resumo para leitores de tela", pattern: ['^(?=.*[{]total[}])(?=.*[{]first[}])(?=.*[{]last[}])(?=.*[{]peak[}])(?=.*[{]value[}])', "Mantenha {total}, {first}, {last}, {peak} e {value}"], hint: "Lido por leitores de tela no lugar do gráfico. Mantenha `{total}` (soma da série), `{first}` e `{last}` (primeiro e último ano), `{peak}` (ano com o maior valor) e `{value}` (esse valor).", i18n: true}
+          - {name: data_note, label: "Dados › pergunta antes do link", hint: "Frase curta abaixo dos gráficos, antes do link para baixar os dados.", i18n: true}
+          - {name: data_link, label: "Dados › link para baixar o JSON", hint: "Baixa o arquivo publications.json com todas as publicações.", i18n: true}
+          - {name: filters_label, label: "Filtros › botão “filtros”", i18n: true}
+          - {name: filters_active_one, label: "Filtros › 1 filtro ativo (singular)", pattern: ['[{]n[}]', "Mantenha {n}"], hint: "Mantenha `{n}`: o número de filtros em uso. Lido por leitores de tela.", i18n: true}
+          - {name: filters_active_other, label: "Filtros › filtros ativos (plural)", pattern: ['[{]n[}]', "Mantenha {n}"], hint: "Mantenha `{n}`: o número de filtros em uso. Lido por leitores de tela.", i18n: true}
+          - {name: person_label, label: "Filtros › “Pessoa”", i18n: true}
+          - {name: person_all, label: "Filtros › opção “todas as pessoas”", i18n: true}
+          - {name: person_faculty, label: "Filtros › grupo dos professores", hint: "A lista de pessoas vem da página Equipe; só aparece quem assina algum artigo.", i18n: true}
+          - {name: person_students, label: "Filtros › grupo dos estudantes", i18n: true}
+          - {name: person_alumni, label: "Filtros › grupo dos egressos", i18n: true}
+          - {name: venue_label, label: "Filtros › “Veículo”", hint: "Revista ou conferência onde o artigo saiu.", i18n: true}
+          - {name: venue_all, label: "Filtros › opção “todos os veículos”", i18n: true}
+          - {name: venue_other, label: "Filtros › opção “outros veículos”", hint: "Reúne os veículos com um só artigo, que não aparecem um a um na lista.", i18n: true}
+          - {name: type_label, label: "Filtros › “Tipo”", i18n: true}
+          - {name: type_all, label: "Filtros › opção “todos os tipos”", i18n: true}
+          - {name: type_journal, label: "Filtros › tipo periódicos", i18n: true}
+          - {name: type_conference, label: "Filtros › tipo conferências", i18n: true}
+          - {name: type_preprint, label: "Filtros › tipo preprints", i18n: true}
+          - {name: type_other, label: "Filtros › tipo livros, teses e patentes", hint: "Tudo o que não é periódico, conferência ou preprint: livros, capítulos, teses, patentes.", i18n: true}
+          - {name: cites_label, label: "Filtros › “Citações”", i18n: true}
+          - {name: cites_any, label: "Filtros › opção “qualquer número” de citações", i18n: true}
+          - {name: cites_min, label: "Filtros › opção “n ou mais” citações", pattern: ['[{]n[}]', "Mantenha {n}"], hint: "Mantenha `{n}`: o mínimo de citações (1, 10, 50, 100).", i18n: true}
+          - {name: sort_label, label: "Filtros › “Ordenar por”", i18n: true}
+          - {name: sort_year, label: "Filtros › ordem por ano", i18n: true}
+          - {name: sort_cites, label: "Filtros › ordem por citações", i18n: true}
+          - {name: chip_remove, label: "Filtros › remover um filtro (leitor de tela)", pattern: ['[{]filter[}]', "Mantenha {filter}"], hint: "Mantenha `{filter}`: o filtro, ex.: “Pessoa: Gladston Moreira”.", i18n: true}
+
+      - name: noticias
+        label: Notícias
+        icon: newspaper
+        file: content/{{locale}}/noticias.md
+        preview_path: /{{locale}}/noticias/
+        i18n: true
+        fields:
+          - {name: title, label: "Título da página (SEO)", hint: "Aparece na aba do navegador e nos resultados de busca.", i18n: true}
+          - {name: description, label: "Descrição (SEO)", widget: text, hint: "Resumo de uma ou duas frases para buscadores e redes sociais (até ~160 caracteres).", i18n: true}
+          - {name: page_label, label: "Cabeçalho › rótulo", hint: "Texto curto acima do título da página.", i18n: true}
+          - {name: page_title, label: "Cabeçalho › título", i18n: true}
+          - {name: page_sub, label: "Cabeçalho › subtítulo", widget: text, hint: "As notícias ficam no menu Notícias.", i18n: true}
+          - {name: nav_label, label: "Atalhos da página › nome (leitor de tela)", hint: "Nome da barra de atalhos para as seções, lido por leitores de tela.", i18n: true}
+          - {name: featured_label, label: "Destaque › rótulo", hint: "Também é o nome do atalho. A notícia em destaque é a mais recente marcada como “Em destaque”.", i18n: true}
+          - {name: link_label, label: "Notícia › botão do link", hint: "Leva ao endereço do campo Link da notícia.", i18n: true}
+          - {name: copy_link, label: "Notícia › botão copiar link", i18n: true}
+          - {name: link_copied, label: "Notícia › confirmação link copiado", i18n: true}
+          - {name: all_label, label: "Arquivo › rótulo", hint: "Também é o nome do atalho.", i18n: true}
+          - {name: all_title, label: "Arquivo › título", i18n: true}
+          - {name: all_sub, label: "Arquivo › subtítulo", widget: text, i18n: true}
+          - {name: empty_text, label: "Arquivo › aviso quando não há notícias", widget: text, i18n: true}
+          - {name: awards_label, label: "Premiações › rótulo", hint: "Também é o nome do atalho.", i18n: true}
+          - {name: awards_title, label: "Premiações › título", hint: "A seção lista as notícias da categoria Premiação.", i18n: true}
+          - {name: awards_sub, label: "Premiações › subtítulo", widget: text, i18n: true}
+          - {name: awards_empty, label: "Premiações › aviso quando não há premiações", widget: text, i18n: true}
+
+      - name: contato
+        label: Contato
+        icon: mail
+        file: content/{{locale}}/contato.md
+        preview_path: /{{locale}}/contato/
+        i18n: true
+        fields:
+          - {name: title, label: "Título da página (SEO)", hint: "Aparece na aba do navegador e nos resultados de busca.", i18n: true}
+          - {name: description, label: "Descrição (SEO)", widget: text, hint: "Resumo de uma ou duas frases para buscadores e redes sociais (até ~160 caracteres).", i18n: true}
+          - {name: page_label, label: "Cabeçalho › rótulo", hint: "Texto curto acima do título da página.", i18n: true}
+          - {name: page_title, label: "Cabeçalho › título", i18n: true}
+          - {name: page_sub, label: "Cabeçalho › subtítulo", widget: text, i18n: true}
+          - {name: nav_label, label: "Atalhos da página › nome (leitor de tela)", hint: "Nome da barra de atalhos para as seções, lido por leitores de tela. Os atalhos usam os rótulos Coordenação, Informações de contato e Como ingressar e o título de Perguntas frequentes.", i18n: true}
+          - {name: coordinators_label, label: "Coordenação › rótulo", hint: "Também é o nome do atalho. Os coordenadores (nome, foto, e-mail, tags) ficam em Equipe › Membros › Coordenadores.", i18n: true}
+          - {name: coordinators_title, label: "Coordenação › título", i18n: true}
+          - {name: coordinators_sub, label: "Coordenação › subtítulo", widget: text, i18n: true}
+          - {name: email_cta, label: "Coordenação › texto do botão enviar e-mail", hint: "O botão só aparece para quem tem e-mail em Equipe › Membros.", i18n: true}
+          - {name: email_cta_label, label: "Coordenação › botão enviar e-mail (leitor de tela)", pattern: ['[{]name[}]', "Mantenha {name}"], hint: "Mantenha `{name}`: o site troca pelo nome do coordenador.", i18n: true}
+          - {name: coordinators_areas, label: "Coordenação › rótulo das áreas de pesquisa", hint: "Fica acima das tags de pesquisa de cada coordenador.", i18n: true}
+          - {name: team_link, label: "Coordenação › link para a página Equipe", i18n: true}
+          - {name: info_label, label: "Informações de contato › rótulo", hint: "Também é o nome do atalho.", i18n: true}
+          - {name: info_title, label: "Informações de contato › título", i18n: true}
+          - {name: location_label, label: "Informações de contato › título do endereço", hint: "O endereço fica em Conteúdo › Contato e ingresso.", i18n: true}
+          - {name: map_link, label: "Informações de contato › link do mapa", hint: "O endereço vem de Configurações › Site › Link do mapa; sem ele, o link não aparece.", i18n: true}
+          - {name: social_label, label: "Informações de contato › título das redes sociais", hint: "As redes ficam em Configurações › Site.", i18n: true}
+          - {name: links_label, label: "Informações de contato › título dos links", hint: "Os links ficam em Configurações › Site › Instituições; o nome da UFOP vem de Conteúdo › Textos da interface › Rodapé › Nome do site oficial da UFOP.", i18n: true}
+          - {name: join_label, label: "Como ingressar › rótulo", hint: "Também é o nome do atalho.", i18n: true}
+          - {name: join_title, label: "Como ingressar › título", hint: "As formas de ingresso ficam em Conteúdo › Contato e ingresso.", i18n: true}
+          - {name: join_sub, label: "Como ingressar › subtítulo", widget: text, i18n: true}
+          - {name: join_link_undergrad, label: "Como ingressar › link do cartão Iniciação Científica", hint: "Leva à seção Coordenação. Vale para a forma de ingresso com identificador undergrad_research.", i18n: true}
+          - {name: join_link_graduate, label: "Como ingressar › link do cartão Mestrado e Doutorado", hint: "Leva ao site do PPGCC (Configurações › Site › Instituições, sigla PPGCC). Vale para o identificador graduate.", i18n: true}
+          - {name: join_link_industry, label: "Como ingressar › link do cartão Parcerias", hint: "Leva aos projetos de P&D da página Pesquisa. Vale para o identificador industry.", i18n: true}
+          - {name: faq_label, label: "Perguntas frequentes › rótulo", i18n: true}
+          - {name: faq_title, label: "Perguntas frequentes › título", hint: "Também é o nome do atalho.", i18n: true}
+          - {name: faq_sub, label: "Perguntas frequentes › subtítulo", widget: text, hint: "As perguntas ficam em Conteúdo › Perguntas frequentes.", i18n: true}
+          - {name: faq_more, label: "Perguntas frequentes › link “outra dúvida?”", hint: "Leva à seção Coordenação.", i18n: true}
+
+  # ── Notícias: content/{{locale}}/news/<slug>.md, same file name in every language ─────────────
+  - name: noticias
+    label: Notícias
+    label_singular: Notícia
+    icon: newspaper
+    description: "Notícias, eventos e premiações, da mais nova para a mais antiga. Data, categoria, destaque, link e imagem valem para os quatro idiomas e são editados em português; título e textos são traduzidos."
+    folder: content/{{locale}}/news
+    i18n: true
+    create: true
+    slug:
+      template: "{{title}}"
+      editable: [create]
+      hint: "Nome do arquivo e âncora da notícia (/noticias/#…), o mesmo nos quatro idiomas. Não pode ser mudado depois de criado."
+    summary: "{{title}} · {{date}}"
+    sortable_fields:
+      fields: [date, title]
+      default: {field: date, direction: descending}
+    preview_path: /{{locale}}/noticias/#{{slug}}
+    aliases_field: false
+    fields:
+      - {name: title, label: "Título", i18n: true}
+      - name: date
+        label: "Data"
+        hint: "Formato AAAA-MM-DD, ou só AAAA-MM ou AAAA quando o dia (ou o mês) não importa. Define a ordem das notícias."
+        pattern: ['^\d{4}(-(0[1-9]|1[0-2])(-(0[1-9]|[12]\d|3[01]))?)?$', "Use AAAA, AAAA-MM ou AAAA-MM-DD, ex.: 2024-12-13"]
+        i18n: duplicate
+      - name: category
+        label: "Categoria"
+        widget: select
+        options:
+          - {label: "Premiação", value: award}
+          - {label: "Conferência", value: conference}
+          - {label: "Publicação", value: publication}
+          - {label: "Projeto", value: project}
+          - {label: "Evento", value: event}
+          - {label: "Código aberto", value: open_source}
+        hint: "Os nomes exibidos no site (e traduzidos) ficam em Conteúdo › Textos da interface. Premiações também aparecem na seção de prêmios."
+        i18n: duplicate
+      - name: featured
+        label: "Em destaque"
+        widget: boolean
+        default: false
+        required: false
+        hint: "A notícia em destaque mais recente abre a página Notícias e aparece na página inicial."
+        i18n: duplicate
+      - {name: event, label: "Evento", required: false, hint: "Opcional: nome do evento ou da premiação, ex.: IEEE LACCI 2024.", i18n: true}
+      - {name: location, label: "Local", required: false, hint: "Opcional, ex.: Bogotá, Colômbia.", i18n: true}
+      - {name: highlight, label: "Frase em evidência", required: false, hint: "Opcional: frase curta em evidência, ex.: 3 artigos aceitos. Se começar com um número, o número aparece em destaque, grande, na página Notícias e na página inicial.", i18n: true}
+      - {name: link, label: "Link", required: false, pattern: ['^https?://', "Comece com https://"], hint: "Opcional: endereço completo (https://…) para saber mais.", i18n: duplicate}
+      - name: image
+        label: "Imagem"
+        widget: image
+        required: false
+        choose_url: false
+        accept: image/*
+        media_folder: /public/images/news
+        public_folder: /images/news
+        media_libraries:
+          all:
+            transformations:
+              raster_image: {format: webp, quality: 82, width: 1600, height: 1600}
+        hint: "Opcional. Convertida para WebP (até 1600 px) ao salvar."
+        i18n: duplicate
+      - {name: image_alt, label: "Descrição da imagem", required: false, hint: "Texto alternativo para leitores de tela: descreva o que a imagem mostra.", i18n: true}
+      - {name: summary, label: "Resumo", widget: markdown, buttons: [bold, italic, link], editor_components: [], minimal: true, hint: "Um parágrafo curto, mostrado nos cartões. Markdown: `**negrito**`, `_itálico_`, `[link](https://…)`.", i18n: true}
+      - {name: body, label: "Texto completo", widget: markdown, buttons: [bold, italic, link, bulleted-list, numbered-list], editor_components: [], required: false, hint: "Opcional: detalhes, lista de artigos etc.", i18n: true}
+
+  # ── Conteúdo: per-language data files content/{{locale}}/data/*.yaml ──────────────────────────
+  - name: conteudo
+    label: Conteúdo
+    label_singular: Conteúdo
+    icon: dataset
+    description: "Listas e textos usados em várias páginas: áreas de pesquisa, projetos, números, perguntas frequentes, contato, textos da interface e da equipe."
+    i18n: true
+    files:
+      - name: research
+        label: "Áreas de pesquisa"
+        icon: science
+        file: content/{{locale}}/data/research.yaml
+        preview_path: /{{locale}}/pesquisa/
+        i18n: true
+        fields:
+          - name: areas
+            label: "Áreas de pesquisa"
+            label_singular: "Área"
+            widget: list
+            root: true
+            map_key_field: id
+            summary: "{{title}}"
+            collapsed: auto
+            hint: "A ordem aqui é a ordem no site. Adicionar, remover ou mover uma área em português faz o mesmo nas traduções."
+            i18n: true
+            fields:
+              - {name: id, label: "Identificador", pattern: ['^[a-z][a-z0-9_]*$', "Só letras minúsculas, números e _"], hint: "Curto, sem espaços nem acentos, ex.: vision.", i18n: duplicate}
+              - name: icon
+                label: "Ícone"
+                widget: select
+                options:
+                  - {label: "Chip (cpu)", value: cpu}
+                  - {label: "Olho (eye)", value: eye}
+                  - {label: "Camadas (layers)", value: layers}
+                  - {label: "Balão de conversa (message)", value: message}
+                  - {label: "Gráfico de barras (bar-chart)", value: bar-chart}
+                  - {label: "Mapa (map)", value: map}
+                  - {label: "Batimento (activity)", value: activity}
+                  - {label: "Controles (sliders)", value: sliders}
+                  - {label: "Brilho (sparkles)", value: sparkles}
+                  - {label: "Globo (globe)", value: globe}
+                  - {label: "Código (code)", value: code}
+                  - {label: "Pessoas (users)", value: users}
+                  - {label: "Livro (book)", value: book}
+                  - {label: "Lupa (search)", value: search}
+                i18n: duplicate
+              - {name: tags, label: "Tags dos pesquisadores", widget: relation, multiple: true,
+                 collection: equipe, file: team_tags, value_field: "{{tags.*.id}}",
+                 display_fields: ["{{tags.*.pt}}"], search_fields: ["{{tags.*.pt}}", "{{tags.*.en}}", "{{tags.*.id}}"],
+                 hint: "Os membros com alguma destas tags aparecem como pesquisadores da área. Novas tags: Equipe › Tags de pesquisa.", i18n: duplicate}
+              - {name: title, label: "Título", i18n: true}
+              - {name: text, label: "Descrição", widget: text, i18n: true}
+
+      - name: projects
+        label: "Projetos de P&D"
+        icon: handshake
+        file: content/{{locale}}/data/projects.yaml
+        preview_path: /{{locale}}/pesquisa/#consultorias
+        i18n: true
+        fields:
+          - name: status_labels
+            label: "Nomes das situações"
+            widget: object
+            hint: "Como cada situação aparece no site."
+            i18n: true
+            fields:
+              - {name: active, label: "Em andamento", i18n: true}
+              - {name: development, label: "Em desenvolvimento", i18n: true}
+              - {name: completed, label: "Concluído", i18n: true}
+          - name: items
+            label: "Projetos"
+            label_singular: "Projeto"
+            widget: list
+            summary: "{{partner}} — {{title}}"
+            collapsed: auto
+            hint: "Adicionar, remover ou mover um projeto em português faz o mesmo nas traduções."
+            i18n: true
+            fields:
+              - {name: partner, label: "Parceiro", hint: "Ex.: EFI Bank.", i18n: duplicate}
+              - name: status
+                label: "Situação"
+                widget: select
+                required: false
+                options:
+                  - {label: "Em andamento", value: active}
+                  - {label: "Em desenvolvimento", value: development}
+                  - {label: "Concluído", value: completed}
+                hint: "Opcional."
+                i18n: duplicate
+              - {name: link, label: "Link", required: false, pattern: ['^https?://', "Comece com https://"], hint: "Opcional: endereço completo (https://…).", i18n: duplicate}
+              - {name: title, label: "Título", i18n: true}
+              - {name: text, label: "Descrição", widget: markdown, buttons: [bold, italic, link], editor_components: [], minimal: true, hint: "Um parágrafo. Markdown: `**negrito**`, `_itálico_`, `[link](https://…)`.", i18n: true}
+
+      - name: counters
+        label: "Números da página inicial"
+        icon: pin
+        file: content/{{locale}}/data/counters.yaml
+        preview_path: /{{locale}}/#numeros
+        i18n: true
+        fields:
+          - name: counters
+            label: "Números"
+            label_singular: "Número"
+            widget: list
+            root: true
+            map_key_field: id
+            summary: "{{label}}"
+            collapsed: auto
+            hint: "Mostrados nesta ordem na faixa de números da página inicial."
+            i18n: true
+            fields:
+              - {name: id, label: "Identificador", pattern: ['^[a-z][a-z0-9_]*$', "Só letras minúsculas, números e _"], hint: "Curto, sem espaços nem acentos, ex.: alumni.", i18n: duplicate}
+              - name: source
+                label: "Origem do valor"
+                widget: select
+                options:
+                  - {label: "Valor fixo (preencha o campo Valor)", value: manual}
+                  - {label: "Publicações (contadas automaticamente)", value: publications}
+                  - {label: "Citações (contadas automaticamente)", value: citations}
+                  - {label: "Professores e pesquisadores (contados na equipe)", value: faculty}
+                  - {label: "Estudantes (contados na equipe)", value: students}
+                i18n: duplicate
+              - {name: value, label: "Valor", widget: number, value_type: int, required: false, hint: "Só para “Valor fixo”.", i18n: duplicate}
+              - {name: suffix, label: "Sufixo", required: false, hint: "Opcional, ex.: + (aparece depois do número).", i18n: duplicate}
+              - {name: label, label: "Legenda", i18n: true}
+
+      - name: faq
+        label: "Perguntas frequentes"
+        icon: quiz
+        file: content/{{locale}}/data/faq.yaml
+        preview_path: /{{locale}}/contato/#faq
+        i18n: true
+        fields:
+          - name: items
+            label: "Perguntas"
+            label_singular: "Pergunta"
+            widget: list
+            summary: "{{question}}"
+            collapsed: auto
+            hint: "Adicionar, remover ou mover uma pergunta em português faz o mesmo nas traduções."
+            i18n: true
+            fields:
+              - {name: id, label: "Identificador", pattern: ['^[a-z][a-z0-9_]*$', "Só letras minúsculas, números e _"], hint: "Curto, sem espaços nem acentos, ex.: scholarships.", i18n: duplicate}
+              - {name: question, label: "Pergunta", i18n: true}
+              - {name: answer, label: "Resposta", widget: markdown, buttons: [bold, italic, link, bulleted-list, numbered-list], editor_components: [], minimal: true, hint: "Markdown: `**negrito**`, `[e-mail](mailto:nome@ufop.edu.br)`, listas.", i18n: true}
+
+      - name: contact
+        label: "Contato e ingresso"
+        icon: contact_mail
+        file: content/{{locale}}/data/contact.yaml
+        preview_path: /{{locale}}/contato/
+        i18n: true
+        fields:
+          - name: location
+            label: "Endereço"
+            widget: object
+            i18n: true
+            fields:
+              - {name: room, label: "Sala e prédio", i18n: true}
+              - {name: dept, label: "Departamento", i18n: true}
+              - {name: univ, label: "Universidade e cidade", i18n: true}
+          - name: join_items
+            label: "Formas de ingresso"
+            label_singular: "Forma de ingresso"
+            widget: list
+            map_key_field: id
+            summary: "{{title}}"
+            collapsed: auto
+            hint: "Adicionar, remover ou mover um item em português faz o mesmo nas traduções."
+            i18n: true
+            fields:
+              - {name: id, label: "Identificador", pattern: ['^[a-z][a-z0-9_]*$', "Só letras minúsculas, números e _"], hint: "Curto, sem espaços nem acentos. Os cartões undergrad_research, graduate e industry têm links fixos (textos em Páginas › Contato › Como ingressar); um identificador novo ou renomeado fica sem link.", i18n: duplicate}
+              - name: icon
+                label: "Ícone"
+                widget: select
+                options:
+                  - {label: "Capelo (graduation)", value: graduation}
+                  - {label: "Livro (book)", value: book}
+                  - {label: "Maleta (briefcase)", value: briefcase}
+                  - {label: "Pessoas (users)", value: users}
+                  - {label: "Prédio (building)", value: building}
+                  - {label: "Medalha (award)", value: award}
+                  - {label: "Código (code)", value: code}
+                  - {label: "Globo (globe)", value: globe}
+                i18n: duplicate
+              - {name: title, label: "Título", i18n: true}
+              - {name: text, label: "Texto", widget: text, i18n: true}
+
+      - name: ui
+        label: "Textos da interface"
+        icon: translate
+        file: content/{{locale}}/data/ui.yaml
+        i18n: true
+        fields:
+          - {name: skip_link, label: "Link “pular para o conteúdo”", hint: "Primeiro item para quem navega pelo teclado ou por leitor de tela.", i18n: true}
+          - name: nav
+            label: "Menu principal"
+            widget: object
+            i18n: true
+            fields:
+              - {name: research, label: "Pesquisa", i18n: true}
+              - {name: people, label: "Pessoas", i18n: true}
+              - {name: publications, label: "Publicações", i18n: true}
+              - {name: news, label: "Notícias", i18n: true}
+              - {name: contact, label: "Contato", i18n: true}
+              - {name: label, label: "Nome do menu (leitor de tela)", i18n: true}
+              - {name: menu_open, label: "Botão “abrir menu” (celular)", i18n: true}
+              - {name: menu_close, label: "Botão “fechar menu” (celular)", i18n: true}
+              - {name: language, label: "Seletor de idioma", i18n: true}
+              - {name: github, label: "Link para o GitHub", hint: "Texto do link no menu do celular; no computador, lido por leitores de tela.", i18n: true}
+          - name: footer
+            label: "Rodapé"
+            widget: object
+            i18n: true
+            fields:
+              - {name: description, label: "Descrição do laboratório", i18n: true}
+              - {name: lab_heading, label: "Coluna das páginas › título", i18n: true}
+              - {name: people_heading, label: "Coluna da equipe › título", i18n: true}
+              - {name: social_heading, label: "Coluna das redes sociais › título", i18n: true}
+              - {name: institutions_heading, label: "Coluna das instituições › título", i18n: true}
+              - name: people_links
+                label: "Links para os grupos da equipe"
+                widget: object
+                hint: "Também são os nomes dos atalhos Coordenadores, Docentes, Colaboradores e Egressos na barra de grupos da página Equipe (Pós-graduandos e Graduandos ficam em Páginas › Equipe)."
+                i18n: true
+                fields:
+                  - {name: coordenadores, label: "Coordenadores", i18n: true}
+                  - {name: docentes, label: "Docentes", i18n: true}
+                  - {name: colaboradores, label: "Colaboradores", i18n: true}
+                  - {name: pos-graduacao, label: "Pós-graduandos", i18n: true}
+                  - {name: graduacao, label: "Graduandos", i18n: true}
+                  - {name: egressos, label: "Egressos", i18n: true}
+              - {name: official_site, label: "Nome do site oficial da UFOP", hint: "Texto alternativo do brasão no rodapé e nome do link da UFOP na página Contato.", i18n: true}
+              - {name: copyright, label: "Linha de copyright", hint: "O site acrescenta “© 2024–ano atual” antes do texto.", i18n: true}
+              - {name: back_to_top, label: "Link “voltar ao topo”", i18n: true}
+          - name: common
+            label: "Botões e textos comuns"
+            widget: object
+            i18n: true
+            fields:
+              - {name: read_more, label: "“Saiba mais”", i18n: true}
+              - {name: new_tab, label: "Aviso de link em nova aba (leitor de tela)", i18n: true}
+              - {name: copy, label: "Botão “copiar”", i18n: true}
+              - {name: copied, label: "Confirmação de cópia", i18n: true}
+          - name: news_categories
+            label: "Categorias de notícias"
+            widget: object
+            hint: "Nomes exibidos no site para a categoria escolhida em cada notícia."
+            i18n: true
+            fields:
+              - {name: award, label: "Premiação", i18n: true}
+              - {name: conference, label: "Conferência", i18n: true}
+              - {name: publication, label: "Publicação", i18n: true}
+              - {name: project, label: "Projeto", i18n: true}
+              - {name: event, label: "Evento", i18n: true}
+              - {name: open_source, label: "Código aberto", i18n: true}
+          - name: not_found
+            label: "Página não encontrada (404)"
+            widget: object
+            i18n: true
+            fields:
+              - {name: title, label: "Título", i18n: true}
+              - {name: text, label: "Texto", widget: text, i18n: true}
+              - {name: home, label: "Botão para o início", i18n: true}
+              - {name: links_heading, label: "Título dos links", i18n: true}
+
+      - name: team_i18n
+        label: "Textos da equipe"
+        icon: badge
+        file: content/{{locale}}/data/team_i18n.yaml
+        preview_path: /{{locale}}/equipe/
+        i18n: true
+        fields:
+          - name: name_prefixes
+            label: "Prefixos dos nomes"
+            widget: object
+            hint: "Colocados antes do nome de coordenadores, professores e colaboradores."
+            i18n: true
+            fields:
+              - {name: m, label: "Masculino", i18n: true}
+              - {name: f, label: "Feminino", i18n: true}
+          - name: roles
+            label: "Cargos"
+            label_singular: "Cargo"
+            widget: list
+            map_key_field: id
+            summary: "{{m}} / {{f}}"
+            collapsed: auto
+            hint: "Escolhidos para cada membro em Equipe › Membros."
+            i18n: true
+            fields:
+              - {name: id, label: "Identificador", pattern: ['^[a-z][a-z0-9_]*$', "Só letras minúsculas, números e _"], hint: "Curto, sem espaços nem acentos, ex.: associate_professor. Não mude o de um cargo em uso.", i18n: duplicate}
+              - {name: m, label: "Forma masculina", i18n: true}
+              - {name: f, label: "Forma feminina", i18n: true}
+          - name: groups
+            label: "Seções da página Equipe"
+            widget: object
+            i18n: true
+            fields:
+              - name: coordinators
+                label: "Coordenadores"
+                widget: object
+                i18n: true
+                fields:
+                  - {name: label, label: "Rótulo", i18n: true}
+                  - {name: title, label: "Título", i18n: true}
+                  - {name: sub, label: "Subtítulo", i18n: true}
+              - name: professors
+                label: "Professores"
+                widget: object
+                i18n: true
+                fields:
+                  - {name: label, label: "Rótulo", i18n: true}
+                  - {name: title, label: "Título", i18n: true}
+                  - {name: sub, label: "Subtítulo", i18n: true}
+              - name: collaborators
+                label: "Colaboradores"
+                widget: object
+                i18n: true
+                fields:
+                  - {name: label, label: "Rótulo", i18n: true}
+                  - {name: title, label: "Título", i18n: true}
+                  - {name: sub, label: "Subtítulo", widget: text, i18n: true}
+              - name: phd_students
+                label: "Doutorandos"
+                widget: object
+                i18n: true
+                fields:
+                  - {name: label, label: "Rótulo da seção de pós-graduação", i18n: true}
+                  - {name: title, label: "Título", i18n: true}
+                  - {name: sub, label: "Subtítulo da seção de pós-graduação", i18n: true}
+                  - {name: since_prefix, label: "Texto antes do ano de entrada", hint: "Ex.: Doutorado · desde (o site acrescenta o ano).", i18n: true}
+              - name: masters_students
+                label: "Mestrandos"
+                widget: object
+                i18n: true
+                fields:
+                  - {name: title, label: "Título", i18n: true}
+                  - {name: since_prefix, label: "Texto antes do ano de entrada", hint: "Ex.: Mestrado · desde.", i18n: true}
+              - name: undergrads
+                label: "Graduandos (IC)"
+                widget: object
+                i18n: true
+                fields:
+                  - {name: label, label: "Rótulo", i18n: true}
+                  - {name: title, label: "Título", i18n: true}
+                  - {name: since_prefix, label: "Texto antes do ano de entrada", hint: "Ex.: IC · desde.", i18n: true}
+                  - {name: sub, label: "Subtítulo", widget: text, i18n: true}
+              - name: alumni_grad
+                label: "Egressos da pós-graduação"
+                widget: object
+                i18n: true
+                fields:
+                  - {name: label, label: "Rótulo da seção de egressos", i18n: true}
+                  - {name: title, label: "Título", i18n: true}
+              - name: alumni_undergrad
+                label: "Egressos da graduação"
+                widget: object
+                i18n: true
+                fields:
+                  - {name: title, label: "Título", i18n: true}
+          - {name: students_title, label: "Estudantes › título da seção", hint: "Seção que reúne a pós-graduação e os graduandos.", i18n: true}
+          - {name: students_sub, label: "Estudantes › subtítulo da seção", widget: text, i18n: true}
+          - {name: graduate_title, label: "Pós-graduação › título da seção", hint: "Seção que reúne doutorandos e mestrandos.", i18n: true}
+          - {name: alumni_title, label: "Egressos › título da seção", i18n: true}
+          - {name: alumni_sub, label: "Egressos › subtítulo da seção", widget: text, i18n: true}
+
+  # ── Equipe: language-independent files in content/_shared/data ────────────────────────────────
+  - name: equipe
+    label: Equipe
+    label_singular: Equipe
+    icon: groups
+    description: "Membros do laboratório e tags de pesquisa (com os nomes nos quatro idiomas), num arquivo único para todos os idiomas. As publicações do site são buscadas toda semana nos perfis do Google Scholar informados aqui."
+    files:
+      - name: team
+        label: Membros
+        icon: group
+        file: content/_shared/data/team.yaml
+        preview_path: /equipe/
+        fields:
+          - name: coordinators
+            label: "Coordenadores"
+            widget: object
+            fields:
+              - name: members
+                label: "Coordenadores"
+                label_singular: "Coordenador(a)"
+                widget: list
+                summary: "{{name}}"
+                thumbnail: photo
+                collapsed: auto
+                fields: &faculty_fields
+                  - {name: name, label: "Nome", hint: "Sem Prof./Profa.: o site acrescenta o prefixo."}
+                  - name: gender
+                    label: "Gênero"
+                    widget: select
+                    options:
+                      - {label: "Masculino (Prof., Coordenador…)", value: m}
+                      - {label: "Feminino (Profa., Coordenadora…)", value: f}
+                    hint: "Define o prefixo e a forma do cargo."
+                  - {name: role, label: "Cargo", widget: relation,
+                     collection: conteudo, file: team_i18n, value_field: "{{roles.*.id}}",
+                     display_fields: ["{{roles.*.m}} / {{roles.*.f}}"], search_fields: ["{{roles.*.m}}", "{{roles.*.f}}", "{{roles.*.id}}"],
+                     hint: "Os cargos e suas traduções ficam em Conteúdo › Textos da equipe."}
+                  - {name: email, label: "E-mail", required: false, type: email, hint: "Opcional. O e-mail dos coordenadores também aparece na página Contato."}
+                  - {name: scholar_id, label: "ID do Google Scholar", required: false, pattern: ['^[A-Za-z0-9_-]+$', "Só o ID, ex.: L4nnrk8AAAAJ"], hint: "Opcional: o trecho `user=…` da URL do perfil, ex.: L4nnrk8AAAAJ. As publicações do site vêm daqui."}
+                  - {name: lattes, label: "ID do Lattes", required: false, pattern: ['^\d{16}$', "Só os 16 dígitos, ex.: 0748942455194916"], hint: "Opcional: os 16 dígitos do endereço lattes.cnpq.br/…"}
+                  - {name: website, label: "Site pessoal", required: false, pattern: ['^https?://', "Comece com https://"], hint: "Opcional: endereço completo (https://…)."}
+                  - &photo_field
+                    name: photo
+                    label: "Foto"
+                    widget: image
+                    required: false
+                    choose_url: false
+                    accept: image/*
+                    media_folder: /public/images/team
+                    public_folder: /images/team
+                    media_libraries:
+                      all:
+                        transformations:
+                          raster_image: {format: webp, quality: 85, width: 800, height: 1000}
+                    hint: "Opcional. Foto de rosto, de preferência quadrada; ao salvar, vira WebP com até 800 px de largura e um nome de arquivo sem acentos. Sem foto, o site mostra as iniciais."
+                  - {name: tags, label: "Tags de pesquisa", widget: relation, multiple: true, required: false,
+                     collection: equipe, file: team_tags, value_field: "{{tags.*.id}}",
+                     display_fields: ["{{tags.*.pt}}"], search_fields: ["{{tags.*.pt}}", "{{tags.*.en}}", "{{tags.*.id}}"],
+                     hint: "Opcional. Ligam o membro às áreas de pesquisa com as mesmas tags. Novas tags: Equipe › Tags de pesquisa."}
+          - name: professors
+            label: "Professores"
+            widget: object
+            fields:
+              - name: members
+                label: "Professores"
+                label_singular: "Professor(a)"
+                widget: list
+                summary: "{{name}}"
+                thumbnail: photo
+                collapsed: auto
+                fields: *faculty_fields
+          - name: collaborators
+            label: "Colaboradores externos"
+            widget: object
+            fields:
+              - name: members
+                label: "Colaboradores"
+                label_singular: "Colaborador(a)"
+                widget: list
+                summary: "{{name}}"
+                thumbnail: photo
+                collapsed: auto
+                fields: *faculty_fields
+          - name: phd_students
+            label: "Doutorandos"
+            widget: object
+            fields:
+              - name: members
+                label: "Doutorandos"
+                label_singular: "Doutorando(a)"
+                widget: list
+                summary: "{{name}} ({{since}})"
+                thumbnail: photo
+                collapsed: auto
+                fields: &student_fields
+                  - {name: name, label: "Nome"}
+                  - {name: since, label: "Ano de entrada", widget: number, value_type: int, min: 1990, max: 2100, hint: "Ex.: 2023. As publicações contam a partir deste ano."}
+                  - {name: scholar_id, label: "ID do Google Scholar", required: false, pattern: ['^[A-Za-z0-9_-]+$', "Só o ID, ex.: DqnrCA8AAAAJ"], hint: "Opcional: o trecho `user=…` da URL do perfil. As publicações do site vêm daqui."}
+                  - {name: lattes, label: "ID do Lattes", required: false, pattern: ['^\d{16}$', "Só os 16 dígitos, ex.: 4755584696921241"], hint: "Opcional: os 16 dígitos do endereço lattes.cnpq.br/…"}
+                  - {name: website, label: "Site pessoal", required: false, pattern: ['^https?://', "Comece com https://"], hint: "Opcional: endereço completo (https://…)."}
+                  - *photo_field
+          - name: masters_students
+            label: "Mestrandos"
+            widget: object
+            fields:
+              - name: members
+                label: "Mestrandos"
+                label_singular: "Mestrando(a)"
+                widget: list
+                summary: "{{name}} ({{since}})"
+                thumbnail: photo
+                collapsed: auto
+                fields: *student_fields
+          - name: undergrads
+            label: "Graduandos (iniciação científica)"
+            widget: object
+            fields:
+              - name: members
+                label: "Graduandos"
+                label_singular: "Graduando(a)"
+                widget: list
+                summary: "{{name}} ({{since}})"
+                thumbnail: photo
+                collapsed: auto
+                fields: *student_fields
+          - name: alumni_grad
+            label: "Egressos da pós-graduação"
+            widget: object
+            fields:
+              - name: members
+                label: "Egressos"
+                label_singular: "Egresso(a)"
+                widget: list
+                hint: "Só os nomes."
+                field: {name: name, label: "Nome"}
+          - name: alumni_undergrad
+            label: "Egressos da graduação"
+            widget: object
+            fields:
+              - name: members
+                label: "Egressos"
+                label_singular: "Egresso(a)"
+                widget: list
+                hint: "Só os nomes."
+                field: {name: name, label: "Nome"}
+
+      - name: team_tags
+        label: "Tags de pesquisa"
+        icon: sell
+        file: content/_shared/data/team_tags.yaml
+        preview_path: /equipe/
+        fields:
+          - name: tags
+            label: "Tags de pesquisa"
+            label_singular: "Tag"
+            widget: list
+            root: true
+            map_key_field: id
+            summary: "{{pt}} · {{en}} · {{es}} · {{it}}"
+            collapsed: auto
+            hint: "Cada tag tem o nome nos quatro idiomas, lado a lado. Usadas pelos membros e pelas áreas de pesquisa."
+            fields:
+              - {name: id, label: "Identificador", pattern: ['^[a-z][a-z0-9_]*$', "Só letras minúsculas, números e _"], hint: "Curto, sem espaços nem acentos, ex.: machine_learning. Não mude o de uma tag em uso."}
+              - {name: pt, label: "Português"}
+              - {name: en, label: "Inglês"}
+              - {name: es, label: "Espanhol"}
+              - {name: it, label: "Italiano"}
+
+  # ── Configurações: content/_shared/data/site.yaml ─────────────────────────────────────────────
+  - name: configuracoes
+    label: Configurações
+    label_singular: Configuração
+    icon: settings
+    description: "Nome do laboratório, redes sociais e links institucionais, iguais em todos os idiomas."
+    files:
+      - name: site
+        label: Site
+        icon: settings
+        file: content/_shared/data/site.yaml
+        preview_path: /
+        fields:
+          - {name: name, label: "Nome completo", hint: "Ex.: CSI Lab · UFOP. Nome do site nas redes sociais e título de reserva das páginas."}
+          - {name: short_name, label: "Nome curto", hint: "Ex.: CSI Lab."}
+          - {name: years, label: "Anos de pesquisa", hint: "Texto do selo da página inicial, ex.: 16+."}
+          - {name: map_url, label: "Link do mapa", required: false, pattern: ['^https?://', "Comece com https://"], hint: "Opcional: endereço do Google Maps (ou outro) para o link “ver no mapa” da página Contato; vazio, o link não aparece."}
+          - name: social
+            label: "Redes sociais"
+            label_singular: "Rede social"
+            widget: list
+            map_key_field: id
+            summary: "{{name}}"
+            collapsed: auto
+            hint: "Mostradas no rodapé e na página Contato, nesta ordem."
+            fields:
+              - name: id
+                label: "Rede"
+                widget: select
+                options:
+                  - {label: "Twitter / X", value: twitter}
+                  - {label: "Instagram", value: instagram}
+                  - {label: "GitHub", value: github}
+                  - {label: "Google Scholar", value: scholar}
+                  - {label: "Lattes", value: lattes}
+                  - {label: "ORCID", value: orcid}
+                hint: "Define o ícone."
+              - {name: name, label: "Nome exibido", hint: "Ex.: Instagram."}
+              - {name: handle, label: "Usuário", required: false, hint: "Opcional, ex.: @csilab_ufop."}
+              - {name: url, label: "Endereço", pattern: ['^https?://', "Comece com https://"], hint: "Endereço completo (https://…)."}
+          - name: institutions
+            label: "Instituições"
+            label_singular: "Instituição"
+            widget: keyvalue
+            key_label: "Sigla"
+            value_label: "Endereço (https://…)"
+            hint: "Links do rodapé e da página Contato, nesta ordem. Mantenha as siglas UFOP (também é o link do brasão do rodapé) e PPGCC (também é o link do cartão Mestrado e Doutorado na página Contato)."

@@ -1,0 +1,234 @@
+/* =============================================================================
+   Home hero (#inicio): the framed live print (js/hero.js) and the text column.
+   Markup: views/partials/home-hero.njk. The visual comes first in the DOM, in the order
+   it is seen on phones.
+   Scoped to .page-index .hero; site.css tokens only.
+   Stacked (phones, portrait tablets): the whole print is a full-width plate above the text,
+            sized from the width and the height.
+   Two columns (≥ 960px; landscape from 640px, or 560px when short): text left, plate right.
+            The title is never smaller than the inner-page h1 (short landscape screens excepted:
+            there it follows the height, so the buttons stay on the first screen). Its column
+            keeps the longest line whole ("Sistemas Inteligentes", up to 9.24em at some sizes),
+            so the title sits in 2–3 lines, and the plate takes the rest, up to 460px.
+   The bottom edge hands over to the ruled stats strip (#numeros) at the fold: registration
+   ticks on the container edges stand on its top hairline.
+   ============================================================================= */
+
+.page-index .hero {
+  --bleed: 24px;                                        /* canvas overhang for glows */
+  --pad-top: clamp(16px, 2.5vh, 48px);                  /* under the header */
+  --pad-bottom: clamp(36px, 6vh, 72px);
+  --band: clamp(168px, min(52vw, 34svh), 420px);        /* the plate's height when stacked */
+  /* the title: the inner-page h1 at least, towards the display size while the longest line
+     still fits the column (20px spare for a desktop scrollbar) */
+  --hero-fs: max(var(--fs-h1), min(var(--fs-display), (100vw - 2 * var(--gutter) - 20px) / 9.3));
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  display: grid;
+  align-content: center;
+  min-block-size: min(100svh, 1200px);                  /* the stats strip starts at the fold */
+  padding-block: calc(var(--header-h) + var(--pad-top)) var(--pad-bottom);
+}
+
+/* --- background: grid on the page axis, dark-red glow behind the print, grain --------- */
+.page-index .hero__bg,
+.page-index .hero__bg::before,
+.page-index .hero__bg::after { position: absolute; inset: 0; pointer-events: none; }
+.page-index .hero__bg {
+  --glow-y: calc(var(--header-h) + var(--pad-top) + var(--band) / 2);   /* the plate's centre */
+  z-index: -1;
+  background: radial-gradient(ellipse 70% 38% at 50% var(--glow-y),
+    color-mix(in srgb, var(--red-800) 32%, transparent), transparent 72%);
+}
+.page-index .hero__bg::before {
+  content: "";
+  background-image: var(--grid);
+  background-size: var(--grid-size) var(--grid-size);
+  background-position: max(var(--gutter), calc((100% - var(--container) + var(--grid-size)) / 2)) calc(var(--header-h) - 1px);
+  -webkit-mask-image: radial-gradient(ellipse 90% 44% at 50% var(--glow-y), #000 15%, transparent 78%);
+  mask-image: radial-gradient(ellipse 90% 44% at 50% var(--glow-y), #000 15%, transparent 78%);
+}
+.page-index .hero__bg::after {
+  content: "";
+  background-image: var(--grain);
+  background-size: 180px;
+  opacity: .05;
+}
+/* registration ticks on the container edges, standing on the stats strip's top hairline */
+.page-index .hero::after {
+  content: "";
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline: max(var(--gutter), calc((100% - var(--container)) / 2));
+  block-size: 6px;
+  background:
+    linear-gradient(var(--line-2), var(--line-2)) left bottom / 1px 100% no-repeat,
+    linear-gradient(var(--line-2), var(--line-2)) right bottom / 1px 100% no-repeat;
+  pointer-events: none;
+}
+
+.page-index .hero__inner { display: grid; row-gap: clamp(24px, 5vw, 44px); }
+
+/* --- text --------------------------------------------------------------------------- */
+.page-index .hero__text { display: grid; justify-items: start; }
+.page-index .hero__eyebrow { text-wrap: balance; }
+.page-index .hero__title {
+  margin-block-start: clamp(14px, 2.4vh, 26px);
+  max-inline-size: 13em;
+  font-size: var(--hero-fs);
+  line-height: 1.02;
+  letter-spacing: -.035em;
+}
+.page-index .hero__lead {
+  margin-block-start: clamp(14px, 2.4vh, 24px);
+  max-inline-size: 34em;
+}
+.page-index .hero__actions { margin-block-start: clamp(22px, 4vh, 40px); }
+
+/* --- the plate: corner marks, the SVG still, the live canvas ---------------------------- */
+.page-index .hero__frame {
+  position: relative;
+  block-size: var(--band);                              /* two columns: from its width (332 / 384) */
+}
+.page-index .hero__frame::before {
+  --arm: 14px;
+  --tick: linear-gradient(var(--fg-3), var(--fg-3));
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    var(--tick) left top / var(--arm) 1px no-repeat, var(--tick) left top / 1px var(--arm) no-repeat,
+    var(--tick) right top / var(--arm) 1px no-repeat, var(--tick) right top / 1px var(--arm) no-repeat,
+    var(--tick) left bottom / var(--arm) 1px no-repeat, var(--tick) left bottom / 1px var(--arm) no-repeat,
+    var(--tick) right bottom / var(--arm) 1px no-repeat, var(--tick) right bottom / 1px var(--arm) no-repeat;
+  opacity: .7;
+  pointer-events: none;
+}
+.page-index .hero__mark {                               /* the print, centred (xMidYMid meet) */
+  position: absolute;
+  inset: 7%;
+  inline-size: 86%;
+  block-size: 86%;
+  overflow: visible;
+}
+/* the still, a frame of the network: its chains as faint links plus dotted nodes, and the
+   ridge endings as rings with a direction tick (the sampling source in <defs> never paints) */
+.page-index .hero__mark :is(path, use) { fill: none; stroke: var(--fg); }
+.page-index .hero__links { stroke-opacity: .28; stroke-width: 1; }
+.page-index .hero__nodes {
+  stroke-opacity: .72;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-dasharray: 0 4;
+}
+.page-index .hero__minutiae { stroke-opacity: .6; stroke-width: 1; }
+.page-index .hero__canvas {
+  position: absolute;
+  inset: calc(var(--bleed) * -1);
+  inline-size: calc(100% + var(--bleed) * 2);
+  max-inline-size: none;
+  block-size: calc(100% + var(--bleed) * 2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1s var(--ease-out);
+}
+.page-index .hero.is-live .hero__canvas { opacity: 1; }
+.page-index .hero.is-live .hero__mark {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .6s var(--ease-out), visibility 0s .6s;
+}
+
+
+/* --- portrait tablets: a taller plate --------------------------------------------------- */
+@media (min-width: 640px) {
+  .page-index .hero { --band: min(60vw, 40svh, 420px); }
+}
+
+/* --- two columns: from 960px, and on landscape screens from 640px (560px when short) ---- */
+@media (min-width: 960px), (min-width: 640px) and (orientation: landscape),
+  (min-width: 560px) and (orientation: landscape) and (max-height: 540px) {
+  .page-index .hero {
+    --text-min: calc(var(--hero-fs) * 9.3);             /* the title's longest line stays whole */
+    --gap: clamp(28px, 4vw, 72px);
+    --fig-max: min(460px,                               /* as tall as the hero allows */
+      (100svh - var(--header-h) - var(--pad-top) - var(--pad-bottom)) * 332 / 384);
+    /* the plate's width and centre, for the glow (percentages of the hero's width; a gradient's
+       size takes no percentage mix, so it follows --fig-max) */
+    --cw: min(100% - 2 * var(--gutter), var(--container));
+    --fig: max(0px, min(var(--fig-max), var(--cw) - var(--text-min) - var(--gap)));
+    --glow-x: calc(50% + (var(--cw) - var(--fig)) / 2);
+    --hero-fs: var(--fs-h1);
+  }
+  .page-index .hero__inner {
+    grid-template-columns: minmax(min(var(--text-min), 100%), 1fr) minmax(0, var(--fig-max));
+    align-items: center;
+    column-gap: var(--gap);
+  }
+  .page-index .hero__visual { grid-area: 1 / 2; }
+  .page-index .hero__text { grid-area: 1 / 1; }
+  .page-index .hero__frame { block-size: auto; aspect-ratio: 332 / 384; }
+  .page-index .hero__bg {
+    background:
+      radial-gradient(ellipse calc(var(--fig-max) * 1.15) 46% at var(--glow-x) 48%,
+        color-mix(in srgb, var(--red-800) 34%, transparent), transparent 72%),
+      radial-gradient(ellipse 40% 32% at max(0%, 50% - var(--cw) / 2 - 160px) 0%,
+        color-mix(in srgb, var(--red-800) 18%, transparent), transparent 70%);
+  }
+  .page-index .hero__bg::before {
+    -webkit-mask-image: radial-gradient(ellipse calc(var(--fig-max) * 1.9) 76% at var(--glow-x) 46%, #000 20%, transparent 76%);
+    mask-image: radial-gradient(ellipse calc(var(--fig-max) * 1.9) 76% at var(--glow-x) 46%, #000 20%, transparent 76%);
+  }
+}
+@media (min-width: 960px) {
+  .page-index .hero {
+    --pad-top: clamp(20px, 4vh, 48px);
+    /* above the inner-page h1 from about 1100px, up to 4.75rem; the height caps it so the
+       buttons clear the fold at 1280×720 */
+    --hero-fs: max(var(--fs-h1), clamp(2.5rem, min(3px + 5.4vw, 1rem + 7.5vh), 4.75rem));
+  }
+}
+/* taller than 1200px: the whole stats strip (about 170px) ends at the fold */
+@media (min-height: 1200.02px) {
+  .page-index .hero { min-block-size: clamp(1028px, 100svh - 172px, 1200px); }
+}
+/* short landscape screens (phones held sideways): the title follows the height (never below the
+   section h2) in two lines, and the spacing tightens, so the eyebrow, title, lead and buttons share
+   the first screen with the print */
+@media (min-width: 560px) and (max-width: 959.98px) and (orientation: landscape) and (max-height: 540px) {
+  .page-index .hero {
+    --pad-top: 12px;
+    --pad-bottom: 16px;
+    --gap: 24px;
+    --hero-fs: clamp(var(--fs-h2), min(1rem + 3vw, .5rem + 8vh), 3rem);
+    --text-min: max(var(--hero-fs) * 12.3, min(27.5rem, 100% - 144px));   /* buttons in one row */
+  }
+  .page-index .hero__title { margin-block-start: 10px; }
+  .page-index .hero__lead { margin-block-start: 10px; }
+  .page-index .hero__actions { margin-block-start: 16px; }
+}
+
+/* --- entrance: the text rises (the title without a fade: it is the LCP element on desktop; the
+   lead, the LCP element on some phones, starts at .01 so it counts as painted at once), the plate
+   fades in; the still waits a moment for the live print -- */
+@media (prefers-reduced-motion: no-preference) {
+  .page-index .hero__text > * { animation: hero-rise .9s var(--ease-out) backwards; }
+  .page-index .hero__title { animation-name: hero-lift; }
+  .page-index .hero__text > :nth-child(3) { animation-delay: 120ms; }
+  .page-index .hero__text > :nth-child(4) { animation-delay: 180ms; }
+  .page-index .hero__frame::before { animation: hero-fade 1.2s .2s var(--ease-out) backwards; }
+  /* with JS on, the still only appears if hero.js has not gone live within 1.5 s */
+  .js .page-index .hero:not(.is-live):not(.is-failed) .hero__mark { animation: hero-fade .6s 1.5s var(--ease-out) backwards; }
+}
+@keyframes hero-rise { from { opacity: .01; translate: 0 16px; } }
+@keyframes hero-lift { from { translate: 0 12px; } }
+@keyframes hero-fade { from { opacity: 0; } }
+
+@media print {
+  .page-index .hero__bg,
+  .page-index .hero__visual,
+  .page-index .hero::after { display: none; }
+  .page-index .hero { min-block-size: 0; padding-block: 0 16pt; }
+}

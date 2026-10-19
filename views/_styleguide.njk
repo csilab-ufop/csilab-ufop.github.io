@@ -1,0 +1,406 @@
+{#-
+  Dev-only component style guide (GET /_styleguide outside production; never built into dist/).
+  It renders every shared component and macro with live content where the context has it.
+  Labels on this page are developer-facing and therefore English only.
+-#}
+{% extends "base.njk" %}
+{%- from "_macros.njk" import icon, brand, section_head, page_header, page_toc, btn, link_arrow, chip, status_chip, avatar, person_id, stat with context -%}
+{%- set ui = data.ui or {} -%}
+{%- set icon_names = ["cpu", "eye", "layers", "message", "bar-chart", "map", "activity", "sliders", "trophy", "globe", "mail", "location", "building", "web", "graduation", "book", "briefcase", "arrow-right", "arrow-left", "arrow-up", "arrow-up-right", "external", "copy", "check", "search", "x", "menu", "chevron-down", "chevron-right", "calendar", "users", "file-text", "award", "link", "quote", "code", "sparkles", "pause", "play"] -%}
+{%- set brand_names = ["twitter", "instagram", "github", "scholar", "lattes", "orcid"] -%}
+{%- set colours = [
+  { token: "--bg", hex: "#060607", note: "page background" },
+  { token: "--bg-1", hex: "#0c0c0e", note: "alternate sections, footer" },
+  { token: "--bg-2", hex: "#121215", note: "cards, surfaces" },
+  { token: "--bg-3", hex: "#19191d", note: "raised surfaces, chips" },
+  { token: "--fg", hex: "#f5f5f6", note: "primary text · 18.6:1 on --bg · 16.1:1 on --bg-3" },
+  { token: "--fg-2", hex: "#b4b4bb", note: "secondary text · 9.8:1 on --bg · 8.5:1 on --bg-3" },
+  { token: "--fg-3", hex: "#8b8b94", note: "captions, labels · 6.0:1 on --bg · 5.2:1 on --bg-3" },
+  { token: "--red-950", hex: "#16040a", note: "tinted backgrounds" },
+  { token: "--red-900", hex: "#2b060b", note: "tinted backgrounds, active chips" },
+  { token: "--red-800", hex: "#4a0a12", note: "glows" },
+  { token: "--red-700", hex: "#6e0e1a", note: "gradients" },
+  { token: "--red-600", hex: "#8f1220", note: "brand red · white text 9.2:1" },
+  { token: "--red-500", hex: "#b3172a", note: "primary fill · white text 6.8:1" },
+  { token: "--red-450", hex: "#c11a2e", note: "primary hover · white text 6.1:1" },
+  { token: "--red-400", hex: "#e0323f", note: "graphics only · 4.5:1 on --bg (large text at most)" },
+  { token: "--red-300", hex: "#ff5a63", note: "accent text · 6.7:1 on --bg · 5.8:1 on --bg-3" },
+  { token: "--red-200", hex: "#ff8f95", note: "accent hover · 9.3:1 on --bg · 8.5:1 on --red-900" }
+] -%}
+{%- set sample_stats = data.stats if (data.stats and data.stats.length) else [
+  { id: "publications", label: "Publicações Científicas", value: 128, suffix: "+" },
+  { id: "professors", label: "Professores e Pesquisadores", value: 12, suffix: "" },
+  { id: "partnerships", label: "Parcerias Industriais", value: 5, suffix: "" },
+  { id: "alumni", label: "Alunos Formados", value: 50, suffix: "+" }
+] -%}
+{%- set faculty = data.people.faculty if (data.people and data.people.faculty) else [] -%}
+{%- set status_labels = (data.projects.status_labels if (data.projects and data.projects.status_labels) else {}) -%}
+{%- set sections = [
+  { id: "type", label: "Type" }, { id: "colour", label: "Colour" }, { id: "buttons", label: "Buttons" },
+  { id: "chips", label: "Chips" }, { id: "cards", label: "Cards" }, { id: "heads", label: "Section heads" },
+  { id: "rows", label: "Rows" }, { id: "stats", label: "Stats" }, { id: "avatars", label: "Avatars" },
+  { id: "prose", label: "Prose" }, { id: "details", label: "Accordion" }, { id: "table", label: "Table" },
+  { id: "icons", label: "Icons", count: (icon_names | length) + (brand_names | length) }
+] -%}
+{%- set toc_items = [] -%}
+{%- for s in sections %}{% set _ = toc_items.push({ href: "#sg-" ~ s.id, label: s.label, count: s.count }) %}{% endfor -%}
+
+{% block head %}
+<style>
+  .sg-type { display: grid; gap: 28px; }
+  .sg-type__row { display: grid; gap: 6px; padding-block-end: 28px; border-block-end: 1px solid var(--line); }
+  .sg-swatches { --grid-min: 220px; }
+  .sg-swatch { display: grid; grid-template-rows: 88px auto; overflow: hidden; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--bg-2); }
+  .sg-swatch__chip { border-block-end: 1px solid var(--line); }
+  .sg-swatch__meta { display: grid; gap: 4px; padding: 12px 14px; }
+  .sg-swatch__meta code { color: var(--fg); font-size: .8rem; }
+  .sg-swatch__meta small { color: var(--fg-3); font-size: .78rem; line-height: 1.45; }
+  .sg-row { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+  .sg-block + .sg-block, * + .sg-block { margin-block-start: 48px; }
+  .sg-section code { color: var(--fg); white-space: nowrap; font-size: .9em; }
+  .sg-icons { --ruled-min: 120px; }
+  .sg-icon { display: grid; justify-items: center; gap: 10px; padding: 22px 8px 16px; color: var(--fg-2); text-align: center; }
+  .sg-icon .icon, .sg-icon .brand { color: var(--fg); }
+  .sg-icon code { color: var(--fg-3); font-size: .7rem; }
+  .sg-avatars { display: flex; flex-wrap: wrap; align-items: end; gap: 24px; }
+  .sg-avatars > [data-person] { display: grid; justify-items: start; gap: 8px; }
+  .sg-avatars code { color: var(--fg-3); font-size: .7rem; }
+  .sg-person { flex-direction: row; align-items: center; gap: 14px; }
+  .sg-split { display: grid; gap: 40px; }
+  .sg-span { min-width: 0; }
+  .sg-narrow { max-inline-size: 220px; padding: 12px 16px; border: 1px dashed var(--line-2); border-radius: var(--r-sm); }
+  .sg-files { display: grid; gap: 10px; }
+  .sg-files ul { display: grid; gap: 4px; list-style: none; color: var(--fg-2); font-family: var(--font-mono); font-size: var(--fs-label-sm); }
+  .sg-rows { border-block-end: 1px solid var(--line); }
+  .sg-rows > li { display: grid; grid-template-columns: 4.5rem minmax(0, 1fr); gap: 8px 24px; align-items: start; padding-block: 28px; border-block-start: 1px solid var(--line); }
+  .sg-rows .numeral { font-size: clamp(2rem, 1.6rem + 1.6vw, 3rem); color: var(--fg); }
+  .sg-rows h3 { font-size: var(--fs-h3); }
+  .sg-rows p { color: var(--fg-2); }
+  .sg-rows .sg-row { grid-column: 2; gap: 4px 20px; }
+  @media (min-width: 960px) { .sg-span { grid-column: span 2; } }
+  @media (min-width: 960px) { .sg-split { grid-template-columns: 1fr 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+{% call(slot) page_header("Design system · v2", "Style guide", "Every shared component and macro, rendered with the live content of this language. Developer page: not linked, not built.", aside=true) %}
+{%- if slot == "aside" %}
+<div class="card sg-files">
+  <p class="label">page_header(…, aside=true) · aside slot</p>
+  <ul role="list"><li>public/css/site.css</li><li>public/js/site.js</li><li>views/_macros.njk</li><li>lib/filters.js</li></ul>
+</div>
+{%- else %}
+<div class="cluster">{{ chip("site.css") }}{{ chip("site.js") }}{{ chip("_macros.njk") }}{{ chip(lang | upper ~ " · " ~ lang_html) }}</div>
+{%- endif %}
+{% endcall %}
+{{ page_toc(toc_items, "Style guide sections", sticky=true) }}
+
+<section class="section" id="sg-type" aria-labelledby="sg-type-title">
+  <div class="container">
+    {{ section_head(1, "Typography", "Type scale", "Funnel Sans for display and headings, Inter for text, Kode Mono for labels, data and numbers.", id="sg-type-title") }}
+    <div class="sg-type">
+      <div class="sg-type__row"><span class="label">--fs-display · Funnel Sans 600 · −0.04em</span><p class="display">Intelligent systems</p></div>
+      <div class="sg-type__row"><span class="label">--fs-h1 · page titles</span><p class="page-header__title" style="font-family: var(--font-display); font-weight: 600; line-height: 1.02; letter-spacing: -.035em;">Computação de Sistemas Inteligentes</p></div>
+      <div class="sg-type__row"><span class="label">--fs-h2 · section titles</span><p style="font-family: var(--font-display); font-size: var(--fs-h2); font-weight: 600; line-height: 1.06; letter-spacing: -.03em;">Pesquisa aplicada com rigor científico</p></div>
+      <div class="sg-type__row"><span class="label">--fs-h3 · card titles</span><p class="card__title">Visão computacional e biometria periocular</p></div>
+      <div class="sg-type__row"><span class="label">--fs-lead · .lead</span><p class="lead">Desenvolvemos métodos de aprendizado de máquina, otimização e ciência de dados, publicados nas principais conferências e periódicos da área.</p></div>
+      <div class="sg-type__row"><span class="label">--fs-body · Inter 16px / 1.65</span><p style="max-width: 68ch; color: var(--fg-2);">O laboratório reúne docentes, pesquisadores e estudantes de graduação e pós-graduação do Departamento de Computação. Ação, acentuação, cedilha: ç ã õ é ü ñ à ì — ¿Qué? «Sì».</p></div>
+      <div class="sg-type__row"><span class="label">--fs-small · .875rem</span><p style="font-size: var(--fs-small); color: var(--fg-3);">Atualizado em 13 de dezembro de 2024 · fonte: Google Scholar</p></div>
+      <div class="sg-type__row"><span class="label">.eyebrow · .label · .mono</span>
+        <div class="sg-row"><p class="eyebrow"><span class="eyebrow__index">01</span><span class="eyebrow__sep" aria-hidden="true">—</span><span>Pesquisa</span></p><p class="label">Label · 2024</p><p class="mono" style="color: var(--fg-2);">CSI·Lab 0123456789</p></div>
+      </div>
+      <div class="sg-type__row"><span class="label">.numeral · years and row indices (Kode Mono, tabular figures; size set by the page)</span>
+        <div class="sg-row"><span class="numeral" style="font-size: 3.25rem;">2024</span><span class="numeral" style="font-size: 3.25rem; color: var(--fg-3);">2023</span><span class="numeral" style="font-size: 3.25rem; color: var(--red-400);">01</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--alt" id="sg-colour" aria-labelledby="sg-colour-title">
+  <div class="container">
+    {{ section_head(2, "Colour", "Tokens and contrast", "Dark theme only. Small red text uses red-300 or red-200; white text sits on red-600, red-500 or darker. Ratios: WCAG 2.x.", id="sg-colour-title") }}
+    <ul class="grid-auto sg-swatches" role="list">
+      {%- for c in colours %}
+      <li class="sg-swatch"><span class="sg-swatch__chip" style="background: {{ c.hex }};"></span><span class="sg-swatch__meta"><code>{{ c.token }}</code><small>{{ c.hex }} — {{ c.note }}</small></span></li>
+      {%- endfor %}
+      <li class="sg-swatch"><span class="sg-swatch__chip" style="background: linear-gradient(var(--line), var(--line)), var(--bg);"></span><span class="sg-swatch__meta"><code>--line / --line-2</code><small>white 8% / 14% — hairlines, borders</small></span></li>
+      <li class="sg-swatch"><span class="sg-swatch__chip" style="background: var(--line-ui);"></span><span class="sg-swatch__meta"><code>--line-ui</code><small>#6b6b73 — form field borders, 3.5:1 on --bg-2</small></span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="section" id="sg-buttons" aria-labelledby="sg-buttons-title">
+  <div class="container">
+    {{ section_head(3, "Actions", "Buttons and links", "Minimum target 44×44 px. Focus: 2px --red-300 ring, 2px offset (Tab through this section).", id="sg-buttons-title") }}
+    <div class="sg-block">
+      <p class="label" style="margin-block-end: 16px;">btn() · primary / ghost / icon / external / aria_label</p>
+      <div class="btn-row">
+        {{ btn(urls.contato, ui.nav.contact, "primary", "arrow-right") }}
+        {{ btn(urls.pesquisa, ui.nav.research, "ghost") }}
+        {{ btn(urls.publicacoes, ui.nav.publications, "ghost", "file-text") }}
+        {{ btn(data.site.social.github.url, ui.nav.github, "ghost", external=true) }}
+        {%- if faculty.length and faculty[0].email %}
+        {{ btn("mailto:" ~ faculty[0].email, "E-mail", "ghost", "mail", aria_label="E-mail " ~ (faculty[0].display_name or faculty[0].name)) }}
+        {%- endif %}
+      </div>
+    </div>
+    <div class="sg-block">
+      <p class="label" style="margin-block-end: 16px;">link_arrow(href, label, external, icon) · .link · icon buttons · copy</p>
+      <div class="sg-row">
+        {{ link_arrow(urls.noticias, ui.nav.news) }}
+        {{ link_arrow(data.site.social.github.url, "GitHub", external=true) }}
+        {{ link_arrow("#top", ui.footer.back_to_top, icon="arrow-up") }}
+        <p style="color: var(--fg-2);">Inline <a class="link" href="{{ urls.contato }}">{{ ui.nav.contact | lower }}</a> link.</p>
+        <a class="icon-btn icon-btn--bordered" href="{{ data.site.social.github.url }}" target="_blank" rel="noopener" aria-label="{{ ui.nav.github }} {{ ui.common.new_tab }}">{{ brand("github", 20) }}</a>
+        <button class="btn btn--ghost" type="button" data-copy="gladston@ufop.edu.br">{{ icon("copy", 18) }}{{ icon("check", 18) }}<span data-copy-label>{{ ui.common.copy }}</span></button>
+      </div>
+      <p class="label" style="margin-block: 24px 12px;">a label that fills its line keeps its arrow on the last word</p>
+      <div class="sg-narrow">{{ link_arrow(urls.equipe, ui.footer.description) }}</div>
+    </div>
+    <div class="sg-block">
+      <p class="label" style="margin-block-end: 16px;">.input</p>
+      <div style="max-width: 420px; position: relative;">
+        <label class="sr-only" for="sg-search">Search</label>
+        <input class="input" id="sg-search" type="search" placeholder="Search publications">
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--alt" id="sg-chips" aria-labelledby="sg-chips-title">
+  <div class="container">
+    {{ section_head(4, "Tags", "Chips and badges", none, id="sg-chips-title") }}
+    <div class="sg-block">
+      <p class="label" style="margin-block-end: 16px;">chip() · static tags</p>
+      <ul class="chip-list" role="list">
+        {%- set tag_source = faculty[0].tag_items if (faculty.length and faculty[0].tag_items) else [{label: "Visão Computacional"}, {label: "Aprendizado de Máquina"}, {label: "Otimização Multiobjetivo"}] %}
+        {%- for t in tag_source %}<li>{{ chip(t.label) }}</li>{% endfor %}
+      </ul>
+    </div>
+    <div class="sg-block">
+      <p class="label" style="margin-block-end: 16px;">chip(label, href, current, class, count) · filter buttons (aria-pressed)</p>
+      <div class="sg-row">
+        {{ chip(ui.footer.people_links.coordenadores, urls.equipe ~ "#coordenadores", true) }}
+        {{ chip(ui.footer.people_links.docentes, urls.equipe ~ "#docentes", false, "", 7) }}
+        <button class="chip" type="button" aria-pressed="true">2024 <span class="chip__count">31</span></button>
+        <button class="chip" type="button" aria-pressed="false">2023 <span class="chip__count">27</span></button>
+      </div>
+    </div>
+    <div class="sg-block">
+      <p class="label" style="margin-block-end: 16px;">.chip-list--track · every chip reserves the current dot (the in-page nav uses it)</p>
+      <ul class="chip-list chip-list--track" role="list">
+        {%- for anchor, label in ui.footer.people_links %}
+        <li>{{ chip(label, urls.equipe ~ "#" ~ anchor, loop.index == 2, "chip--nowrap", loop.index) }}</li>
+        {%- endfor %}
+      </ul>
+    </div>
+    <div class="sg-block">
+      <p class="label" style="margin-block-end: 16px;">status_chip(status, label) · active / development / completed</p>
+      <div class="sg-row" data-reveal>
+        {{ status_chip("active", status_labels.active or "active") }}
+        {{ status_chip("development", status_labels.development or "development") }}
+        {{ status_chip("completed", status_labels.completed or "completed") }}
+      </div>
+    </div>
+    <div class="sg-block">
+      <p class="label" style="margin-block-end: 16px;">.badge · .badge--red · .badge--dot</p>
+      <div class="sg-row">
+        <span class="badge">{{ ui.news_categories.conference }}</span>
+        <span class="badge badge--red">{{ ui.news_categories.award }}</span>
+        <span class="badge badge--dot" style="color: var(--red-300);">{{ ui.news_categories.project }}</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="sg-cards" aria-labelledby="sg-cards-title">
+  <div class="container">
+    {{ section_head(5, "Surfaces", "Cards", "card · card--interactive (lift, pointer spotlight, glowing border, red icon and arrow nudge on hover) · card__link stretches the main link over the card. Known counts use .grid-4 / .grid-3 (no orphans), open lists .grid-auto.", id="sg-cards-title") }}
+    {%- set areas = data.areas if (data.areas and data.areas.length) else [
+      { index: 1, icon: "cpu", title: "Inteligência Artificial", text: "Métodos de IA para problemas reais." },
+      { index: 2, icon: "eye", title: "Visão Computacional", text: "Biometria, reconhecimento de padrões." },
+      { index: 3, icon: "layers", title: "Aprendizado de Máquina", text: "Aprendizado profundo e métrico." }
+    ] %}
+    <ul class="grid-4" role="list" data-reveal-group>
+      {%- for area in areas | batch(4) | first %}
+      <li class="card card--interactive" data-reveal>
+        <span class="tile-icon">{{ icon(area.icon, 22) }}</span>
+        <p class="card__meta">{{ "0" ~ area.index if area.index < 10 else area.index }}</p>
+        <h3 class="card__title"><a class="card__link" href="{{ urls.pesquisa }}#{{ area.id or 'ai' }}">{{ area.title }}</a></h3>
+        <p class="card__text">{{ area.text | striptags | truncate(140) }}</p>
+        <p class="card__foot"><span class="link-arrow" aria-hidden="true"><span class="link-arrow__text">{{ ui.common.read_more }}</span>{{ icon("arrow-right", 18) }}</span></p>
+      </li>
+      {%- endfor %}
+    </ul>
+    <div class="sg-block grid-auto">
+      <article class="card">
+        <p class="card__meta">.card (static)</p>
+        <h3 class="card__title">{{ data.site.name }}</h3>
+        <p class="card__text">{{ ui.footer.description }}</p>
+      </article>
+      <div class="cta-band sg-span">
+        <div>
+          <h3 class="cta-band__title">.cta-band — {{ ui.nav.contact }}</h3>
+          <p class="cta-band__text">{{ ui.not_found.text }}</p>
+        </div>
+        {{ btn(urls.contato, ui.nav.contact, "primary", "arrow-right") }}
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--alt" id="sg-heads" aria-labelledby="sg-heads-title">
+  <div class="container">
+    {{ section_head(6, "Structure", "Section heads", "section_head(index, eyebrow, title, sub, id, align, level, layout, meta, reveal): the head reveals itself. The page header at the top of this page is page_header(…, aside=true), the strip under it page_toc(…, sticky=true).", id="sg-heads-title") }}
+    <div class="sg-split">
+      <div class="card">{{ section_head(1, ui.nav.research, "Pesquisa aplicada", "Lead paragraph in --fg-2, at most 62 characters per line.", level=3, reveal=false) }}</div>
+      <div class="card">{{ section_head(none, ui.nav.news, "Centred, no index", "align=\"center\"", align="center", level=3, reveal=false) }}</div>
+    </div>
+  </div>
+</section>
+
+{#- a run of ruled sections: the hairline with ticks opens each one; they share one --section-y gap -#}
+<section class="section section--ruled" aria-labelledby="sg-ruled-a">
+  <div class="container">
+    {{ section_head(7, ui.footer.people_links.coordenadores, "Split head on a ruled section", "layout=\"split\": eyebrow and title on the left, the meta and this lead on the right from 960px, the lead on the title's last baseline.", id="sg-ruled-a", layout="split", meta=((faculty | length) ~ " · meta")) }}
+    <p class="lead">.section.section--ruled opens on the hairline with registration ticks drawn across the content box.</p>
+  </div>
+</section>
+<section class="section section--ruled" aria-labelledby="sg-ruled-b">
+  <div class="container">
+    {{ section_head(8, ui.footer.people_links.docentes, "The next ruled section", none, id="sg-ruled-b", layout="split", meta="12 · meta") }}
+  </div>
+</section>
+
+<section class="section section--alt" id="sg-rows" aria-labelledby="sg-rows-title">
+  <div class="container">
+    {{ section_head(9, "Hover language", "Rows with several controls", ".row-hover: on hover, focus inside or :target, a red rule draws along the top hairline and [data-row-index] turns red. Whole-target links use .card--interactive.", id="sg-rows-title") }}
+    <ol class="sg-rows" role="list">
+      {%- for area in areas | batch(3) | first %}
+      <li class="row-hover" id="sg-row-{{ loop.index }}">
+        <span class="numeral" data-row-index aria-hidden="true">{{ "0" ~ loop.index }}</span>
+        <div><h3>{{ area.title }}</h3><p>{{ area.text | striptags | truncate(110) }}</p></div>
+        <p class="sg-row">{{ link_arrow(urls.pesquisa ~ "#" ~ (area.id or "ai"), ui.common.read_more) }}{{ link_arrow("#sg-row-" ~ loop.index, ":target") }}</p>
+      </li>
+      {%- endfor %}
+    </ol>
+  </div>
+</section>
+
+<section class="section" id="sg-stats" aria-labelledby="sg-stats-title">
+  <div class="container">
+    {{ section_head(10, "Data", "Stats with count-up", "stat(value, suffix, label, size): tabular numbers, final value in the HTML, counts up once visible (not under reduced motion). .ruled.stats: 4 items → 2 × 2, 4 columns from 768px; 3 items → 2 + 1, 3 columns from 640px.", id="sg-stats-title") }}
+    <div class="ruled stats">
+      {%- for s in sample_stats %}
+      {{ stat(s.value, s.suffix, s.label) }}
+      {%- endfor %}
+    </div>
+    <div class="ruled stats sg-block">
+      {%- for s in sample_stats | batch(3) | first %}
+      {{ stat(s.value, s.suffix, s.label, "sm") }}
+      {%- endfor %}
+    </div>
+    <div class="sg-block">
+      <p class="label" style="margin-block-end: 16px;">size="xl" · --fs-stat-xl (one feature stat per page)</p>
+      {{ stat(sample_stats[0].value, sample_stats[0].suffix, sample_stats[0].label, "xl") }}
+    </div>
+  </div>
+</section>
+
+<section class="section section--alt" id="sg-avatars" aria-labelledby="sg-avatars-title">
+  <div class="container">
+    {{ section_head(11, "People", "Avatars", "avatar(person, size, alt): a photo (grayscale until its person is hovered or focused) or the ridge monogram, whose origin and spacing come from person.name | monogram. Sizes sm 40 · md 64 · lg 96 · xl 144. The element standing for the person carries data-person.", id="sg-avatars-title") }}
+    {%- set first = faculty[0] if faculty.length else { name: "Gladston Moreira", initials: "GM", display_name: "Prof. Gladston Moreira", role_label: "Coordenador" } %}
+    <div class="sg-avatars">
+      <div data-person>{{ avatar({ photo: "/images/foto-equipe-640.webp", name: "CSI Lab" }, "xl") }}<code>photo · xl</code></div>
+      <div data-person>{{ avatar({ photo: "/images/evento-2024-660.webp", name: "Evento" }, "lg") }}<code>photo · lg</code></div>
+      {%- for size in ["xl", "lg", "md", "sm"] %}
+      <div data-person>{{ avatar(first, size) }}<code>{{ size }}</code></div>
+      {%- endfor %}
+    </div>
+    <ul class="grid-auto sg-block" role="list" style="--grid-min: 260px;">
+      {%- set people = faculty if faculty.length else [first] %}
+      {%- for p in people | batch(9) | first %}
+      <li class="card sg-person" data-person>{{ avatar(p, "md") }}{{ person_id(p, "p") }}</li>
+      {%- endfor %}
+    </ul>
+  </div>
+</section>
+
+<section class="section" id="sg-prose" aria-labelledby="sg-prose-title">
+  <div class="container">
+    {{ section_head(12, "Markdown", "Prose", ".prose styles Markdown output (| md): paragraphs, links, lists, quotes, code.", id="sg-prose-title") }}
+    <div class="prose">
+      <p>O <strong>CSI Lab</strong> desenvolve pesquisa em <a href="{{ urls.pesquisa }}">inteligência computacional</a> e ciência de dados, com projetos em parceria com a indústria e o setor público. Os resultados aparecem em periódicos e conferências como <em>IEEE LACCI</em>.</p>
+      <h3>Artigos apresentados</h3>
+      <ul>
+        <li><em>Reinforcement Learning for Spatial Cluster Detection</em> — Dênis Oliveira</li>
+        <li><em>Multi-objective Optimization of Community Detection</em> — exemplo</li>
+        <li>Código aberto em <a href="{{ data.site.social.github.url }}" target="_blank" rel="noopener">github.com/csilab-ufop<span class="sr-only"> {{ ui.common.new_tab }}</span></a></li>
+      </ul>
+      <ol>
+        <li>Envie seu currículo Lattes.</li>
+        <li>Indique a linha de pesquisa de interesse.</li>
+      </ol>
+      <blockquote><p>Pesquisa de excelência com impacto real.</p></blockquote>
+      <p>Para citar, use <code>doi:10.1109/LACCI.2024.0001</code>.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section section--alt" id="sg-details" aria-labelledby="sg-details-title">
+  <div class="container container--narrow">
+    {{ section_head(13, "Disclosure", "Accordion", "Native details/summary; height animates where ::details-content is supported, instantly elsewhere.", id="sg-details-title") }}
+    {%- set faq_items = data.faq.items if (data.faq and data.faq.items) else [] %}
+    <div class="accordion-group">
+      {%- for item in faq_items | batch(3) | first %}
+      <details class="accordion"{% if loop.first %} open{% endif %}>
+        <summary>{{ item.question }}<span class="accordion__chevron" aria-hidden="true">{{ icon("chevron-down", 18) }}</span></summary>
+        <div class="accordion__body prose">{{ (item.answer_html or (item.answer | md)) | safe }}</div>
+      </details>
+      {%- else %}
+      <details class="accordion" open>
+        <summary>Como ingressar no laboratório?<span class="accordion__chevron" aria-hidden="true">{{ icon("chevron-down", 18) }}</span></summary>
+        <div class="accordion__body prose"><p>Envie um e-mail para <a href="mailto:gladston@ufop.edu.br">gladston@ufop.edu.br</a>.</p></div>
+      </details>
+      <details class="accordion">
+        <summary>Quais são as linhas de pesquisa?<span class="accordion__chevron" aria-hidden="true">{{ icon("chevron-down", 18) }}</span></summary>
+        <div class="accordion__body prose"><p>Inteligência artificial, visão computacional, otimização e ciência de dados.</p></div>
+      </details>
+      {%- endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section" id="sg-table" aria-labelledby="sg-table-title">
+  <div class="container">
+    {{ section_head(14, "Data", "Table", ".table inside .table-wrap (scrolls horizontally on narrow screens). Also the accessible fallback of the publication charts.", id="sg-table-title") }}
+    {%- set pub_years = data.pubs.years if (data.pubs and data.pubs.years and data.pubs.years.length) else [{year: 2022, count: 18}, {year: 2023, count: 27}, {year: 2024, count: 31}] %}
+    <section class="table-wrap" aria-labelledby="sg-table-cap" tabindex="0">
+      <table class="table">
+        <caption id="sg-table-cap">{{ ui.nav.publications }}</caption>
+        <thead><tr><th scope="col">Year</th><th scope="col" class="num">Papers</th><th scope="col">Share</th></tr></thead>
+        <tbody>
+          {%- for y in pub_years | reverse | batch(6) | first %}
+          <tr><td>{{ y.year }}</td><td class="num">{{ y.count | num }}</td><td><span style="display: block; inline-size: {{ (y.count * 4) if y.count < 50 else 200 }}px; block-size: 6px; background: var(--red-400);"></span></td></tr>
+          {%- endfor %}
+        </tbody>
+      </table>
+    </section>
+  </div>
+</section>
+
+<section class="section section--alt" id="sg-icons" aria-labelledby="sg-icons-title">
+  <div class="container">
+    {{ section_head(15, "Iconography", "Icons", "icon(name, size): 24px grid, 1.75 stroke, round caps, currentColor. brand(name, size): filled glyphs.", id="sg-icons-title") }}
+    <ul class="ruled sg-icons" role="list">
+      {%- for name in icon_names %}
+      <li class="sg-icon">{{ icon(name, 24) }}<code>{{ name }}</code></li>
+      {%- endfor %}
+      {%- for name in brand_names %}
+      <li class="sg-icon">{{ brand(name, 24) }}<code>brand: {{ name }}</code></li>
+      {%- endfor %}
+    </ul>
+  </div>
+</section>
+{% endblock %}

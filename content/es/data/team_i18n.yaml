@@ -1,44 +1,49 @@
 name_prefixes:
   m: "Prof."
   f: "Profa."
-
-students_title: "Estudiantes"
-alumni_title: "Egresados"
-
+roles:
+  coordinator:
+    m: "Coordinador"
+    f: "Coordinadora"
+  associate_professor:
+    m: "Profesor asociado"
+    f: "Profesora asociada"
+  collaborating_researcher:
+    m: "Investigador colaborador"
+    f: "Investigadora colaboradora"
 groups:
   coordinators:
     label: "Coordinación"
-    title: "Profesores Coordinadores"
-    sub: "Departamento de Computación — DECOM/UFOP"
+    title: "Profesores coordinadores"
+    sub: "Lideran las líneas de investigación y los proyectos de I+D del laboratorio."
   professors:
-    label: "Cuerpo Docente"
-    title: "Profesores Investigadores"
-    sub: "Departamento de Computación — DECOM/UFOP"
+    label: "Cuerpo docente"
+    title: "Profesores investigadores"
+    sub: "Profesores del DECOM/UFOP que dirigen investigaciones en el laboratorio."
   collaborators:
-    label: "Colaboradores Externos"
+    label: "Colaboradores externos"
     title: "Colaboradores"
+    sub: "Investigadores de otras instituciones que colaboran con el laboratorio."
   phd_students:
     label: "Posgrado"
-    title: "Estudiantes de Doctorado"
+    title: "Estudiantes de doctorado"
     sub: "Programa de Posgrado en Ciencias de la Computación (PPGCC) — UFOP"
     since_prefix: "Doctorado · desde"
   masters_students:
-    title: "Estudiantes de Maestría"
+    title: "Estudiantes de maestría"
     since_prefix: "Maestría · desde"
   undergrads:
-    label: "Investigación de Pregrado"
-    title: "Estudiantes de Pregrado — Becarios"
+    label: "Investigación de pregrado"
+    title: "Estudiantes de pregrado — becarios"
     since_prefix: "Pregrado · desde"
+    sub: "Estudiantes de pregrado que desarrollan proyectos de investigación en el laboratorio."
   alumni_grad:
     label: "Egresados"
-    title: "Egresados del Posgrado"
+    title: "Egresados del posgrado"
   alumni_undergrad:
-    title: "Egresados del Pregrado"
-
-roles:
-  coordinator: "Coordinador"
-  coordinator_f: "Coordinadora"
-  associate_professor: "Profesor Asociado"
-  associate_professor_f: "Profesora Asociada"
-  collaborating_researcher: "Investigador Colaborador"
-  collaborating_researcher_f: "Investigadora Colaboradora"
+    title: "Egresados del pregrado"
+students_title: "Estudiantes"
+students_sub: "Estudiantes de posgrado y de pregrado que investigan bajo la dirección de los profesores del laboratorio."
+graduate_title: "Estudiantes de posgrado"
+alumni_title: "Exintegrantes del laboratorio"
+alumni_sub: "Personas que formaron parte del laboratorio durante sus estudios de pregrado o posgrado."

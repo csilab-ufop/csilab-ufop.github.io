@@ -1,0 +1,229 @@
+{#-
+  News page (spec/pages.md "News"). Styles: public/css/pages/news.css (scoped under .page-noticias).
+    page header + page_toc (static)
+    01  featured story: data.featured_news as a large card, id = its slug (the home page cards link to
+        urls.noticias#slug). A body that is a list (LACCI: its papers) joins the highlight panel;
+        any other body stays in the text column.
+    02  #arquivo: every story, newest first, as a ruled timeline (.row-hover rows); each item id = its
+        slug. The featured story is a compact entry there that links up to its card and has no id of
+        its own (ids stay unique). Empty state when there is no news.
+    03  #premios: data.awards (category award) as a compact honours index: year, trophy, title and an
+        arrow, each cell one link to its story (.card--interactive). The home page's legacy
+        #destaque anchor is redirected here.
+-#}
+{% extends "base.njk" %}
+{%- from "_macros.njk" import icon, section_head, page_header, page_toc, btn, link_arrow, chip, stat with context -%}
+{%- set news = data.news or [] -%}
+{%- set featured = data.featured_news -%}
+{%- set awards = data.awards or [] -%}
+{#- the archive is the whole chronology, the featured story included; without any news it keeps
+    its empty-state text -#}
+{%- set archive = news -%}
+{%- set i_featured = 1 if featured else 0 -%}
+{%- set i_archive = i_featured + 1 -%}
+{%- set i_awards = i_archive + 1 -%}
+{#- titles such as "Prize — Event": the dash stays with the word before it, so no line starts with
+    "—" (the first character of nb_dash is a no-break space, U+00A0) -#}
+{%- set nb_dash = " — " -%}
+
+{%- macro pad(n) -%}{{ ("0" ~ n) if n < 10 else n }}{%- endmacro -%}
+
+{#- copies the story's permalink (site.js [data-copy]); hidden without JS (news.css) -#}
+{%- macro copy_link(item) -%}
+<button class="nw-copy" type="button" data-copy="{{ site_url }}{{ item.url }}" data-copied="{{ page.link_copied }}" aria-describedby="{{ item.slug }}-title">
+  {{- icon("link", 15) }}{{ icon("check", 15) -}}
+  <span class="nw-copy__label" data-copy-label>{{ page.copy_link }}</span>
+</button>
+{%- endmacro -%}
+
+{#- event · location; the event is left out when the summary already opens with it -#}
+{%- macro where(item) -%}
+{%- set event = item.event if (item.event and (item.summary | string).indexOf(item.event) != 0) else "" -%}
+{%- if event or item.location -%}
+<p class="nw-where">
+  {%- if event %}<span class="nw-where__item">{{ event }}</span>{% endif -%}
+  {%- if item.location %}<span class="nw-where__item">{{ icon("location", 14) }}{{ item.location }}</span>{% endif -%}
+</p>
+{%- endif -%}
+{%- endmacro -%}
+
+{#- Known photos with smaller derivatives in public/images: their srcset, intrinsic size and the focal
+    point kept by the 16:9 frame (the 2023 crop is portrait). Any other image (a CMS upload) is
+    printed as a single src; the frame fixes the ratio (16:9, object-fit cover), so nothing shifts. -#}
+{%- set derivatives = {
+  "/images/evento-2023-crop-312.webp": { srcset: [["/images/evento-2023-crop-240.webp", 240], ["/images/evento-2023-crop-312.webp", 312]], w: 312, h: 371, pos: "50% 30%" },
+  "/images/evento-2024-660.webp": { srcset: [["/images/evento-2024-400.webp", 400], ["/images/evento-2024-660.webp", 660]], w: 660, h: 371 }
+} -%}
+{%- macro media(item, cls="", lazy=true, reveal=false, sizes=none) -%}
+{%- set ext = item.image.indexOf("http") == 0 -%}
+{%- set src = item.image if ext else (base_path ~ item.image) -%}
+{%- set d = none if ext else derivatives[item.image] -%}
+<figure class="nw-media {{ cls }}"{% if reveal %} data-reveal style="--i: 2"{% endif %}><img src="{{ src }}"
+  {%- if d %} srcset="{% for f in d.srcset %}{{ base_path }}{{ f[0] }} {{ f[1] }}w{{ ", " if not loop.last }}{% endfor %}"{% if sizes %} sizes="{{ sizes }}"{% endif %}{% endif %} alt="{{ item.image_alt }}" width="{{ d.w if d else 640 }}" height="{{ d.h if d else 360 }}"
+  {%- if d and d.pos %} style="object-position: {{ d.pos }}"{% endif %}{% if lazy %} loading="lazy"{% endif %} decoding="async"></figure>
+{%- endmacro -%}
+
+{% block head %}
+<link rel="stylesheet" href="{{ base_path }}/css/pages/news.css">
+{% endblock %}
+
+{% block content %}
+{{ page_header(page.page_label, page.page_title, page.page_sub) }}
+{%- set toc = [] %}
+{%- if featured %}{% set _ = toc.push({ href: "#" ~ featured.slug, label: page.featured_label }) %}{% endif %}
+{%- set _ = toc.push({ href: "#arquivo", label: page.all_label, count: (archive.length if archive.length else none) }) %}
+{%- set _ = toc.push({ href: "#premios", label: page.awards_label, count: (awards.length if awards.length else none) }) %}
+{{ page_toc(toc, page.nav_label) }}
+
+{%- if featured %}
+{%- set f = featured %}
+{%- set hl = (f.highlight or "") | string | trim %}
+{%- set hl_parts = hl.split(" ") %}
+{%- set hl_n = hl_parts[0] | int(-1) %}
+{#- "3 Artigos Aceitos" → a big counted 3 + its label; any other highlight is shown as written -#}
+{%- set hl_is_num = hl_parts.length > 1 and hl_n >= 0 and (hl_n | string) == hl_parts[0] %}
+{%- set f_body = (f.body_html or "") | trim %}
+{%- set f_list = f_body and (f_body.indexOf("<ul") == 0 or f_body.indexOf("<ol") == 0) %}
+{%- set f_aside = hl or f.image or f_list %}
+{%- set f_event = f.event if (f.event and (f.summary | string).indexOf(f.event) != 0) else "" %}
+<section class="section nw-lead" aria-labelledby="nw-featured-label">
+  <div class="container">
+    <p class="eyebrow nw-lead__eyebrow"><span class="eyebrow__index">{{ pad(i_featured) }}</span><span class="eyebrow__sep" aria-hidden="true">—</span><span id="nw-featured-label">{{ page.featured_label }}</span></p>
+    <article class="nw-feature{% if not f_aside %} nw-feature--solo{% endif %}" id="{{ f.slug }}" aria-labelledby="{{ f.slug }}-title">
+      <div class="nw-feature__main">
+        <div class="nw-meta">
+          {%- if f.category_label %}{{ chip(f.category_label) }}{% endif %}
+          {%- if f.date %}<time class="nw-meta__date" datetime="{{ f.date }}">{{ f.date_label }}</time>{% endif %}
+          {{ copy_link(f) }}
+        </div>
+        <h2 class="nw-feature__title" id="{{ f.slug }}-title">{{ f.title | replace(" — ", nb_dash) }}</h2>
+        {%- if f.summary_html %}
+        <p class="nw-feature__summary">{{ f.summary_html | safe }}</p>
+        {%- endif %}
+        {%- if f_body and not f_list %}
+        <div class="prose nw-feature__body">{{ f_body | safe }}</div>
+        {%- endif %}
+        {%- if f_event or f.location or f.link %}
+        <div class="nw-feature__foot">
+          {{ where(f) }}
+          {%- if f.link %}
+          <div class="btn-row">{{ btn(f.link, page.link_label, "ghost", external=true) }}</div>
+          {%- endif %}
+        </div>
+        {%- endif %}
+      </div>
+      {%- if f_aside %}
+      <div class="nw-feature__aside">
+        {%- if f.image %}
+        {{ media(f, "nw-feature__media", lazy=false, sizes="(min-width: 1240px) 520px, (min-width: 960px) 42vw, 100vw") }}
+        {%- endif %}
+        {%- if hl or f_list %}
+        <div class="nw-panel">
+          {%- if hl and hl_is_num %}
+          {{ stat(hl_parts[0], "", hl_parts.slice(1).join(" "), "xl") }}
+          {%- elif hl %}
+          <p class="nw-panel__text">{{ hl }}</p>
+          {%- endif %}
+          {%- if f_list %}
+          {#- list bodies are paper titles and author names (as in the home teaser): kept as written -#}
+          <div class="nw-papers" translate="no">{{ f_body | safe }}</div>
+          {%- endif %}
+        </div>
+        {%- endif %}
+      </div>
+      {%- endif %}
+    </article>
+  </div>
+</section>
+{%- endif %}
+
+<section class="section section--alt nw-archive" id="arquivo" aria-labelledby="arquivo-title">
+  <div class="container">
+    {{ section_head(i_archive, page.all_label, page.all_title, page.all_sub if archive.length else none, id="arquivo-title") }}
+    {%- if archive.length %}
+    <ol class="nw-timeline" role="list">
+      {%- for item in archive %}
+      {%- set year_start = loop.first or archive[loop.index0 - 1].year != item.year %}
+      {%- set day = item.day_label %}
+      {#- the featured story: a compact entry that points up to its card (which owns the id) -#}
+      {%- set is_feat = featured and item.slug == featured.slug %}
+      {%- set tid = item.slug ~ ("-entry-title" if is_feat else "-title") %}
+      <li>
+        <article class="nw-entry row-hover{% if year_start %} is-year-start{% endif %}{% if item.image and not is_feat %} has-media{% endif %}{% if is_feat %} nw-entry--featured{% endif %}"{% if not is_feat %} id="{{ item.slug }}"{% endif %} aria-labelledby="{{ tid }}">
+          <div class="nw-entry__when" data-reveal>
+            {%- if item.date %}
+            <time class="nw-date" datetime="{{ item.date }}">
+              <span class="nw-date__vis" aria-hidden="true">
+                {%- if year_start and item.year %}<span class="nw-date__year numeral" data-row-index>{{ item.year }}</span>{% endif -%}
+                {%- if day %}<span class="nw-date__day">{{ day }}</span>{% elif not (year_start and item.year) %}<span class="nw-date__day">{{ item.date_label }}</span>{% endif -%}
+              </span>
+              <span class="sr-only">{{ item.date_label }}</span>
+            </time>
+            {%- endif %}
+          </div>
+          <div class="nw-entry__body" data-reveal style="--i: 1">
+            <div class="nw-meta">
+              {%- if item.category_label %}{{ chip(item.category_label) }}{% endif %}
+              {%- if item.highlight %}<span class="badge badge--red">{{ item.highlight }}</span>{% endif %}
+              {%- if not is_feat %}
+              {{ copy_link(item) }}
+              {%- endif %}
+            </div>
+            {%- if is_feat %}
+            <h3 class="nw-entry__title" id="{{ tid }}"><a class="nw-entry__up" href="#{{ item.slug }}">{{ item.title | replace(" — ", nb_dash) }}&nbsp;{{ icon("arrow-up", 18) }}</a></h3>
+            {{ where(item) }}
+            {%- else %}
+            <h3 class="nw-entry__title" id="{{ tid }}">{{ item.title | replace(" — ", nb_dash) }}</h3>
+            {%- if item.summary_html %}
+            <p class="nw-entry__summary">{{ item.summary_html | safe }}</p>
+            {%- endif %}
+            {{ where(item) }}
+            {%- if item.body_html %}
+            <div class="prose nw-entry__text">{{ item.body_html | safe }}</div>
+            {%- endif %}
+            {%- if item.link %}
+            <p class="nw-entry__link">{{ link_arrow(item.link, page.link_label, external=true) }}</p>
+            {%- endif %}
+            {%- endif %}
+          </div>
+          {%- if item.image and not is_feat %}
+          {#- phones: the content width; 768–959: column 2, capped at 330px; from 960: a third column of
+              clamp(220px, 23vw, 330px) -#}
+          {{ media(item, "nw-entry__media", reveal=true, sizes="(min-width: 1435px) 330px, (min-width: 960px) 23vw, (min-width: 768px) 330px, (min-width: 400px) 92vw, calc(100vw - 32px)") }}
+          {%- endif %}
+        </article>
+      </li>
+      {%- endfor %}
+    </ol>
+    {%- else %}
+    <div class="nw-empty">
+      <span class="tile-icon">{{ icon("file-text", 22) }}</span>
+      <p>{{ page.empty_text }}</p>
+    </div>
+    {%- endif %}
+  </div>
+</section>
+
+<section class="section nw-awards" id="premios" aria-labelledby="premios-title">
+  <div class="container">
+    {{ section_head(i_awards, page.awards_label, page.awards_title, page.awards_sub, id="premios-title") }}
+    {%- if awards.length %}
+    <ol class="ruled nw-honours" role="list">
+      {%- for a in awards %}
+      <li class="nw-honour card--interactive" data-reveal style="--i: {{ loop.index0 % 4 }}">
+        <time class="nw-honour__year numeral" datetime="{{ a.date }}">{{ a.year or a.date_label }}</time>
+        <span class="tile-icon nw-honour__icon">{{ icon("trophy", 20) }}</span>
+        <h3 class="nw-honour__title"><a class="nw-honour__link" href="#{{ a.slug }}">{{ a.title | replace(" — ", nb_dash) }}</a></h3>
+        <span class="nw-honour__go" aria-hidden="true">{{ icon("arrow-right", 18) }}</span>
+      </li>
+      {%- endfor %}
+    </ol>
+    {%- else %}
+    <div class="nw-empty">
+      <span class="tile-icon">{{ icon("trophy", 22) }}</span>
+      <p>{{ page.awards_empty }}</p>
+    </div>
+    {%- endif %}
+  </div>
+</section>
+{% endblock %}

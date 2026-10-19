@@ -1,117 +1,90 @@
 'use strict';
-const express = require('express');
-const path    = require('path');
-const fs      = require('fs');
+const express  = require('express');
+const path     = require('path');
 const nunjucks = require('nunjucks');
-const yaml     = require('js-yaml');
 const { LANGUAGES, DEFAULT_LANG, PAGES } = require('./config');
+const content  = require('./lib/content');
+const filters  = require('./lib/filters');
 
 const app  = express();
 const PORT = process.env.PORT || 3001;
+const PRODUCTION = process.env.NODE_ENV === 'production';
+const { BASE_PATH, LANGS, pageUrl } = content;
 
-const BASE_PATH = process.env.BASE_PATH || '';
-const SITE_URL  = (process.env.SITE_URL || 'https://csilab.ufop.br').replace(/\/$/, '');
-
-const LANGS       = Object.keys(LANGUAGES);
-const FACULTY     = ['coordinators', 'professors', 'collaborators'];
-const CONTENT_DIR = path.join(__dirname, 'content');
-
-nunjucks.configure(path.join(__dirname, 'views'), {
+const env = nunjucks.configure(path.join(__dirname, 'views'), {
   autoescape: true,
   express: app,
-  noCache: process.env.NODE_ENV !== 'production',
+  noCache: !PRODUCTION,
 });
+filters.register(env);
 app.set('view engine', 'njk');
 
-function parseFrontmatter(filePath) {
-  if (!fs.existsSync(filePath)) return {};
-  const raw   = fs.readFileSync(filePath, 'utf8');
-  const match = raw.match(/^---\n([\s\S]*?)\n---/);
-  if (!match) return {};
-  return yaml.load(match[1]) || {};
-}
+// Generated URLs include BASE_PATH; the app itself is mounted at the root.
+const route = url => url.slice(BASE_PATH.length) || '/';
 
-const isObject = v => Object.prototype.toString.call(v) === '[object Object]';
+const queryOf = req => {
+  const i = req.originalUrl.indexOf('?');
+  return i === -1 ? '' : req.originalUrl.slice(i);
+};
 
-function deepMerge(target, source) {
-  for (const [k, v] of Object.entries(source)) {
-    target[k] = isObject(v) && isObject(target[k]) ? deepMerge(target[k], v) : v;
+function render(res, next, view, makeContext, status = 200) {
+  let ctx;
+  try {
+    ctx = makeContext();
+  } catch (err) {
+    return next(err);
   }
-  return target;
+  res.render(view, ctx, (err, html) => {
+    if (err) return next(err);
+    res.status(status).send(html);
+  });
 }
 
-// Files with the same name in _shared/data and {lang}/data are merged key by key,
-// so language-independent values live once and only the texts are translated.
-function loadYamlDir(dir, data) {
-  if (!fs.existsSync(dir)) return;
-  for (const f of fs.readdirSync(dir)) {
-    if (/\.(ya?ml|json)$/.test(f)) {
-      const key = f.replace(/\.(ya?ml|json)$/, '');
-      try {
-        const value = yaml.load(fs.readFileSync(path.join(dir, f), 'utf8'));
-        data[key] = isObject(value) && isObject(data[key]) ? deepMerge(data[key], value) : value;
-      } catch (e) {
-        console.error(`[content] Error loading ${dir}/${f}:`, e.message);
-      }
-    }
-  }
-}
-
-function loadContent(lang, page) {
-  const langDir = path.join(CONTENT_DIR, lang);
-  const pageData = parseFrontmatter(path.join(langDir, `${page}.md`));
-  const data = {};
-  loadYamlDir(path.join(CONTENT_DIR, '_shared', 'data'), data);
-  loadYamlDir(path.join(langDir, 'data'), data);
-  return { page: pageData, data };
-}
-
-function langBase(lang) {
-  return lang === DEFAULT_LANG ? BASE_PATH : `${BASE_PATH}/${lang}`;
-}
-
-function pageUrl(lang, page) {
-  if (page !== 'index') return `${langBase(lang)}/${page}`;
-  return langBase(lang) || '/';
-}
-
-function computeCounterTargets(data) {
-  const { counters, team = {}, publications } = data;
-  if (!counters) return;
-  if (counters.publications) {
-    counters.publications.target = (publications?.years || []).reduce((s, y) => s + y.items.length, 0);
-  }
-  if (counters.professors) {
-    counters.professors.target = FACULTY.reduce((s, g) => s + (team[g]?.members?.length || 0), 0);
-  }
-}
-
-function ctx(lang, page) {
-  const { page: p, data } = loadContent(lang, page);
-  computeCounterTargets(data);
-  return {
-    lang,
-    lang_html: LANGUAGES[lang].html,
-    languages: LANGUAGES,
-    currentPage: page,
-    base_url: langBase(lang),
-    base_path: BASE_PATH,
-    site_url: SITE_URL,
-    lang_urls: Object.fromEntries(LANGS.map(l => [l, pageUrl(l, page)])),
-    page: p,
-    data,
-  };
+// "/en/whatever" → "en"; anything without a language prefix → pt.
+function langFromPath(urlPath) {
+  const p = BASE_PATH && urlPath.startsWith(`${BASE_PATH}/`) ? urlPath.slice(BASE_PATH.length) : urlPath;
+  const first = p.split('/')[1];
+  return LANGUAGES[first] ? first : DEFAULT_LANG;
 }
 
 for (const page of PAGES) {
-  app.get(`/${page}.html`, (req, res) => res.redirect(301, pageUrl(DEFAULT_LANG, page)));
-  app.get(`/${DEFAULT_LANG}${page === 'index' ? '' : `/${page}`}`, (req, res) => res.redirect(301, pageUrl(DEFAULT_LANG, page)));
+  // Legacy URLs: /<page>.html and /pt/... → the canonical pt URL.
+  const legacy = [`/${page}.html`, page === 'index' ? `/${DEFAULT_LANG}` : `/${DEFAULT_LANG}/${page}`];
+  for (const url of legacy) {
+    app.get(url, (req, res) => res.redirect(301, pageUrl(DEFAULT_LANG, page) + queryOf(req)));
+  }
   for (const lang of LANGS) {
-    app.get(pageUrl(lang, page).slice(BASE_PATH.length) || '/', (req, res) => res.render(`${page}.njk`, ctx(lang, page)));
+    app.get(route(pageUrl(lang, page)), (req, res, next) =>
+      render(res, next, `${page}.njk`, () => content.buildContext(lang, page)));
   }
 }
 
-app.use(express.static(path.join(__dirname, 'public')));
+// Rendered once (pt) by the static build as dist/404.html, which GitHub Pages serves for unknown URLs.
+app.get('/404.html', (req, res, next) =>
+  render(res, next, '404.njk', () => content.notFoundContext(DEFAULT_LANG)));
 
-app.listen(PORT, '0.0.0.0', () =>
-  console.log(`CSI Lab running at http://localhost:${PORT}`));
+if (!PRODUCTION) {
+  // Component style guide for development (?lang=en to switch language).
+  app.get('/_styleguide', (req, res, next) => {
+    const lang = LANGUAGES[req.query.lang] ? req.query.lang : DEFAULT_LANG;
+    render(res, next, '_styleguide.njk', () => content.styleguideContext(lang));
+  });
+}
+
+// The publications data, linked from the publications page; the static build copies it to
+// dist/data/ (scripts/build-static.js).
+app.get('/data/publications.json', (req, res, next) =>
+  res.sendFile(path.join(content.CONTENT_DIR, '_shared', 'data', 'publications.json'), err => err && next()));
+
+app.use(express.static(content.PUBLIC_DIR));
+
+// Any other URL: the 404 page in the language of the path prefix.
+app.use((req, res, next) =>
+  render(res, next, '404.njk', () => content.notFoundContext(langFromPath(req.path)), 404));
+
+if (require.main === module) {
+  app.listen(PORT, '0.0.0.0', () =>
+    console.log(`CSI Lab running at http://localhost:${PORT}`));
+}
+
+module.exports = app;

@@ -1,8 +1,16 @@
 publications:
+  source: "publications"
+  suffix: "+"
   label: "Scientific Publications"
 professors:
+  source: "faculty"
   label: "Professors & Researchers"
 partnerships:
+  source: "manual"
+  value: 5
   label: "Industry Partnerships"
 alumni:
+  source: "manual"
+  value: 50
+  suffix: "+"
   label: "Alumni"

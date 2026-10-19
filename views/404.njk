@@ -1,0 +1,159 @@
+{#-
+  404 page. The static build renders it once (pt) as dist/404.html and GitHub Pages serves it for
+  every unknown URL, so:
+    1. an inline script (before any stylesheet) maps legacy URLs to canonical ones, keeping the
+       query and #hash: /index.html → /, /<page>.html → /<page>/, /pt[/] → /, /pt/<page>[.html] →
+       /<page>/, /<lang>/<page>.html → /<lang>/<page>/ (base_path aware);
+    2. otherwise the texts, links and chrome labels (header, skip link, main, footer) and the
+       meta tags (description, Open Graph title, description, image, image alt and locale) are
+       swapped to the language of the path prefix (/en/…, /es/…, /it/…) from not_found_i18n.
+       Express renders it per language directly.
+-#}
+{% extends "base.njk" %}
+{%- from "_macros.njk" import icon with context -%}
+{%- set ui = data.ui or {} -%}
+{%- set nf_links = [
+  { key: "research", page: "pesquisa" },
+  { key: "people", page: "equipe" },
+  { key: "publications", page: "publicacoes" },
+  { key: "news", page: "noticias" },
+  { key: "contact", page: "contato" }
+] -%}
+
+{% block head_early %}
+<script>
+(function () {
+  var base = {{ (base_path or "") | dump | safe }};
+  var def = {{ (default_lang or "pt") | dump | safe }};
+  var langs = {{ languages | dump | safe }};
+  var pages = {{ urls | dump | safe }};
+  var loc = window.location;
+  var path = loc.pathname;
+  if (base) {
+    if (path !== base && path.indexOf(base + "/") !== 0) return;
+    path = path.slice(base.length) || "/";
+  }
+  var seg = path.split("/").filter(Boolean);
+  var html = /\.html?$/i;
+  var bare = function (s) { return s.replace(html, ""); };
+  var isPage = function (s) { return Object.prototype.hasOwnProperty.call(pages, s); };
+  var url = function (lang, page) {
+    return base + (lang === def ? "" : "/" + lang) + (page === "index" ? "" : "/" + page) + "/";
+  };
+  var target = null;
+  if (seg.length === 1) {
+    if (seg[0] === def) target = url(def, "index");
+    else if (html.test(seg[0]) && isPage(bare(seg[0]))) target = url(def, bare(seg[0]));
+  } else if (seg.length === 2 && isPage(bare(seg[1]))) {
+    if (seg[0] === def) target = url(def, bare(seg[1]));
+    else if (langs[seg[0]] && html.test(seg[1])) target = url(seg[0], bare(seg[1]));
+  }
+  if (target) loc.replace(target + loc.search + loc.hash);
+})();
+</script>
+{% endblock %}
+
+{% block content %}
+<section class="page-header not-found" aria-labelledby="nf-title">
+  <div class="page-header__bg" aria-hidden="true">
+    <div class="page-header__grid"></div>
+    <div class="page-header__glow"></div>
+    <div class="page-header__cells"><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="page-header__scan"></div>
+  </div>
+  <div class="container page-header__inner">
+    <p class="not-found__code" aria-hidden="true" translate="no">4<span>0</span>4</p>
+    <h1 class="page-header__title" id="nf-title" data-nf="title">{{ ui.not_found.title }}</h1>
+    <p class="page-header__sub" data-nf="text">{{ ui.not_found.text }}</p>
+    <div class="btn-row">
+      <a class="btn btn--primary" href="{{ urls.index }}" data-nav-page="index"><span class="btn__label" data-nf="home">{{ ui.not_found.home }}</span>{{ icon("arrow-right", 18, "btn__icon") }}</a>
+    </div>
+    <nav class="not-found__links" aria-labelledby="nf-links">
+      <h2 class="label" id="nf-links" data-nf="links_heading">{{ ui.not_found.links_heading }}</h2>
+      <ul class="not-found__list" role="list">
+        {%- for item in nf_links %}
+        <li><a class="not-found__link" href="{{ urls[item.page] }}" data-nav-page="{{ item.page }}"><span class="not-found__idx" aria-hidden="true">0{{ loop.index }}</span><span data-nav-key="{{ item.key }}">{{ ui.nav[item.key] }}</span>{{ icon("arrow-right", 20) }}</a></li>
+        {%- endfor %}
+      </ul>
+    </nav>
+  </div>
+</section>
+{%- if not_found_i18n %}
+<script type="application/json" id="nf-i18n">{{ not_found_i18n | dump | replace("<", "\\u003c") | safe }}</script>
+<script>
+(function () {
+  var all;
+  try { all = JSON.parse(document.getElementById("nf-i18n").textContent); } catch (e) { return; }
+  var base = {{ (base_path or "") | dump | safe }};
+  var current = {{ lang | dump | safe }};
+  var siteName = {{ (data.site.name or "") | dump | safe }};
+  var shortName = {{ (data.site.short_name or data.site.name or "") | dump | safe }};
+  var path = location.pathname;
+  if (base && path.indexOf(base) === 0) path = path.slice(base.length);
+  var code = path.split("/")[1] || "";
+  if (!all[code] || code === current) return;
+  var t = all[code];
+  var nav = t.nav || {};
+  var newTab = (t.common && t.common.new_tab) || "";
+  /* data-nf / data-nf-alt hold a path into t: "title", "footer.lab_heading", "location.room" … */
+  var pick = function (key) {
+    return key.split(".").reduce(function (o, k) { return o && typeof o === "object" ? o[k] : undefined; }, t);
+  };
+  var href = function (page) {
+    return (t.urls && t.urls[page]) || (base + "/" + code + (page === "index" ? "" : "/" + page));
+  };
+  var each = function (sel, fn) { Array.prototype.forEach.call(document.querySelectorAll(sel), fn); };
+  var apply = function () {
+    each("[data-nf]", function (el) {
+      var v = pick(el.getAttribute("data-nf"));
+      /* keep the leading space of " (opens in a new tab)" suffixes */
+      if (typeof v === "string" && v) el.textContent = (/^\s/.test(el.textContent) ? " " : "") + v;
+    });
+    each("[data-nf-alt]", function (el) {
+      var v = pick(el.getAttribute("data-nf-alt"));
+      if (typeof v === "string" && v) el.setAttribute("alt", v);
+    });
+    each("[data-nav-key]", function (el) { var v = nav[el.getAttribute("data-nav-key")]; if (v) el.textContent = v; });
+    each("[data-nav-aria]", function (el) {
+      var v = nav[el.getAttribute("data-nav-aria")];
+      if (v) el.setAttribute("aria-label", el.getAttribute("target") === "_blank" && newTab ? v + " " + newTab : v);
+    });
+    each("[data-nav-page]", function (el) {
+      var hash = el.getAttribute("data-nav-hash");
+      el.setAttribute("href", href(el.getAttribute("data-nav-page")) + (hash ? "#" + hash : ""));
+    });
+    each("[data-lang-current]", function (el) { el.textContent = code.toUpperCase(); });
+    each("[data-lang-link]", function (el) {
+      if (el.getAttribute("data-lang-link") === code) el.setAttribute("aria-current", "true");
+      else el.removeAttribute("aria-current");
+    });
+  };
+  var meta = function (sel, v) {
+    var m = document.querySelector("meta[" + sel + "]");
+    if (m && v) m.setAttribute("content", v);
+    return m;
+  };
+  document.documentElement.lang = t.lang_html || code;
+  if (t.title) document.title = siteName ? t.title + " — " + siteName : t.title;
+  meta('name="description"', t.text);
+  meta('property="og:title"', t.title && document.title);
+  meta('property="og:description"', t.text);
+  meta('property="og:image:alt"', t.footer && t.footer.description && shortName + " — " + t.footer.description);
+  var img = meta('property="og:image"');
+  if (img) img.setAttribute("content", img.getAttribute("content").replace(/og-card-[a-z]+\.jpg$/, "og-card-" + code + ".jpg"));
+  /* the URL's locale and the page's own trade places */
+  var loc = meta('property="og:locale"');
+  var alt = meta('property="og:locale:alternate"][data-lang="' + code + '"');
+  if (loc && alt) {
+    var own = loc.getAttribute("content");
+    loc.setAttribute("content", alt.getAttribute("content"));
+    alt.setAttribute("content", own);
+    alt.setAttribute("data-lang", current);
+  }
+  /* the header and main exist now; the footer is parsed after this script */
+  apply();
+  document.addEventListener("DOMContentLoaded", apply);
+})();
+</script>
+{%- endif %}
+{% endblock %}

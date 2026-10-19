@@ -1,0 +1,83 @@
+{#-
+  Global header + mobile menu. Data attributes are hooks for site.js and for the 404 page,
+  which re-labels and re-links the chrome client-side (data-nav-page / data-nav-key / data-nav-aria /
+  data-nf; an aria-label from data-nav-aria on a target=_blank link gets the new-tab suffix).
+-#}
+{%- from "_macros.njk" import icon, brand with context -%}
+{%- set ui = data.ui or {} -%}
+{%- set nav_items = [
+  { key: "research", page: "pesquisa" },
+  { key: "people", page: "equipe" },
+  { key: "publications", page: "publicacoes" },
+  { key: "news", page: "noticias" },
+  { key: "contact", page: "contato" }
+] -%}
+{%- set github = data.site.social.github if (data.site and data.site.social) else none -%}
+<header class="site-header" data-header>
+  <div class="container site-header__inner">
+    <a class="site-header__brand" href="{{ urls.index }}" data-nav-page="index">
+      <img src="{{ base_path }}/images/logo-csilab-compact.svg" width="115" height="34" alt="CSI Lab">
+    </a>
+    <nav class="site-nav" aria-label="{{ ui.nav.label }}" data-nav data-nav-aria="label">
+      <ul class="site-nav__list" role="list">
+        {%- for item in nav_items %}
+        {%- set current = currentPage == item.page %}
+        <li><a class="site-nav__link" href="{{ urls[item.page] }}" data-nav-page="{{ item.page }}"{% if current %} aria-current="page"{% endif %}><span data-nav-key="{{ item.key }}">{{ ui.nav[item.key] }}</span>{% if current %}<span class="site-nav__mark" aria-hidden="true"></span>{% endif %}</a></li>
+        {%- endfor %}
+      </ul>
+    </nav>
+    <div class="site-header__actions">
+      <div class="lang" data-lang>
+        <button class="lang__btn" type="button" aria-expanded="false" aria-controls="lang-menu" data-lang-btn>
+          {{- icon("globe", 16) -}}
+          <span class="sr-only" data-nav-key="language">{{ ui.nav.language }}</span>
+          <span data-lang-current translate="no">{{ lang | upper }}</span>
+          {{- icon("chevron-down", 14, "lang__chev") -}}
+        </button>
+        <div class="lang__menu" id="lang-menu">
+          <ul class="lang__list" role="list">
+            {%- for code, l in languages %}
+            <li><a class="lang__link" href="{{ lang_urls[code] }}" hreflang="{{ l.html }}" lang="{{ l.html }}" data-lang-link="{{ code }}"{% if code == lang %} aria-current="true"{% endif %}><span class="lang__code" translate="no">{{ code | upper }}</span><span class="lang__name">{{ l.name }}</span>{{ icon("check", 16, "lang__check") }}</a></li>
+            {%- endfor %}
+          </ul>
+        </div>
+      </div>
+      {%- if github %}
+      <span class="site-header__divider" aria-hidden="true"></span>
+      <a class="icon-btn site-header__github" href="{{ github.url }}" target="_blank" rel="noopener" aria-label="{{ ui.nav.github }} {{ ui.common.new_tab }}" data-nav-aria="github">{{ brand("github", 20) }}</a>
+      {%- endif %}
+      <button class="icon-btn icon-btn--bordered menu-btn" type="button" aria-label="{{ ui.nav.menu_open }}" aria-haspopup="dialog" aria-expanded="false" aria-controls="site-menu" commandfor="site-menu" command="show-modal" data-menu-open data-nav-aria="menu_open">{{ icon("menu", 20) }}</button>
+    </div>
+  </div>
+</header>
+{#- tabindex="-1": when its content overflows (short viewports, the opening animation) Chromium
+    would otherwise make the dialog itself an invisible Tab stop as a scroll container.
+    The list is a <nav>: below 960px it is the page's navigation landmark (the desktop <nav> is
+    display:none there, and this one only exists while the dialog is open). -#}
+<dialog class="menu" id="site-menu" aria-labelledby="site-menu-title" tabindex="-1">
+  <h2 class="sr-only" id="site-menu-title" data-nav-key="label">{{ ui.nav.label }}</h2>
+  <div class="container menu__bar">
+    <a class="menu__brand" href="{{ urls.index }}" data-nav-page="index"><img src="{{ base_path }}/images/logo-csilab-compact.svg" width="101" height="30" alt="CSI Lab"></a>
+    <button class="icon-btn icon-btn--bordered menu__close" type="button" aria-label="{{ ui.nav.menu_close }}" commandfor="site-menu" command="close" autofocus data-menu-close data-nav-aria="menu_close">{{ icon("x", 20) }}</button>
+  </div>
+  <nav class="container menu__nav" aria-labelledby="site-menu-title">
+    <ul class="menu__list" role="list">
+      {%- for item in nav_items %}
+      <li class="menu__item" style="--i: {{ loop.index0 }}"><a class="menu__link" href="{{ urls[item.page] }}" data-nav-page="{{ item.page }}"{% if currentPage == item.page %} aria-current="page"{% endif %}><span class="menu__index" aria-hidden="true">0{{ loop.index }}</span><span class="menu__label" data-nav-key="{{ item.key }}">{{ ui.nav[item.key] }}</span>{{ icon("arrow-right", 22) }}</a></li>
+      {%- endfor %}
+    </ul>
+  </nav>
+  <div class="container menu__foot" style="--i: {{ nav_items | length }}">
+    <div role="group" aria-labelledby="menu-lang-label">
+      <p class="label" id="menu-lang-label" data-nav-key="language">{{ ui.nav.language }}</p>
+      <ul class="menu__langs" role="list">
+        {%- for code, l in languages %}
+        <li><a class="menu__lang" href="{{ lang_urls[code] }}" hreflang="{{ l.html }}" lang="{{ l.html }}" data-lang-link="{{ code }}"{% if code == lang %} aria-current="true"{% endif %}><span class="lang__code" translate="no">{{ code | upper }}</span><span>{{ l.name }}</span>{{ icon("check", 16, "lang__check") }}</a></li>
+        {%- endfor %}
+      </ul>
+    </div>
+    {%- if github %}
+    <a class="link-arrow menu__github" href="{{ github.url }}" target="_blank" rel="noopener">{{ brand("github", 18) }}<span class="link-arrow__text" data-nav-key="github">{{ ui.nav.github }}</span><span class="sr-only" data-nf="common.new_tab"> {{ ui.common.new_tab }}</span>{{ icon("arrow-up-right", 18) }}</a>
+    {%- endif %}
+  </div>
+</dialog>

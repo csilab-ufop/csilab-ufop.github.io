@@ -1,24 +1,66 @@
 ai:
+  icon: "cpu"
+  tags:
+    - "artificial_intelligence"
+    - "computational_intelligence"
+    - "applied_ml"
   title: "Inteligência Artificial"
   text: "Modelos de IA aplicados a problemas de alta complexidade em saúde, finanças, linguagem e percepção ambiental."
 vision:
+  icon: "eye"
+  tags:
+    - "computer_vision"
+    - "biometrics"
+    - "periocular_biometrics"
+    - "pattern_recognition"
   title: "Visão Computacional"
   text: "Reconhecimento de padrões visuais, classificação de imagens, detecção de deepfakes e identificação biométrica."
 ml:
+  icon: "layers"
+  tags:
+    - "machine_learning"
+    - "deep_learning"
+    - "metric_learning"
+    - "applied_ml"
   title: "Aprendizado de Máquina"
   text: "Redes neurais profundas, aprendizado por transferência, self-supervised learning e arquiteturas eficientes (NAS)."
 nlp:
+  icon: "message"
+  tags:
+    - "nlp"
+    - "text_classification"
   title: "Processamento de Linguagem Natural"
   text: "Modelos de linguagem para o português, classificação de texto tóxico, reconhecimento de fala e otimização de prompts."
 data_science:
+  icon: "bar-chart"
+  tags:
+    - "data_science"
+    - "statistical_methods"
+    - "time_series"
+    - "databases"
+    - "network_science"
   title: "Ciência de Dados"
   text: "Análise de risco de crédito, detecção de fraude, churn prediction e séries temporais epidemiológicas."
 spatial:
+  icon: "map"
+  tags:
+    - "spatial_analysis"
+    - "cluster_detection"
   title: "Análise Espacial e Epidemiológica"
   text: "Detecção de clusters espaciais, modelagem de COVID-19 com redes GNN e mobilidade urbana, vigilância epidemiológica."
 biosignals:
+  icon: "activity"
+  tags:
+    - "biomedical_signals"
+    - "biological_signal_analysis"
   title: "Sinais Biomédicos"
   text: "Classificação de ECG, detecção de arritmias, segmentação de heartbeat e sinais cardíacos remotos por vídeo (rPPG)."
 optimization:
-  title: "Otimização Multi-objetivo"
+  icon: "sliders"
+  tags:
+    - "multiobjective_optimization"
+    - "evolutionary_algorithms"
+    - "community_detection"
+    - "social_network_analysis"
+  title: "Otimização Multiobjetivo"
   text: "Algoritmos evolutivos, detecção de comunidades em redes sociais e otimização de dispersão/concentração de soluções Pareto."

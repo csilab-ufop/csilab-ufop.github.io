@@ -1,56 +1,99 @@
 coordinators:
   members:
     - name: "Gladston Moreira"
-      scholar_id: "L4nnrk8AAAAJ"
-      role_key: coordinator
-      tags: [artificial_intelligence, multiobjective_optimization, spatial_analysis, cluster_detection]
+      gender: "m"
+      role: "coordinator"
       email: "gladston@ufop.edu.br"
+      scholar_id: "L4nnrk8AAAAJ"
+      tags:
+        - "artificial_intelligence"
+        - "multiobjective_optimization"
+        - "spatial_analysis"
+        - "cluster_detection"
     - name: "Eduardo Luz"
-      scholar_id: "20pViLEAAAAJ"
+      gender: "m"
+      role: "coordinator"
       email: "eduardoluz@ufop.edu.br"
-      role_key: coordinator
-      tags: [computer_vision, biometrics, pattern_recognition, biomedical_signals]
-
+      scholar_id: "20pViLEAAAAJ"
+      tags:
+        - "computer_vision"
+        - "biometrics"
+        - "pattern_recognition"
+        - "biomedical_signals"
 professors:
   members:
     - name: "Vander Freitas"
+      gender: "m"
+      role: "associate_professor"
       scholar_id: "XX3euXkAAAAJ"
-      role_key: associate_professor
-      tags: [machine_learning, nlp, time_series]
+      tags:
+        - "machine_learning"
+        - "nlp"
+        - "time_series"
     - name: "Pedro Silva"
+      gender: "m"
+      role: "associate_professor"
       scholar_id: "JZt9ClYAAAAJ"
-      role_key: associate_professor
-      tags: [computer_vision, periocular_biometrics, deep_learning, metric_learning]
+      tags:
+        - "computer_vision"
+        - "periocular_biometrics"
+        - "deep_learning"
+        - "metric_learning"
     - name: "Jadson Castro"
-      role_key: associate_professor
-      tags: [databases, pattern_recognition, biological_signal_analysis]
+      gender: "m"
+      role: "associate_professor"
+      tags:
+        - "databases"
+        - "pattern_recognition"
+        - "biological_signal_analysis"
     - name: "Valéria Santos"
-      gender: f
-      role_key: associate_professor_f
-      tags: [nlp, machine_learning, text_classification]
+      gender: "f"
+      role: "associate_professor"
+      tags:
+        - "nlp"
+        - "machine_learning"
+        - "text_classification"
     - name: "Rodrigo Silva"
+      gender: "m"
+      role: "associate_professor"
       scholar_id: "Ki1CGw4AAAAJ"
-      role_key: associate_professor
-      tags: [data_science, artificial_intelligence, applied_ml]
+      tags:
+        - "data_science"
+        - "artificial_intelligence"
+        - "applied_ml"
     - name: "Ivair Silva"
-      role_key: associate_professor
-      tags: [statistical_methods, sequential_tests, sampler_convergence]
+      gender: "m"
+      role: "associate_professor"
+      tags:
+        - "statistical_methods"
+        - "sequential_tests"
+        - "sampler_convergence"
     - name: "Carlos Henrique G. Ferreira"
+      gender: "m"
+      role: "associate_professor"
       scholar_id: "ILpkjHAAAAAJ"
-      role_key: associate_professor
-      tags: [network_science, data_science, computational_social_science]
       lattes: "0748942455194916"
-
+      tags:
+        - "network_science"
+        - "data_science"
+        - "computational_social_science"
 collaborators:
   members:
     - name: "Elizabeth Wanner"
-      gender: f
-      role_key: collaborating_researcher_f
-      tags: [multiobjective_optimization, evolutionary_algorithms, computational_intelligence]
+      gender: "f"
+      role: "collaborating_researcher"
+      tags:
+        - "multiobjective_optimization"
+        - "evolutionary_algorithms"
+        - "computational_intelligence"
     - name: "David Menotti"
-      role_key: collaborating_researcher
-      tags: [computer_vision, biometrics, pattern_recognition, deep_learning]
-
+      gender: "m"
+      role: "collaborating_researcher"
+      tags:
+        - "computer_vision"
+        - "biometrics"
+        - "pattern_recognition"
+        - "deep_learning"
 phd_students:
   members:
     - name: "Pedro Castro"
@@ -68,15 +111,14 @@ phd_students:
       since: 2023
       lattes: "9750853239897719"
     - name: "Guilherme Silva"
-      scholar_id: "DqnrCA8AAAAJ"
       since: 2023
+      scholar_id: "DqnrCA8AAAAJ"
       lattes: "4755584696921241"
     - name: "Andressa Oliveira"
       since: 2023
     - name: "Fernando Duarte"
       since: 2022
       lattes: "9331617052785818"
-
 masters_students:
   members:
     - name: "Jean Pinheiro"
@@ -87,7 +129,6 @@ masters_students:
     - name: "Amanda Oliveira"
       since: 2022
       lattes: "7187644478574662"
-
 undergrads:
   members:
     - name: "Rafael Alto"
@@ -108,7 +149,6 @@ undergrads:
     - name: "Suleimane Ducure"
       since: 2021
       lattes: "4547014379251202"
-
 alumni_grad:
   members:
     - "Rafael Oliveira"
@@ -116,7 +156,6 @@ alumni_grad:
     - "Pedro Silva"
     - "Thiago Schons"
     - "Felipe de Oliveira Mota"
-
 alumni_undergrad:
   members:
     - "Carlos Freitas"

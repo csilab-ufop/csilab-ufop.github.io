@@ -1,219 +1,362 @@
+{#-
+  Publications (spec/pages.md "Publications"). Everything is server-rendered from
+  publications.json (data.publications, data.pubs, data.pub_facets). publications.js only layers
+  the search, filters and sort over the full list, so without JS every paper is visible and the toolbar stays
+  hidden. Styles: public/css/pages/publications.css.
+
+    page header   label, h1, sub, provenance line (source · updated · code), three stats
+    01 panorama   two SVG bar charts (papers per year, citations by publication year), each
+                  described by a one-sentence summary; every bar links to its year in the
+                  archive; a link to the raw publications.json under them
+    02 arquivo    sticky toolbar (search, year, filters disclosure, count, clear) + filter
+                  chips + year groups, newest first. Each paper carries its facets as data
+                  attributes (people, venue, type, citations; lib/pub-facets.js)
+    code CTA      GitHub organisation
+
+  Charts have no viewBox on purpose: horizontal positions are percentages of the SVG width
+  (plus a per-element pixel offset for the y-axis gutter) and vertical positions are pixels on
+  a fixed height, so the chart fills its card at any width while labels keep their real 11px
+  size (a scaled viewBox would shrink them to ~5px on a phone).
+-#}
 {% extends "base.njk" %}
+{%- from "_macros.njk" import icon, brand, section_head, page_header, stat, link_arrow with context -%}
+{%- set ui = data.ui or {} -%}
+{%- set pubs = data.pubs or {} -%}
+{%- set groups = (data.publications.years if (data.publications and data.publications.years) else []) -%}
+{%- set github = data.site.social.github if (data.site and data.site.social) else none -%}
+{#- the newest year is still running when the data was generated in it: its bars are partial -#}
+{%- set gen_year = ((pubs.generated_at or "") | string).slice(0, 4) | int(0) -%}
+{%- set partial = pubs.last_year if (pubs.last_year and pubs.last_year == gen_year) else none -%}
+{%- set period = (pubs.first_year ~ "–" ~ pubs.last_year) if (pubs.first_year != pubs.last_year) else pubs.last_year -%}
+{%- set cited = (page.cited_by or "{n}").split("{n}") -%}
+{#- Google Scholar pages open in the language of the page -#}
+{%- set hl_re = r/([?&])hl=[^&#]*/ -%}
+{%- set url_re = r/^https?:\/\/(www\.)?([^\/?#]+).*$/ -%}
+
+{%- macro plural(n, one, other) -%}{{ (one if n == 1 else other) | replace("{n}", n | num) }}{%- endmacro -%}
+
+{%- macro fill_bold(tpl, vars) -%}
+{#- replaces {n} / {total} by <b>value</b>; the rest of the template is escaped text -#}
+{%- set parts = (tpl or "").split("{") -%}
+{%- for part in parts -%}
+{%- if loop.first -%}{{ part }}
+{%- else -%}
+{%- set kv = part.split("}") -%}
+{%- if kv.length > 1 and (vars[kv[0]] is defined) -%}<b>{{ vars[kv[0]] }}</b>{{ kv.slice(1).join("}") }}
+{%- else -%}{{ "{" ~ part }}{%- endif -%}
+{%- endif -%}
+{%- endfor -%}
+{%- endmacro -%}
+
+{%- macro chart(key, title, rows, one, other) -%}
+{%- set H = 236 -%}{%- set T = 30 -%}{%- set B = 30 -%}
+{%- set plot_h = H - T - B -%}
+{%- set base = H - B -%}
+{%- set n = rows | length -%}
+{%- set top_row = rows | sort(true, false, "count") | first -%}
+{%- set maxv = top_row.count if (top_row and top_row.count > 0) else 1 -%}
+{%- set peak_year = top_row.year if top_row else none -%}
+{#- smallest "nice" step that covers the maximum in at most 4 intervals -#}
+{%- set steps = [] -%}
+{%- for s in [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 2500, 5000, 10000, 20000, 25000, 50000, 100000, 250000, 500000, 1000000] -%}
+{%- if (maxv / s) | round(0, "ceil") <= 4 %}{% set _ = steps.push(s) %}{% endif -%}
+{%- endfor -%}
+{%- set step = steps[0] or 1000000 -%}
+{%- set ticks = (maxv / step) | round(0, "ceil") -%}
+{%- set ymax = ticks * step -%}
+{#- y-axis gutter: room for the longest tick label (11px mono ≈ 7px per character) -#}
+{%- set gut = ((ymax | num) | string | length) * 7 + 12 -%}
+{#- bars take half of their column (in % of the SVG width, centred with the gutter offset) -#}
+{%- set bw = (50 / n) | round(3) -%}
+{#- the chart's text alternative: the series in one sentence (total, span, peak) as the figure's
+    description, plus a <title> on every bar -#}
+{%- set summary = (page.chart_summary or "")
+  | replace("{total}", plural(rows | sum("count"), one, other))
+  | replace("{first}", rows[0].year if n else "")
+  | replace("{last}", rows[n - 1].year if n else "")
+  | replace("{peak}", peak_year or "")
+  | replace("{value}", plural(top_row.count if top_row else 0, one, other)) -%}
+<figure class="pubs-chart pubs-chart--{{ key }}" aria-describedby="chart-{{ key }}-sum" data-reveal>
+  <figcaption class="pubs-chart__head">
+    <h3 class="pubs-chart__title" id="chart-{{ key }}">{{ title }}</h3>
+  </figcaption>
+  <p class="sr-only" id="chart-{{ key }}-sum">{{ summary }}{% if partial %} {{ page.chart_partial | replace("{year}", partial) }}.{% endif %}</p>
+  {#- unnamed group: the figure already carries the title (named by its figcaption) -#}
+  <svg class="pubs-chart__svg" width="100%" height="{{ H }}" role="group">
+    <defs><clipPath id="pubs-clip-{{ key }}"><rect width="100%" height="{{ base }}"/></clipPath></defs>
+    <g class="pubs-chart__grid" aria-hidden="true">
+      {%- for k in range(0, ticks + 1) %}
+      {%- set y = (base - k * step / ymax * plot_h) | round(1) %}
+      <line x1="{{ gut }}" x2="100%" y1="{{ y }}" y2="{{ y }}"{% if k == 0 %} class="is-base"{% endif %}/><text x="{{ gut - 10 }}" y="{{ y }}" dy=".35em">{{ (k * step) | num }}</text>
+      {%- endfor %}
+    </g>
+    {%- for r in rows %}
+    {%- set i = loop.index0 %}
+    {%- set c = (i + 0.5) / n %}
+    {%- set cx = (c * 100) | round(3) %}
+    {%- set off = (gut * (1 - c)) | round(2) %}
+    {%- set h = (r.count / ymax * plot_h) | round(1) %}
+    {%- set y0 = (base - h) | round(1) %}
+    {%- set label = r.year ~ ": " ~ plural(r.count, one, other) ~ ((" (" ~ page.partial_short ~ ")") if r.year == partial else "") %}
+    {%- if r.count %}
+    <a class="pubs-chart__bar{% if r.year == peak_year %} is-peak{% endif %}{% if r.year == partial %} is-partial{% endif %}" href="#ano-{{ r.year }}" aria-describedby="pubs-bar-hint" style="--i: {{ i }}">
+      <title>{{ label }}</title>
+      <rect class="pubs-chart__hit" x="{{ (i / n * 100) | round(3) }}%" y="0" width="{{ (100 / n) | round(3) }}%" height="{{ H }}" rx="6" transform="translate({{ (gut * (1 - i / n)) | round(2) }} 0)"/>
+      <rect class="pubs-chart__col" x="{{ (cx - bw / 2) | round(3) }}%" y="{{ y0 }}" width="{{ bw }}%" height="{{ h + 4 }}" rx="3" transform="translate({{ off }} 0)" clip-path="url(#pubs-clip-{{ key }})"/>
+      <text class="pubs-chart__value" x="{{ cx }}%" dx="{{ off }}" y="{{ y0 - 9 }}">{{ r.count | num }}</text>
+      <text class="pubs-chart__x{% if (n - 1 - i) % 2 %} is-alt{% endif %}" x="{{ cx }}%" dx="{{ off }}" y="{{ H - 9 }}">{{ r.year }}</text>
+    </a>
+    {%- else %}
+    <g class="pubs-chart__bar is-empty"><title>{{ label }}</title><text class="pubs-chart__x{% if (n - 1 - i) % 2 %} is-alt{% endif %}" x="{{ cx }}%" dx="{{ off }}" y="{{ H - 9 }}">{{ r.year }}</text></g>
+    {%- endif %}
+    {%- endfor %}
+  </svg>
+  {#- one line under the chart: the partial-year key at rest, the keyboard hint (bar_hint, also
+      the bars' description) while a bar has keyboard focus; both share one grid cell -#}
+  <div class="pubs-chart__foot">
+    {%- if partial %}
+    <p class="pubs-chart__note"><span class="pubs-chart__key" aria-hidden="true"></span>{{ page.chart_partial | replace("{year}", partial) }}</p>
+    {%- endif %}
+    <p class="pubs-chart__hint" aria-hidden="true">{{ page.bar_hint }}</p>
+  </div>
+</figure>
+{%- endmacro -%}
 
 {% block head %}
-<style>
-.pub-charts {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.25rem;
-  margin: 2rem 0 2.5rem;
-}
-.pub-chart-card {
-  background: var(--color-surface);
-  border: 1px solid rgba(86,101,115,0.2);
-  border-radius: 10px;
-  padding: 1.25rem 1.5rem 1rem;
-}
-.pub-chart-title {
-  font-family: var(--font-primary);
-  font-size: 0.8125rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--color-muted);
-  margin-bottom: 0.875rem;
-}
-.pub-chart-canvas-wrap { position: relative; height: 160px; }
-@media (max-width: 640px) {
-  .pub-charts { grid-template-columns: 1fr; }
-  .pub-chart-canvas-wrap { height: 140px; }
-}
-
-.pub-cite-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  margin-top: 0.6rem;
-  padding: 0.25rem 0.7rem;
-  border-radius: 5px;
-  font-size: 0.775rem;
-  font-family: var(--font-secondary), sans-serif;
-  border: 1px solid rgba(86,101,115,0.3);
-  background: rgba(86,101,115,0.08);
-  color: var(--color-muted);
-  cursor: pointer;
-  text-decoration: none;
-  transition: border-color 0.15s, color 0.15s, background 0.15s;
-}
-.pub-cite-btn:hover {
-  border-color: rgba(233,79,55,0.4);
-  color: var(--color-text);
-  background: rgba(233,79,55,0.06);
-}
-.pub-cite-btn svg { flex-shrink: 0; }
-.pub-cite-panel {
-  display: none;
-  margin-top: 0.75rem;
-  padding: 0.875rem 1rem;
-  background: rgba(11,12,16,0.6);
-  border: 1px solid rgba(86,101,115,0.2);
-  border-radius: 6px;
-}
-.pub-cite-panel.open { display: block; }
-.pub-cite-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-.pub-cite-list li {
-  font-size: 0.8125rem;
-  color: var(--color-muted);
-  line-height: 1.45;
-}
-.pub-cite-list li strong { color: var(--color-text); display: block; }
-.pub-cite-list li a { color: var(--color-accent); text-decoration: none; font-size: 0.775rem; }
-.pub-cite-list li a:hover { text-decoration: underline; }
-.pub-cite-count {
-  font-size: 0.775rem;
-  color: var(--color-muted);
-  margin-bottom: 0.6rem;
-}
-</style>
+<link rel="stylesheet" href="{{ base_path }}/css/pages/publications.css">
 {% endblock %}
 
 {% block content %}
+{% call page_header(page.page_label, page.page_title, page.page_sub) %}
+<ul class="pubs-meta" role="list">
+  <li>{{ brand("scholar", 16) }}<span>{{ page.meta_source | replace("{source}", "Google Scholar") }}</span></li>
+  {%- if pubs.updated_label %}
+  {%- set updated = (page.meta_updated or "{date}").split("{date}") %}
+  <li>{{ icon("calendar", 16) }}<span>{{ updated[0] }}<time datetime="{{ pubs.generated_at }}">{{ pubs.updated_label }}</time>{{ updated[1] }}</span></li>
+  {%- endif %}
+  {%- if github %}
+  <li>{{ brand("github", 16) }}<span>{{ page.code_note }} <a class="link" href="{{ github.url }}" target="_blank" rel="noopener" translate="no">github.com/{{ github.handle }}<span class="sr-only"> {{ ui.common.new_tab }}</span></a></span></li>
+  {%- endif %}
+</ul>
+{%- if pubs.total %}
+<div class="ruled stats pubs-stats">
+  {{ stat(pubs.total, "", page.stat_papers_label, "sm") }}
+  {{ stat(pubs.citations, "", page.stat_citations_label, "sm") }}
+  {{ stat(period, "", page.stat_period_label, "sm") }}
+</div>
+{%- endif %}
+{% endcall %}
 
-<section style="padding-top:8rem;padding-bottom:3rem;">
+{%- if pubs.total %}
+<section class="section section--alt pubs-overview" id="panorama" aria-labelledby="pubs-overview-title">
   <div class="container">
-    <span class="section-label">{{ page.page_label }}</span>
-    <h1 class="d2c_title" style="margin-top:0.75rem;margin-bottom:1rem;">{{ page.page_title }}</h1>
-    <p class="text-lavender" style="font-size:1rem;max-width:640px;line-height:1.75;">
-      {{ page.page_sub }}
-      <a href="{{ data.site.social.github.url }}" target="_blank" style="color:var(--color-accent);">github.com/{{ data.site.social.github.handle }}</a>.
-    </p>
+    {{ section_head(1, page.overview_label, page.overview_title, page.overview_sub, id="pubs-overview-title") }}
+    <div class="pubs-charts" data-reveal-group>
+      {{ chart("papers", page.chart_papers_label, pubs.years, page.papers_one, page.papers_other) }}
+      {{ chart("cites", page.chart_cites_label, pubs.citations_by_year, page.citations_one, page.citations_other) }}
+    </div>
+    {#- the data behind the page, for anyone who wants to work with it (dist/data/, server.js) -#}
+    <p class="pubs-data">{{ icon("file-text", 16) }}<span>{{ page.data_note }} <a class="link" href="{{ base_path }}/data/publications.json" download="csilab-publications.json" type="application/json">{{ page.data_link }}</a></span></p>
+    <span id="pubs-bar-hint" hidden>{{ page.bar_hint }}</span>
   </div>
 </section>
+{%- endif %}
 
-<section style="padding-top:0;">
+{%- set total_b = { total: pubs.total | num } %}
+<section class="section pubs-archive" id="arquivo" aria-labelledby="pubs-archive-title" data-pubs data-one="{{ page.papers_one }}" data-other="{{ page.papers_other }}" data-count-of="{{ page.count_of }}" data-all="{{ page.results_all }}" data-some="{{ page.results_some }}" data-none="{{ page.results_none }}" data-active-one="{{ page.filters_active_one }}" data-active-other="{{ page.filters_active_other }}">
   <div class="container">
-
-    <div class="pub-charts" data-aos="fade-up">
-      <div class="pub-chart-card">
-        <div class="pub-chart-title">{{ page.chart_papers_label or "Papers per Year" }}</div>
-        <div class="pub-chart-canvas-wrap"><canvas id="chart-papers"></canvas></div>
-      </div>
-      <div class="pub-chart-card">
-        <div class="pub-chart-title">{{ page.chart_cites_label or "Citations by Publication Year" }}</div>
-        <div class="pub-chart-canvas-wrap"><canvas id="chart-citations"></canvas></div>
-      </div>
-    </div>
-
-    {% for year_group in data.publications.years %}
-    <h2 class="pub-year-heading">{{ year_group.year }}</h2>
-    <div class="pub-list">
-      {% for pub in year_group.items %}
-      <div class="pub-item" data-aos="fade-up">
-        <div class="pub-authors">{{ pub.authors }}</div>
-        <div class="pub-title">{{ pub.title }}</div>
-        <div class="pub-venue">
-          {% if pub.journal %}<em>{{ pub.journal }}</em>.{% endif %}
-          {% if pub.url %}<a href="{{ pub.url }}" target="_blank" rel="noopener">{{ page.access_text or "Access" }}</a>{% endif %}
-          {% if pub.badge %}<span class="pub-badge">{{ pub.badge }}</span>{% endif %}
-        </div>
-
-        {% if pub.cited_by_count and pub.scholar_cites_id %}
-        {% set scholar_cites_url = "https://scholar.google.com/scholar?cites=" + pub.scholar_cites_id %}
-        {% if pub.citing_papers and pub.citing_papers | length > 0 %}
-        <div>
-          <button class="pub-cite-btn" aria-expanded="false" onclick="
-            var p=this.nextElementSibling;
-            var open=p.classList.toggle('open');
-            this.setAttribute('aria-expanded',open);
-          ">
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm.75 12h-1.5V7h1.5v5zm0-6.5h-1.5v-1.5h1.5v1.5z"/></svg>
-            Cited by {{ pub.cited_by_count }}
-          </button>
-          <div class="pub-cite-panel">
-            <p class="pub-cite-count">Showing {{ pub.citing_papers | length }} of {{ pub.cited_by_count }} citing paper{{ 's' if pub.cited_by_count != 1 else '' }}</p>
-            <ul class="pub-cite-list">
-              {% for cp in pub.citing_papers %}
-              <li>
-                <strong>{{ cp.title }}</strong>
-                {{ cp.authors }}{% if cp.year %} ({{ cp.year }}){% endif %}
-                {% if cp.url %}<a href="{{ cp.url }}" target="_blank" rel="noopener">Link ↗</a>{% endif %}
-                {% if cp.cited_by_count %}<span style="opacity:0.5;margin-left:0.5rem;">{{ cp.cited_by_count }} citations</span>{% endif %}
-              </li>
-              {% endfor %}
-            </ul>
-            {% if pub.cited_by_count > pub.citing_papers | length %}
-            <p style="margin-top:0.6rem;font-size:0.775rem;color:var(--color-muted);">
-              +{{ pub.cited_by_count - (pub.citing_papers | length) }} more —
-              <a href="{{ scholar_cites_url }}" target="_blank" rel="noopener" style="color:var(--color-accent);">view all on Google Scholar ↗</a>
-            </p>
-            {% endif %}
-          </div>
-        </div>
-        {% else %}
-        <div>
-          <a class="pub-cite-btn" href="{{ scholar_cites_url }}" target="_blank" rel="noopener">
-            <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zm.75 12h-1.5V7h1.5v5zm0-6.5h-1.5v-1.5h1.5v1.5z"/></svg>
-            Cited by {{ pub.cited_by_count }} ↗
-          </a>
-        </div>
-        {% endif %}
-        {% endif %}
-      </div>
-      {% endfor %}
-    </div>
-    {% endfor %}
-
-    <div style="margin:4rem 0 2rem;padding:2rem;background:var(--color-surface);border-radius:8px;border:1px solid rgba(86,101,115,0.2);text-align:center;">
-      <p class="text-lavender" style="margin-bottom:1rem;">{{ page.github_text }}</p>
-      <a href="{{ data.site.social.github.url }}" target="_blank" class="btn-primary">github.com/{{ data.site.social.github.handle }}</a>
-    </div>
-
+    {{ section_head(2 if pubs.total else none, page.archive_label, page.archive_title, page.archive_sub if groups.length else none, id="pubs-archive-title") }}
   </div>
+  {%- if groups.length %}
+  {#- toolbar and status line: rendered hidden, publications.js reveals them -#}
+  <div class="pubs-bar" role="search" aria-label="{{ page.search_label }}" data-pubs-bar hidden>
+    <div class="container pubs-bar__inner">
+      <div class="pubs-bar__search">
+        <label class="sr-only" for="pubs-q">{{ page.search_label }}</label>
+        {{ icon("search", 18, "pubs-bar__icon") }}
+        <input class="input pubs-bar__input" id="pubs-q" type="search" name="q" placeholder="{{ page.search_placeholder }}" autocomplete="off" spellcheck="false" enterkeyhint="search">
+      </div>
+      <div class="pubs-bar__year">
+        <label class="sr-only" for="pubs-y">{{ page.year_label }}</label>
+        <select class="pubs-bar__select" id="pubs-y" name="ano">
+          <option value="">{{ page.year_all }}</option>
+          {%- for g in groups %}
+          <option value="{{ g.year }}">{{ g.year }}</option>
+          {%- endfor %}
+        </select>
+        <span class="pubs-bar__year-text" aria-hidden="true" data-pubs-year-text>{{ page.year_label }}</span>
+        {{ icon("chevron-down", 16, "pubs-bar__chev") }}
+      </div>
+      <button class="pubs-more" type="button" aria-expanded="false" aria-controls="pubs-filters" data-pubs-more>
+        {{- icon("sliders", 18) }}<span class="pubs-more__text">{{ page.filters_label }}</span><span class="pubs-more__badge" aria-hidden="true" data-pubs-badge hidden></span><span class="sr-only" data-pubs-badge-sr></span>
+      </button>
+      <button class="pubs-clear pubs-bar__clear" type="button" data-pubs-clear>{{ icon("x", 16) }}<span>{{ page.clear_label }}</span></button>
+      <p class="pubs-count pubs-bar__count" aria-hidden="true" data-pubs-count>{{ fill_bold(page.results_all, total_b) }}</p>
+    </div>
+    {#- more filters and the sort, behind the Filtros button (a disclosure); options and counts
+        come from data.pub_facets; an option's data-name is its chip text -#}
+    <div class="container pubs-filters" id="pubs-filters" data-pubs-filters hidden>
+      {%- set fx = data.pub_facets or {} %}
+      {%- set group_labels = { faculty: page.person_faculty, students: page.person_students, alumni: page.person_alumni } %}
+      {%- set type_labels = { journal: page.type_journal, conference: page.type_conference, preprint: page.type_preprint, other: page.type_other } %}
+      <div class="pubs-field pubs-field--wide">
+        <label class="pubs-field__label" for="pubs-p">{{ page.person_label }}</label>
+        <div class="pubs-pick">
+          <select class="pubs-bar__select" id="pubs-p" name="pessoa" data-pubs-filter="people">
+            <option value="">{{ page.person_all }}</option>
+            {%- for g in fx.people or [] %}
+            <optgroup label="{{ group_labels[g.category] }}">
+              {%- for m in g.members %}
+              <option value="{{ m.slug }}" data-name="{{ m.name }}">{{ m.name }} ({{ m.count | num }})</option>
+              {%- endfor %}
+            </optgroup>
+            {%- endfor %}
+          </select>
+          {{ icon("chevron-down", 16, "pubs-bar__chev") }}
+        </div>
+      </div>
+      <div class="pubs-field pubs-field--wide">
+        <label class="pubs-field__label" for="pubs-v">{{ page.venue_label }}</label>
+        <div class="pubs-pick">
+          <select class="pubs-bar__select" id="pubs-v" name="veiculo" data-pubs-filter="venue">
+            <option value="">{{ page.venue_all }}</option>
+            {%- for v in fx.venues or [] %}
+            <option value="{{ v.key }}" data-name="{{ v.name }}">{{ v.name }} ({{ v.count | num }})</option>
+            {%- endfor %}
+            {%- if fx.venue_other %}
+            <option value="other" data-name="{{ page.venue_other }}">{{ page.venue_other }} ({{ fx.venue_other | num }})</option>
+            {%- endif %}
+          </select>
+          {{ icon("chevron-down", 16, "pubs-bar__chev") }}
+        </div>
+      </div>
+      <div class="pubs-field">
+        <label class="pubs-field__label" for="pubs-t">{{ page.type_label }}</label>
+        <div class="pubs-pick">
+          <select class="pubs-bar__select" id="pubs-t" name="tipo" data-pubs-filter="type">
+            <option value="">{{ page.type_all }}</option>
+            {%- for t in fx.types or [] %}
+            <option value="{{ t.key }}" data-name="{{ type_labels[t.key] }}">{{ type_labels[t.key] }} ({{ t.count | num }})</option>
+            {%- endfor %}
+          </select>
+          {{ icon("chevron-down", 16, "pubs-bar__chev") }}
+        </div>
+      </div>
+      <div class="pubs-field">
+        <label class="pubs-field__label" for="pubs-c">{{ page.cites_label }}</label>
+        <div class="pubs-pick">
+          <select class="pubs-bar__select" id="pubs-c" name="cit" data-pubs-filter="cites">
+            <option value="">{{ page.cites_any }}</option>
+            {%- for c in fx.cites or [] %}
+            {%- set label = page.cites_min | replace("{n}", c.min | num) %}
+            <option value="{{ c.min }}" data-name="{{ label }}">{{ label }} ({{ c.count | num }})</option>
+            {%- endfor %}
+          </select>
+          {{ icon("chevron-down", 16, "pubs-bar__chev") }}
+        </div>
+      </div>
+      <div class="pubs-field">
+        <label class="pubs-field__label" for="pubs-o">{{ page.sort_label }}</label>
+        <div class="pubs-pick">
+          <select class="pubs-bar__select" id="pubs-o" name="ordem" data-pubs-sort>
+            <option value="">{{ page.sort_year }}</option>
+            <option value="citacoes">{{ page.sort_cites }}</option>
+          </select>
+          {{ icon("chevron-down", 16, "pubs-bar__chev") }}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="container pubs-status" data-pubs-status hidden>
+    <p class="pubs-count" aria-hidden="true" data-pubs-count>{{ fill_bold(page.results_all, total_b) }}</p>
+    <button class="pubs-clear" type="button" data-pubs-clear>{{ icon("x", 16) }}<span>{{ page.clear_label }}</span></button>
+  </div>
+  {#- the active filters as removable chips (publications.js; data-remove = the chip template) -#}
+  <div class="container pubs-chips" data-pubs-chips data-remove="{{ page.chip_remove }}" hidden><ul class="pubs-chips__list" role="list"></ul></div>
+  <p class="sr-only" role="status" data-pubs-live></p>
+  <div class="container pubs-years">
+    <span id="pubs-nt" hidden>{{ ui.common.new_tab }}</span>
+    {%- for g in groups %}
+    {%- set n = g.items | length %}
+    <div class="pubs-year" id="ano-{{ g.year }}" data-year="{{ g.year }}" style="--n: {{ n }}">
+      <div class="pubs-year__head">
+        <h3 class="pubs-year__title numeral">{{ g.year }}</h3>
+        <p class="pubs-year__count" data-count>{{ plural(n, page.papers_one, page.papers_other) }}</p>
+      </div>
+      <ul class="pubs-list" role="list">
+        {%- for pub in g.items %}
+        {%- set cites = pub.cited_by_count or 0 %}
+        {%- set citing = pub.citing_papers or [] %}
+        {%- set cites_url = ("https://scholar.google.com/scholar?cites=" ~ pub.scholar_cites_id ~ "&hl=" ~ lang_html) if pub.scholar_cites_id else none %}
+        {%- set fc = pub.facets or {} %}
+        <li class="pub row-hover" translate="no" data-people="{{ (fc.people or []) | join(' ') }}" data-venue="{{ fc.venue }}" data-type="{{ fc.type }}" data-cites="{{ cites }}">
+          <p class="pub__title"{% if pub.lang and pub.lang != lang %} lang="{{ pub.lang }}"{% endif %}>{% if pub.url %}<a href="{{ pub.url | replace(hl_re, '$1hl=' ~ lang_html) }}" target="_blank" rel="noopener" aria-describedby="pubs-nt">{{ pub.title }}</a>{% else %}{{ pub.title }}{% endif %}</p>
+          {%- if pub.authors %}
+          <p class="pub__authors">{{ pub.authors }}</p>
+          {%- endif %}
+          {#- a few venues are bare URLs in the source data: show the host only. The year is shown
+              only when the papers are sorted by citations, out of their year groups -#}
+          {%- set venue = (pub.journal | replace(url_re, "$2")) if (pub.journal and url_re.test(pub.journal)) else pub.journal %}
+          <p class="pub__venue{% if not (venue or pub.badge) %} pub__venue--bare{% endif %}"><span class="pub__year">{{ g.year }}</span>{% if venue %}<span class="pub__venue-text">{{ venue }}</span>{% endif %}{% if pub.badge %} <span class="badge">{{ pub.badge }}</span>{% endif %}</p>
+          {%- if cites and citing.length %}
+          <details class="pub__cites" translate="yes">
+            <summary class="pub__cite">{{ cited[0] }}<b>{{ cites | num }}</b>{{ cited[1] }}</summary>
+            <div class="pub__panel">
+              <p class="cites__head"><span>{{ page.cites_heading }}</span><span class="cites__count">{{ page.count_of | replace("{n}", citing.length | num) | replace("{total}", cites | num) }}</span></p>
+              <ol class="cites" role="list">
+                {%- for cp in citing %}
+                <li class="cites__item" translate="no">
+                  <p class="cites__title"{% if cp.lang and cp.lang != lang %} lang="{{ cp.lang }}"{% endif %}>{% if cp.url %}<a href="{{ cp.url }}" target="_blank" rel="noopener" aria-describedby="pubs-nt">{{ cp.title }}</a>{% else %}{{ cp.title }}{% endif %}</p>
+                  <p class="cites__meta">
+                    {%- if cp.authors %}<span>{{ cp.authors }}</span> {% endif %}
+                    {%- if cp.year %}<span>{{ cp.year }}</span> {% endif %}
+                    {%- if cp.cited_by_count %}<span translate="yes">{{ plural(cp.cited_by_count, page.citations_one, page.citations_other) }}</span>{% endif -%}
+                  </p>
+                </li>
+                {%- endfor %}
+              </ol>
+              {%- set more = cites - (citing | length) %}
+              {%- if more > 0 and cites_url %}
+              <p class="cites__more">{{ link_arrow(cites_url, plural(more, page.cites_more_one, page.cites_more_other), external=true) }}</p>
+              {%- endif %}
+            </div>
+          </details>
+          {%- elif cites and cites_url %}
+          <a class="pub__cite" href="{{ cites_url }}" target="_blank" rel="noopener" aria-describedby="pubs-nt" translate="yes">{{ cited[0] }}<b>{{ cites | num }}</b>{{ cited[1] }}</a>
+          {%- elif cites %}
+          <p class="pub__cite" translate="yes">{{ cited[0] }}<b>{{ cites | num }}</b>{{ cited[1] }}</p>
+          {%- endif %}
+        </li>
+        {%- endfor %}
+      </ul>
+    </div>
+    {%- endfor %}
+    <div class="pubs-empty" data-pubs-empty hidden>
+      <p class="pubs-empty__title">{{ page.results_none }}</p>
+      <p class="pubs-empty__text">{{ page.empty_text }}</p>
+      <button class="btn btn--ghost" type="button" data-pubs-clear>{{ icon("x", 18, "btn__icon") }}<span class="btn__label">{{ page.clear_label }}</span></button>
+    </div>
+  </div>
+  {%- else %}
+  <div class="container"><p class="pubs-unavailable">{{ page.empty_data }}</p></div>
+  {%- endif %}
 </section>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
-<script>
-(function () {
-  const _pubData = {{ (data.publications.years or []) | dump | safe }};
-  const sorted   = [..._pubData].sort((a, b) => a.year - b.year);
-  const years    = sorted.map(g => String(g.year));
-  const perYear  = sorted.map(g => (g.items || []).length);
+{%- if github %}
+<section class="section pubs-code" aria-labelledby="pubs-code-title">
+  <div class="container">
+    <div class="cta-band" data-reveal>
+      <div>
+        <h2 class="cta-band__title" id="pubs-code-title">{{ page.github_title }}</h2>
+        <p class="cta-band__text">{{ page.github_text }}</p>
+      </div>
+      <a class="btn btn--primary" href="{{ github.url }}" target="_blank" rel="noopener">{{ brand("github", 18) }}<span class="btn__label" translate="no">github.com/{{ github.handle }}</span><span class="sr-only"> {{ ui.common.new_tab }}</span>{{ icon("arrow-up-right", 18, "btn__icon") }}</a>
+    </div>
+  </div>
+</section>
+{%- endif %}
+{% endblock %}
 
-  const _citeRaw  = {{ (data.publications.citations_by_pub_year or {}) | dump | safe }};
-  const citeYears  = Object.keys(_citeRaw).map(Number).sort((a, b) => a - b).map(String);
-  const citeValues = citeYears.map(y => _citeRaw[y] || 0);
-
-  Chart.defaults.color       = '#8892B0';
-  Chart.defaults.borderColor = 'rgba(86,101,115,0.18)';
-  Chart.defaults.font.family = '"Inter", sans-serif';
-  Chart.defaults.font.size   = 11;
-
-  const sharedScales = {
-    x: { grid: { color: 'rgba(86,101,115,0.13)' }, ticks: { maxRotation: 45 } },
-    y: { grid: { color: 'rgba(86,101,115,0.13)' }, beginAtZero: true, ticks: { precision: 0 } },
-  };
-  const sharedPlugins = {
-    legend: { display: false },
-    tooltip: { backgroundColor: '#1F2833', borderColor: 'rgba(86,101,115,0.4)', borderWidth: 1, titleColor: '#E2E8F0', bodyColor: '#8892B0' },
-  };
-
-  new Chart(document.getElementById('chart-papers'), {
-    type: 'bar',
-    data: { labels: years, datasets: [{ data: perYear, backgroundColor: 'rgba(233,79,55,0.65)', borderColor: 'rgba(233,79,55,0.9)', borderWidth: 1, borderRadius: 3, hoverBackgroundColor: 'rgba(233,79,55,0.85)' }] },
-    options: { responsive: true, maintainAspectRatio: false, plugins: sharedPlugins, scales: sharedScales },
-  });
-
-  new Chart(document.getElementById('chart-citations'), {
-    type: 'bar',
-    data: { labels: citeYears, datasets: [{ data: citeValues, backgroundColor: 'rgba(86,101,115,0.55)', borderColor: 'rgba(86,101,115,0.85)', borderWidth: 1, borderRadius: 3, hoverBackgroundColor: 'rgba(86,101,115,0.75)' }] },
-    options: { responsive: true, maintainAspectRatio: false, plugins: sharedPlugins, scales: sharedScales },
-  });
-})();
-</script>
-
+{% block scripts %}
+<script type="module" src="{{ base_path }}/js/publications.js"></script>
 {% endblock %}

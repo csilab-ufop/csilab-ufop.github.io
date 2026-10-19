@@ -1,44 +1,49 @@
 name_prefixes:
   m: "Prof."
   f: "Prof.ssa"
-
-students_title: "Studenti"
-alumni_title: "Alumni"
-
+roles:
+  coordinator:
+    m: "Coordinatore"
+    f: "Coordinatrice"
+  associate_professor:
+    m: "Professore associato"
+    f: "Professoressa associata"
+  collaborating_researcher:
+    m: "Ricercatore collaboratore"
+    f: "Ricercatrice collaboratrice"
 groups:
   coordinators:
     label: "Coordinamento"
-    title: "Professori Coordinatori"
-    sub: "Dipartimento di Informatica — DECOM/UFOP"
+    title: "Professori coordinatori"
+    sub: "Guidano le linee di ricerca e i progetti di R&S del laboratorio."
   professors:
-    label: "Corpo Docente"
-    title: "Professori Ricercatori"
-    sub: "Dipartimento di Informatica — DECOM/UFOP"
+    label: "Corpo docente"
+    title: "Professori ricercatori"
+    sub: "Docenti del DECOM/UFOP che seguono le ricerche nel laboratorio."
   collaborators:
-    label: "Collaboratori Esterni"
+    label: "Collaboratori esterni"
     title: "Collaboratori"
+    sub: "Ricercatori di altre istituzioni che collaborano con il laboratorio."
   phd_students:
-    label: "Studi di Dottorato"
+    label: "Post-laurea"
     title: "Dottorandi"
-    sub: "Programma di Dottorato in Informatica (PPGCC) — UFOP"
+    sub: "Programma Post-Laurea in Informatica (PPGCC) — UFOP"
     since_prefix: "Dottorato · dal"
   masters_students:
-    title: "Magistrali"
+    title: "Studenti magistrali"
     since_prefix: "Magistrale · dal"
   undergrads:
-    label: "Ricerca Universitaria"
-    title: "Universitari — Borsisti di Ricerca"
+    label: "Ricerca universitaria"
+    title: "Universitari — borsisti di ricerca"
     since_prefix: "Ricerca · dal"
+    sub: "Studenti universitari che svolgono progetti di ricerca nel laboratorio."
   alumni_grad:
     label: "Alumni"
-    title: "Alumni del Dottorato"
+    title: "Alumni post-laurea"
   alumni_undergrad:
-    title: "Alumni Universitari"
-
-roles:
-  coordinator: "Coordinatore"
-  coordinator_f: "Coordinatrice"
-  associate_professor: "Professore Associato"
-  associate_professor_f: "Professoressa Associata"
-  collaborating_researcher: "Ricercatore Collaboratore"
-  collaborating_researcher_f: "Ricercatrice Collaboratrice"
+    title: "Alumni universitari"
+students_title: "Studenti"
+students_sub: "Studenti post-laurea e universitari che fanno ricerca con la guida dei docenti del laboratorio."
+graduate_title: "Studenti post-laurea"
+alumni_title: "Ex membri del laboratorio"
+alumni_sub: "Persone che hanno fatto parte del laboratorio durante gli studi universitari o post-laurea."
