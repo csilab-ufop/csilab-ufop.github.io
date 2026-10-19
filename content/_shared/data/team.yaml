@@ -149,6 +149,10 @@ undergrads:
     - name: "Suleimane Ducure"
       since: 2021
       lattes: "4547014379251202"
+    - name: "Guilherme Santos"
+      since: 2024
+      scholar_id: "hAxFeikAAAAJ"
+      photo: "/images/team/citations.webp"
 alumni_grad:
   members:
     - "Rafael Oliveira"
