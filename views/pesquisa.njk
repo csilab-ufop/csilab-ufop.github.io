@@ -1,0 +1,180 @@
+{#-
+  Research page (spec/pages.md "Research"): page header + in-page nav, #areas (one ruled row per
+  research area; the home page links to each row by its id), #consultorias (R&D projects),
+  #ciencia-aberta (open science) and the collaborate band. Styles: public/css/pages/research.css.
+-#}
+{% extends "base.njk" %}
+{%- from "_macros.njk" import icon, brand, section_head, page_header, page_toc, btn, chip, status_chip, avatar, stat with context -%}
+{%- set ui = data.ui or {} -%}
+{%- set areas = data.areas or [] -%}
+{%- set projects = (data.projects.items if (data.projects and data.projects.items) else []) -%}
+{%- set pubs = data.pubs or {} -%}
+{%- set github = data.site.social.github if (data.site and data.site.social) else none -%}
+{%- macro pad(n) -%}{{ ("0" ~ n) if n < 10 else n }}{%- endmacro -%}
+
+{% block head %}
+<link rel="stylesheet" href="{{ base_path }}/css/pages/research.css">
+{% endblock %}
+
+{% block content %}
+{% call(slot) page_header(page.page_label, page.page_title, page.page_sub, aside=true) %}
+{%- if slot == "aside" and areas.length %}
+{#- contents panel on the right of the header (wide screens only, see research.css) -#}
+<nav class="rs-index" aria-labelledby="rs-index-label">
+  <p class="rs-index__head"><span class="label" id="rs-index-label">{{ page.areas_label }}</span><span class="rs-index__count" aria-hidden="true">{{ pad(areas | length) }}</span></p>
+  <ol class="rs-index__list" role="list">
+    {%- for area in areas %}
+    <li><a class="rs-index__link" href="#{{ area.id }}"><span class="rs-index__num" aria-hidden="true">{{ pad(area.index) }}</span><span class="rs-index__title">{{ area.title }}</span>{{ icon("arrow-right", 16) }}</a></li>
+    {%- endfor %}
+  </ol>
+</nav>
+{%- endif %}
+{% endcall %}
+{{ page_toc([
+  {href: "#areas", label: page.nav_areas, count: areas | length},
+  {href: "#consultorias", label: page.nav_projects, count: projects | length},
+  {href: "#ciencia-aberta", label: page.nav_open}
+], page.nav_label, true) }}
+
+<section class="section rs-areas" id="areas" aria-labelledby="areas-title">
+  <div class="container">
+    {{ section_head(1, page.areas_label, page.areas_title, page.areas_sub, id="areas-title") }}
+    <ol class="rs-area-list" role="list">
+      {%- for area in areas %}
+      <li class="rs-area row-hover" id="{{ area.id }}">
+        <div class="rs-area__mark" data-reveal style="--i: 0">
+          <p class="rs-area__index" aria-hidden="true"><span class="rs-area__num numeral" data-row-index>{{ pad(area.index) }}</span><span class="rs-area__of">/{{ pad(areas | length) }}</span></p>
+          {%- if area.icon %}
+          <span class="tile-icon rs-area__icon">{{ icon(area.icon, 22) }}</span>
+          {%- endif %}
+        </div>
+        <div class="rs-area__body" data-reveal style="--i: 1">
+          <h3 class="rs-area__title">{{ area.title }}</h3>
+          <p class="rs-area__text">{{ area.text }}</p>
+          {%- if area.tag_items and area.tag_items.length %}
+          <div class="rs-area__group">
+            <p class="label" id="{{ area.id }}-topics">{{ page.area_topics_label }}</p>
+            <ul class="chip-list" role="list" aria-labelledby="{{ area.id }}-topics">
+              {%- for t in area.tag_items %}
+              <li>{{ chip(t.label) }}</li>
+              {%- endfor %}
+            </ul>
+          </div>
+          {%- endif %}
+        </div>
+        {%- if area.people and area.people.length %}
+        <div class="rs-area__people rs-area__group" data-reveal style="--i: 2">
+          <p class="label" id="{{ area.id }}-people">{{ page.area_people_label }}</p>
+          <ul class="rs-people" role="list" aria-labelledby="{{ area.id }}-people">
+            {%- for p in area.people %}
+            <li><a class="rs-person" href="{{ urls.equipe }}#{{ p.slug }}" data-person>{{ avatar(p, "sm") }}<span class="rs-person__text"><span class="rs-person__name" translate="no">{{ p.display_name }}</span>{% if p.role_label %}<span class="rs-person__role">{{ p.role_label }}</span>{% endif %}</span></a></li>
+            {%- endfor %}
+          </ul>
+        </div>
+        {%- endif %}
+      </li>
+      {%- endfor %}
+    </ol>
+  </div>
+</section>
+
+{#- Known count, no orphans: the first project spans the row (2 columns, 640–1023 px) or two
+    columns / the row (3 columns, from 1024 px) whenever the rest would leave a gap. -#}
+{%- set n = projects | length %}
+<section class="section section--alt rs-projects" id="consultorias" aria-labelledby="projects-title">
+  <div class="container">
+    {{ section_head(2, page.projects_label, page.projects_title, page.projects_sub, id="projects-title") }}
+    <ul class="rs-project-list" role="list">
+      {%- for item in projects %}
+      {%- set span = "" %}
+      {%- if loop.first %}
+        {%- if n % 2 == 1 %}{% set span = span ~ " rs-project--span-sm" %}{% endif %}
+        {%- if n % 3 == 2 %}{% set span = span ~ " rs-project--span-lg" %}{% elif n % 3 == 1 %}{% set span = span ~ " rs-project--full-lg" %}{% endif %}
+      {%- endif %}
+      <li class="card rs-project{{ span }}{% if item.link %} card--interactive{% endif %}" data-reveal style="--i: {{ loop.index0 }}">
+        {%- if span %}<span class="rs-project__deco" aria-hidden="true"></span>{% endif %}
+        <div class="rs-project__head">
+          <p class="rs-project__partner" translate="no">{{ item.partner }}</p>
+          {%- if item.status_label %}
+          {{ status_chip(item.status, item.status_label) }}
+          {%- endif %}
+        </div>
+        <h3 class="card__title rs-project__title">
+          {%- if item.link -%}
+          <a class="card__link" href="{{ item.link }}" target="_blank" rel="noopener">{{ item.title }}<span class="sr-only"> {{ ui.common.new_tab }}</span></a>
+          {%- else -%}
+          {{ item.title }}
+          {%- endif -%}
+        </h3>
+        <p class="card__text rs-project__text">{{ item.text_html | safe }}</p>
+        {%- if item.link %}
+        <p class="card__foot"><span class="link-arrow" aria-hidden="true"><span class="link-arrow__text">{{ ui.common.read_more }}</span>{{ icon("arrow-up-right", 18) }}</span></p>
+        {%- endif %}
+      </li>
+      {%- endfor %}
+    </ul>
+  </div>
+</section>
+
+{%- set years = pubs.years or [] %}
+{%- set peak = (years | sort(true, false, "count") | first) if years.length else none %}
+{#- the newest year is still in progress when the data was fetched that same year: its bar is
+    drawn as year-to-date (hatched) and said so in the axis and the list -#}
+{%- set fetched_year = (pubs.generated_at | string).slice(0, 4) | int(0) %}
+{%- set partial_year = pubs.last_year if (pubs.last_year and pubs.last_year == fetched_year) else none %}
+<section class="section rs-open" id="ciencia-aberta" aria-labelledby="open-title">
+  <div class="container rs-open__grid">
+    <div class="rs-open__intro">
+      {{ section_head(3, page.open_label, page.open_title, page.open_text, id="open-title") }}
+      <div class="btn-row">
+        {{ btn(urls.publicacoes, page.open_cta_publications, "primary", "arrow-right") }}
+        {%- if github %}
+        {{ btn(github.url, page.open_cta_github, "ghost", external=true) }}
+        {%- endif %}
+      </div>
+    </div>
+    <div class="rs-open__panel" data-reveal>
+      <div class="rs-open__cell rs-open__cell--main">
+        {{ stat(page.open_stat_value, "", page.open_stat_label, "xl") }}
+        <span class="rs-open__glyph" aria-hidden="true">{{ brand("github", 26) }}</span>
+      </div>
+      {%- if pubs.total %}
+      <div class="ruled stats rs-open__stats">
+        {{ stat(pubs.total, "", page.open_pubs_label, "sm") }}
+        {{ stat(pubs.citations, "", page.open_cites_label, "sm") }}
+      </div>
+      {%- endif %}
+      {%- if peak and peak.count > 0 and years.length > 1 %}
+      <figure class="rs-open__cell rs-open__cell--chart rs-chart">
+        <figcaption class="label">{{ page.open_chart_label }}</figcaption>
+        <div class="rs-chart__bars" aria-hidden="true">
+          {%- for y in years %}
+          <span class="rs-chart__bar{% if y.year == peak.year %} is-peak{% endif %}{% if y.year == partial_year %} is-partial{% endif %}" style="--h: {{ (y.count / peak.count) | round(3) }}; --i: {{ loop.index0 }}">
+            {%- if y.year == peak.year %}<span class="rs-chart__value">{{ y.count | num }}</span>{% endif -%}
+          </span>
+          {%- endfor %}
+        </div>
+        <p class="rs-chart__axis" aria-hidden="true"><span>{{ pubs.first_year }}</span><span>{{ pubs.last_year }}{% if partial_year %} <span class="rs-chart__partial">· {{ page.open_chart_partial }}</span>{% endif %}</span></p>
+        <ul class="sr-only">
+          {%- for y in years %}
+          <li>{{ y.year }}: {{ y.count | num }}{% if y.year == partial_year %} ({{ page.open_chart_partial }}){% endif %}</li>
+          {%- endfor %}
+        </ul>
+      </figure>
+      {%- endif %}
+    </div>
+  </div>
+</section>
+
+<section class="section rs-cta" aria-labelledby="cta-title">
+  <div class="container">
+    <div class="cta-band" data-reveal>
+      <div>
+        <h2 class="cta-band__title" id="cta-title">{{ page.cta_title }}</h2>
+        <p class="cta-band__text">{{ page.cta_text }}</p>
+      </div>
+      {{ btn(urls.contato, page.cta_button, "primary", "arrow-right") }}
+    </div>
+  </div>
+</section>
+{% endblock %}

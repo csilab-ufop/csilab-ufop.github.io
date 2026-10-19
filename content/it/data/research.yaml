@@ -1,24 +1,66 @@
 ai:
-  title: "Intelligenza Artificiale"
+  icon: "cpu"
+  tags:
+    - "artificial_intelligence"
+    - "computational_intelligence"
+    - "applied_ml"
+  title: "Intelligenza artificiale"
   text: "Modelli di IA applicati a problemi ad alta complessità in sanità, finanza, linguaggio e percezione ambientale."
 vision:
-  title: "Visione Artificiale"
+  icon: "eye"
+  tags:
+    - "computer_vision"
+    - "biometrics"
+    - "periocular_biometrics"
+    - "pattern_recognition"
+  title: "Visione artificiale"
   text: "Riconoscimento di pattern visivi, classificazione di immagini, rilevamento di deepfake e identificazione biometrica."
 ml:
-  title: "Machine Learning"
+  icon: "layers"
+  tags:
+    - "machine_learning"
+    - "deep_learning"
+    - "metric_learning"
+    - "applied_ml"
+  title: "Machine learning"
   text: "Reti neurali profonde, transfer learning, self-supervised learning e architetture efficienti (NAS)."
 nlp:
-  title: "Elaborazione del Linguaggio Naturale"
+  icon: "message"
+  tags:
+    - "nlp"
+    - "text_classification"
+  title: "Elaborazione del linguaggio naturale"
   text: "Modelli linguistici per il portoghese, classificazione di testi tossici, riconoscimento vocale e ottimizzazione di prompt."
 data_science:
-  title: "Data Science"
+  icon: "bar-chart"
+  tags:
+    - "data_science"
+    - "statistical_methods"
+    - "time_series"
+    - "databases"
+    - "network_science"
+  title: "Data science"
   text: "Analisi del rischio di credito, rilevamento di frodi, previsione del churn e serie temporali epidemiologiche."
 spatial:
-  title: "Analisi Spaziale ed Epidemiologica"
+  icon: "map"
+  tags:
+    - "spatial_analysis"
+    - "cluster_detection"
+  title: "Analisi spaziale ed epidemiologica"
   text: "Rilevamento di cluster spaziali, modellazione COVID-19 con GNN e mobilità urbana, sorveglianza epidemiologica."
 biosignals:
-  title: "Segnali Biomedici"
+  icon: "activity"
+  tags:
+    - "biomedical_signals"
+    - "biological_signal_analysis"
+  title: "Segnali biomedici"
   text: "Classificazione ECG, rilevamento di aritmie, segmentazione del battito cardiaco e segnali cardiaci remoti via video (rPPG)."
 optimization:
-  title: "Ottimizzazione Multi-obiettivo"
+  icon: "sliders"
+  tags:
+    - "multiobjective_optimization"
+    - "evolutionary_algorithms"
+    - "community_detection"
+    - "social_network_analysis"
+  title: "Ottimizzazione multiobiettivo"
   text: "Algoritmi evolutivi, rilevamento di comunità in reti sociali e ottimizzazione della dispersione/concentrazione di soluzioni Pareto."

@@ -1,16 +1,17 @@
-info_title: "Contact Information"
 location:
   room: "Room 281 — ICEB II"
   dept: "Department of Computer Science (DECOM)"
   univ: "UFOP · Ouro Preto, MG · Brazil"
-join_title: "How to Join CSI Lab"
 join_items:
   undergrad_research:
+    icon: "graduation"
     title: "Undergraduate Research"
     text: "Undergraduate students can apply for research grants via CNPq and FAPEMIG. Send your CV and area of interest."
   graduate:
+    icon: "book"
     title: "Master's & PhD"
     text: "Follow PPGCC-UFOP admission notices. Contact the professor in your research area of interest before applying."
   industry:
+    icon: "briefcase"
     title: "Industry Partnerships"
     text: "We carry out R&D projects via UFOP/Embrapii agreements or direct contracts. Describe your needs and we'll schedule a meeting."

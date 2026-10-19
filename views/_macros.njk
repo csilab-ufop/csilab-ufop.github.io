@@ -1,48 +1,296 @@
-{% macro icon(name, size=22, stroke="var(--color-accent)", sw="1.75") %}
-  {% if name == "cpu" %}
-    <svg xmlns="http://www.w3.org/2000/svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="{{ stroke }}" stroke-width="{{ sw }}" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
-  {% elif name == "eye" %}
-    <svg xmlns="http://www.w3.org/2000/svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="{{ stroke }}" stroke-width="{{ sw }}" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-  {% elif name == "layers" %}
-    <svg xmlns="http://www.w3.org/2000/svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="{{ stroke }}" stroke-width="{{ sw }}" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
-  {% elif name == "message" %}
-    <svg xmlns="http://www.w3.org/2000/svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="{{ stroke }}" stroke-width="{{ sw }}" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-  {% elif name == "bar-chart" %}
-    <svg xmlns="http://www.w3.org/2000/svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="{{ stroke }}" stroke-width="{{ sw }}" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>
-  {% elif name == "map" %}
-    <svg xmlns="http://www.w3.org/2000/svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="{{ stroke }}" stroke-width="{{ sw }}" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
-  {% elif name == "activity" %}
-    <svg xmlns="http://www.w3.org/2000/svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="{{ stroke }}" stroke-width="{{ sw }}" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-  {% elif name == "sliders" %}
-    <svg xmlns="http://www.w3.org/2000/svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="{{ stroke }}" stroke-width="{{ sw }}" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
-  {% elif name == "trophy" %}
-    <svg xmlns="http://www.w3.org/2000/svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="{{ stroke }}" stroke-width="{{ sw }}" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
-  {% elif name == "globe" %}
-    <svg class="globe-spin-icon" xmlns="http://www.w3.org/2000/svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="{{ stroke }}" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22" stroke-opacity="0.4"/></svg>
-  {% elif name == "mail" %}
-    <svg xmlns="http://www.w3.org/2000/svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="{{ stroke }}" stroke-width="{{ sw }}" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-  {% elif name == "location" %}
-    <svg xmlns="http://www.w3.org/2000/svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="{{ stroke }}" stroke-width="{{ sw }}" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-  {% elif name == "building" %}
-    <svg xmlns="http://www.w3.org/2000/svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="{{ stroke }}" stroke-width="{{ sw }}" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/></svg>
-  {% elif name == "web" %}
-    <svg xmlns="http://www.w3.org/2000/svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="{{ stroke }}" stroke-width="{{ sw }}" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
-  {% elif name == "graduation" %}
-    <svg xmlns="http://www.w3.org/2000/svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="{{ stroke }}" stroke-width="{{ sw }}" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-  {% elif name == "book" %}
-    <svg xmlns="http://www.w3.org/2000/svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="{{ stroke }}" stroke-width="{{ sw }}" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
-  {% elif name == "briefcase" %}
-    <svg xmlns="http://www.w3.org/2000/svg" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="{{ stroke }}" stroke-width="{{ sw }}" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-  {% endif %}
-{% endmacro %}
+{#
+  CSI Lab · UFOP — shared macros (foundation).
 
-{% macro brand(name, size=14) %}
-  <svg width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    {% if name == "twitter" %}<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-    {% elif name == "instagram" %}<path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/>
-    {% elif name == "github" %}<path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
-    {% endif %}
-  </svg>
-{% endmacro %}
+  Import them WITH CONTEXT — btn/link_arrow read data.ui.common.new_tab and avatar reads base_path:
+    {% from "_macros.njk" import icon, brand, section_head, page_header, page_toc, btn, link_arrow, chip, status_chip, avatar, person_id, stat with context %}
 
-{% macro wordmark() %}<span style="color:#E2E8F0;">CSI</span><span style="color:#E94F37;">Lab</span>{% endmacro %}
+  icon(name, size=20, class="")      24×24 stroke icon, stroke 1.75, currentColor, aria-hidden.
+                                     Geometry adapted from Lucide (ISC License, © Lucide Contributors).
+  brand(name, size=20, class="")     filled glyphs: twitter, instagram, github, scholar, lattes, orcid.
+                                     Paths adapted from Simple Icons (CC0); lattes is a monogram.
+  section_head(index, eyebrow, title, sub=none, id=none, align="start", level=2, layout="stack", meta=none, reveal=true)
+                                     index: "01" or 1 (zero-padded); id goes on the heading;
+                                     align: "start" | "center"; sub: text or `| mdi` output.
+                                     layout "split": eyebrow + title left (7fr), meta + lead right
+                                     (5fr) from 960px; meta: a short mono note ("7 pessoas").
+                                     The head reveals itself (data-reveal): don't wrap it in another
+                                     [data-reveal]; reveal=false for a head in the first screen.
+  page_header(label, title, sub=none, aside=false)
+                                     inner-page hero with grid + glow; renders the page's only <h1>.
+                                     {% call page_header(...) %}…{% endcall %} adds content below the sub.
+                                     aside=true: a second column from 1100px, filled by the same call
+                                     block, which then receives the slot name:
+                                     {% call(slot) page_header(l, t, s, aside=true) %}{% if slot == "aside" %}…{% else %}…{% endif %}{% endcall %}
+  page_toc(items, label, sticky=false)
+                                     in-page nav strip, called right after page_header at the top level
+                                     of the content block (a direct child of <main>). items: [{ href,
+                                     label, count? }]. sticky: pinned under the header, scroll-spy
+                                     (site.js); the root scroll padding then clears it.
+  btn(href, label, variant="primary", icon=none, external=false, aria_label=none)
+                                     variant: "primary" | "ghost"; icon: any icon() name; aria_label
+                                     replaces the accessible name (it must contain the visible label).
+  link_arrow(href, label, external=false, icon=none, class="")
+                                     text link with a sliding arrow; the last word and the arrow never
+                                     break apart; icon: e.g. "arrow-up" for a link back up the page;
+                                     class: extra classes on the <a>, e.g. "card__link".
+  chip(label, href=none, current=false, class="", count=none)
+                                     current → aria-current="true" (red tint + leading dot);
+                                     class: e.g. "chip--nowrap" inside a horizontal scroller;
+                                     count → <span class="chip__count">.
+  status_chip(status, label)         project status: "active" | "development" | "completed".
+  avatar(person, size="md", alt="")  photo (person.photo) or ridge monogram (person.name | monogram);
+                                     size sm 40 | md 64 | lg 96 | xl 144. Decorative by default (the
+                                     name is adjacent text); put data-person on the element that stands
+                                     for the person (hover/focus ring, photo colour).
+  person_id(person, level="h3")      name (h3/h4/p/strong) with the role in grey mono capitals above it.
+  stat(value, suffix="", label="", size="md")
+                                     big number + mono label; counts up when visible (site.js);
+                                     size: "sm" | "md" | "xl" (one feature stat per page).
+#}
+
+{%- macro _svg(name, size=20, class="") -%}
+<svg class="icon icon--{{ name }}{{ (' ' ~ class) if class }}" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+{%- if name == "cpu" -%}
+<rect x="5" y="5" width="14" height="14" rx="2"/><rect x="9" y="9" width="6" height="6" rx="1"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/>
+{%- elif name == "eye" -%}
+<path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0"/><circle cx="12" cy="12" r="3"/>
+{%- elif name == "layers" -%}
+<path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="m2 12 9.17 4.17a2 2 0 0 0 1.66 0L22 12"/><path d="m2 17 9.17 4.17a2 2 0 0 0 1.66 0L22 17"/>
+{%- elif name == "message" -%}
+<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><path d="M8 8h8M8 12h5"/>
+{%- elif name == "bar-chart" -%}
+<path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M8 17v-4M13 17V8M18 17V5"/>
+{%- elif name == "map" -%}
+<path d="M14.11 5.55a2 2 0 0 0 1.78 0l3.66-1.83A1 1 0 0 1 21 4.62v12.76a1 1 0 0 1-.55.9l-4.56 2.27a2 2 0 0 1-1.78 0l-4.22-2.1a2 2 0 0 0-1.78 0l-3.66 1.83A1 1 0 0 1 3 19.38V6.62a1 1 0 0 1 .55-.9l4.56-2.27a2 2 0 0 1 1.78 0z"/><path d="M15 5.76v15M9 3.24v15"/>
+{%- elif name == "activity" -%}
+<path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"/>
+{%- elif name == "sliders" -%}
+<path d="M21 4h-7M10 4H3M21 12h-9M8 12H3M21 20h-5M12 20H3M14 2v4M8 10v4M16 18v4"/>
+{%- elif name == "trophy" -%}
+<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0z"/>
+{%- elif name == "globe" -%}
+<circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"/>
+{%- elif name == "mail" -%}
+<rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>
+{%- elif name == "location" -%}
+<path d="M20 10c0 4.99-5.54 10.19-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.19 4 14.99 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>
+{%- elif name == "building" -%}
+<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/>
+{%- elif name == "web" -%}
+<rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 9h20M6 6.5h.01M9 6.5h.01"/><path d="m10 13-2 2 2 2M14 13l2 2-2 2"/>
+{%- elif name == "graduation" -%}
+<path d="M21.42 10.92a1 1 0 0 0-.02-1.84L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.83l8.57 3.91a2 2 0 0 0 1.66 0z"/><path d="M22 10v6M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>
+{%- elif name == "book" -%}
+<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>
+{%- elif name == "briefcase" -%}
+<path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect x="2" y="6" width="20" height="14" rx="2"/>
+{%- elif name == "arrow-right" -%}
+<path d="M5 12h14M12 5l7 7-7 7"/>
+{%- elif name == "arrow-left" -%}
+<path d="M19 12H5M12 19l-7-7 7-7"/>
+{%- elif name == "arrow-up" -%}
+<path d="M12 19V5M5 12l7-7 7 7"/>
+{%- elif name == "arrow-up-right" -%}
+<path d="M7 17 17 7M7 7h10v10"/>
+{%- elif name == "external" -%}
+<path d="M15 3h6v6M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+{%- elif name == "copy" -%}
+<rect x="8" y="8" width="14" height="14" rx="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+{%- elif name == "check" -%}
+<path d="M20 6 9 17l-5-5"/>
+{%- elif name == "search" -%}
+<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+{%- elif name == "x" -%}
+<path d="M18 6 6 18M6 6l12 12"/>
+{%- elif name == "menu" -%}
+<path d="M4 8h16M4 16h16"/>
+{%- elif name == "chevron-down" -%}
+<path d="m6 9 6 6 6-6"/>
+{%- elif name == "chevron-right" -%}
+<path d="m9 18 6-6-6-6"/>
+{%- elif name == "calendar" -%}
+<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M8 2v4M16 2v4M3 10h18"/>
+{%- elif name == "users" -%}
+<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>
+{%- elif name == "file-text" -%}
+<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7z"/><path d="M14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8"/>
+{%- elif name == "award" -%}
+<path d="m15.48 12.89 1.51 8.53a.5.5 0 0 1-.81.47l-3.58-2.69a1 1 0 0 0-1.2 0l-3.59 2.69a.5.5 0 0 1-.81-.47l1.51-8.53"/><circle cx="12" cy="8" r="6"/>
+{%- elif name == "link" -%}
+<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+{%- elif name == "quote" -%}
+<path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/>
+{%- elif name == "code" -%}
+<path d="m16 18 6-6-6-6M8 6l-6 6 6 6"/>
+{%- elif name == "sparkles" -%}
+<path d="M9.94 15.5A2 2 0 0 0 8.5 14.06l-6.13-1.58a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.14a.5.5 0 0 1 .96 0L14.06 8.5a2 2 0 0 0 1.44 1.44l6.13 1.58a.5.5 0 0 1 0 .96L15.5 14.06a2 2 0 0 0-1.44 1.44l-1.58 6.14a.5.5 0 0 1-.96 0z"/><path d="M20 3v4M22 5h-4M4 17v2M5 18H3"/>
+{%- elif name == "pause" -%}
+<rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/>
+{%- elif name == "play" -%}
+<path d="M6 4.5v15a1 1 0 0 0 1.5.87l12.5-7.5a1 1 0 0 0 0-1.74L7.5 3.63A1 1 0 0 0 6 4.5z"/>
+{%- endif -%}
+</svg>
+{%- endmacro -%}
+
+{%- macro icon(name, size=20, class="") -%}{{ _svg(name, size, class) }}{%- endmacro -%}
+
+{%- macro brand(name, size=20, class="") -%}
+<svg class="brand brand--{{ name }}{{ (' ' ~ class) if class }}" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+{%- if name == "twitter" -%}
+<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+{%- elif name == "instagram" -%}
+<path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/>
+{%- elif name == "github" -%}
+<path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+{%- elif name == "scholar" -%}
+<path d="M5.242 13.769 0 9.5 12 0l12 9.5-5.242 4.269C17.548 11.249 14.978 9.5 12 9.5c-2.977 0-5.548 1.748-6.758 4.269zM12 10a7 7 0 1 0 0 14 7 7 0 0 0 0-14z"/>
+{%- elif name == "lattes" -%}
+<path fill-rule="evenodd" d="M5 2h14a3 3 0 0 1 3 3v14a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3zm3.25 4.5v11h8.5v-2.4h-5.8V6.5z"/>
+{%- elif name == "orcid" -%}
+<path d="M12 0C5.372 0 0 5.372 0 12s5.372 12 12 12 12-5.372 12-12S18.628 0 12 0zM7.369 4.378c.525 0 .947.431.947.947s-.422.947-.947.947a.95.95 0 0 1-.947-.947c0-.525.422-.947.947-.947zm-.722 3.038h1.444v10.041H6.647V7.416zm3.562 0h3.9c3.712 0 5.344 2.653 5.344 5.025 0 2.578-2.016 5.025-5.325 5.025h-3.919V7.416zm1.444 1.303v7.444h2.297c3.272 0 4.022-2.484 4.022-3.722 0-2.016-1.284-3.722-4.097-3.722h-2.222z"/>
+{%- endif -%}
+</svg>
+{%- endmacro -%}
+
+{%- macro section_head(index, eyebrow, title, sub=none, id=none, align="start", level=2, layout="stack", meta=none, reveal=true) -%}
+{%- set idx = index -%}
+{%- if index is number -%}{%- set idx = ("0" ~ index) if index < 10 else index -%}{%- endif -%}
+{%- set lvl = level if (level >= 2 and level <= 4) else 2 -%}
+<div class="section-head section-head--{{ align }}{{ ' section-head--split' if layout == 'split' }}"{% if reveal %} data-reveal{% endif %}>
+  {%- if idx or eyebrow %}
+  <p class="eyebrow">
+    {%- if idx %}<span class="eyebrow__index">{{ idx }}</span>{% if eyebrow %}<span class="eyebrow__sep" aria-hidden="true">—</span>{% endif %}{% endif -%}
+    {%- if eyebrow %}<span>{{ eyebrow }}</span>{% endif -%}
+  </p>
+  {%- endif %}
+  <h{{ lvl }} class="section-head__title"{% if id %} id="{{ id }}"{% endif %}>{{ title }}</h{{ lvl }}>
+  {%- if sub %}
+  <p class="section-head__sub">{{ sub }}</p>
+  {%- endif %}
+  {%- if meta or meta === 0 %}
+  <p class="section-head__meta">{{ meta }}</p>
+  {%- endif %}
+</div>
+{%- endmacro -%}
+
+{%- macro page_header(label, title, sub=none, aside=false) -%}
+<header class="page-header{{ ' page-header--aside' if aside }}">
+  <div class="page-header__bg" aria-hidden="true">
+    <div class="page-header__grid"></div>
+    <div class="page-header__glow"></div>
+    <div class="page-header__cells"><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="page-header__scan"></div>
+  </div>
+  <div class="container page-header__inner">
+    {%- if aside %}
+    <div class="page-header__main">
+    {%- endif %}
+    {%- if label %}
+    <p class="eyebrow page-header__label">{{ label }}</p>
+    {%- endif %}
+    <h1 class="page-header__title">{{ title }}</h1>
+    {%- if sub %}
+    <p class="page-header__sub">{{ sub }}</p>
+    {%- endif %}
+    {#- caller() output is a SafeString, truthy even when empty: test its length -#}
+    {%- set extra = ((caller("extra") if aside else caller()) | trim) if caller else "" %}
+    {%- if extra | length %}
+    <div class="page-header__extra">{{ extra | safe }}</div>
+    {%- endif %}
+    {%- if aside %}
+    </div>
+    {%- set side = (caller("aside") | trim) if caller else "" %}
+    {%- if side | length %}
+    <div class="page-header__aside">{{ side | safe }}</div>
+    {%- endif %}
+    {%- endif %}
+  </div>
+</header>
+{%- endmacro -%}
+
+{%- macro page_toc(items, label, sticky=false) -%}
+<nav class="page-toc{{ ' page-toc--sticky' if sticky }}" aria-label="{{ label }}">
+  <div class="container">
+    <ul class="chip-list chip-list--track page-toc__list" role="list">
+      {%- for item in items %}
+      <li>{{ chip(item.label, item.href, false, "chip--nowrap", item.count) }}</li>
+      {%- endfor %}
+    </ul>
+  </div>
+</nav>
+{%- endmacro -%}
+
+{%- macro btn(href, label, variant="primary", icon=none, external=false, aria_label=none) -%}
+{%- set ic = icon or ("arrow-up-right" if external else none) -%}
+{%- set new_tab = data.ui.common.new_tab if (external and data and data.ui and data.ui.common) else "" -%}
+<a class="btn btn--{{ variant }}" href="{{ href }}"{% if external %} target="_blank" rel="noopener"{% endif %}{% if aria_label %} aria-label="{{ aria_label }}{{ (' ' ~ new_tab) if new_tab }}"{% endif %}>
+  <span class="btn__label">{{ label }}</span>
+  {%- if new_tab and not aria_label %}<span class="sr-only"> {{ new_tab }}</span>{% endif %}
+  {%- if ic %}{{ _svg(ic, 18, "btn__icon") }}{% endif %}
+</a>
+{%- endmacro -%}
+
+{#- The last word and the arrow share a no-wrap tail, so a label that fills its line never leaves
+    the arrow alone on the next one. -#}
+{%- macro link_arrow(href, label, external=false, icon=none, class="") -%}
+{%- set text = (label or "") | string | trim -%}
+{%- set cut = text.lastIndexOf(" ") -%}
+<a class="link-arrow{{ (' ' ~ class) if class }}" href="{{ href }}"{% if external %} target="_blank" rel="noopener"{% endif %}>
+  <span class="link-arrow__text">{% if cut > 0 %}{{ text.slice(0, cut) }} {% endif %}<span class="link-arrow__tail">{{ text.slice(cut + 1) }}{{ _svg(icon or ("arrow-up-right" if external else "arrow-right"), 18) }}</span></span>
+  {%- if external and data and data.ui %}<span class="sr-only"> {{ data.ui.common.new_tab }}</span>{% endif %}
+</a>
+{%- endmacro -%}
+
+{%- macro _count(n) -%}{%- if n or n === 0 %}<span class="chip__count">{{ n }}</span>{% endif -%}{%- endmacro -%}
+
+{%- macro chip(label, href=none, current=false, class="", count=none) -%}
+{%- if href -%}
+<a class="chip{{ (' ' ~ class) if class }}" href="{{ href }}"{% if current %} aria-current="true"{% endif %}>{{ label }}{{ _count(count) }}</a>
+{%- else -%}
+<span class="chip{{ (' ' ~ class) if class }}">{{ label }}{{ _count(count) }}</span>
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro status_chip(status, label) -%}
+<span class="chip chip--status chip--status-{{ status }}"><span class="chip__dot" aria-hidden="true"></span>{{ label }}</span>
+{%- endmacro -%}
+
+{#- Monogram: the initials on the ridge tile; the monogram filter turns the full name into the
+    ridge origin and spacing, so a person has the same tile on every page. -#}
+{%- macro avatar(person, size="md", alt="") -%}
+{%- set px = {sm: 40, md: 64, lg: 96, xl: 144}[size] or 64 -%}
+{%- if person and person.photo -%}
+{%- set src = person.photo if (person.photo.indexOf("http") == 0) else (base_path ~ person.photo) -%}
+<span class="avatar avatar--{{ size }}"><img src="{{ src }}" alt="{{ alt }}" width="{{ px }}" height="{{ px }}" loading="lazy" decoding="async"></span>
+{%- else -%}
+{%- set name = (person.name or person.display_name or person.initials or "") if person else "" -%}
+<span class="avatar avatar--{{ size }} avatar--monogram" style="{{ name | monogram }}"{% if alt %} role="img" aria-label="{{ alt }}"{% else %} aria-hidden="true"{% endif %}><span class="avatar__initials" translate="no">{{ (person.initials or (person.name | initials)) if person }}</span></span>
+{%- endif -%}
+{%- endmacro -%}
+
+{#- The name comes first in the source (heading navigation lands on it); the role shows above it. -#}
+{%- macro person_id(person, level="h3") -%}
+<div class="person__id">
+  <{{ level }} class="person__name" translate="no">{{ person.display_name or person.name }}</{{ level }}>
+  {%- if person.role_label %}
+  <p class="person__role">{{ person.role_label }}</p>
+  {%- endif %}
+</div>
+{%- endmacro -%}
+
+{%- macro stat(value, suffix="", label="", size="md") -%}
+{#- numbers, or numeric strings from front matter ("14"), count up; anything else ("16+") is shown as is -#}
+{%- set n = value | int(-1) -%}
+{%- set count = value if (value is number) else (n if (n >= 0 and (n | string) == (value | string | trim)) else none) -%}
+{%- set shown = (count | num) if (count is number) else value -%}
+<div class="stat{{ (' stat--' ~ size) if (size == 'sm' or size == 'xl') }}">
+  <p class="stat__value">
+    <span class="stat__num"{% if count is number %} data-count-to="{{ count }}"{% endif %} aria-hidden="true">{{ shown }}</span>
+    {%- if suffix %}<span class="stat__suffix" aria-hidden="true">{{ suffix }}</span>{% endif -%}
+    <span class="sr-only">{{ shown }}{{ suffix }}</span>
+  </p>
+  {%- if label %}
+  <p class="stat__label">{{ label }}</p>
+  {%- endif %}
+</div>
+{%- endmacro -%}

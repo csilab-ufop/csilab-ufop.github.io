@@ -1,233 +1,387 @@
-{% from "_macros.njk" import icon %}
+{#- Home page. The hero (#inicio) lives in partials/home-hero.njk with hero.css + hero.js (hero builder);
+    everything else on this page belongs to the home builder (spec/pages.md "Home", items 2–9):
+      #numeros       stats strip (data.stats)
+      #sobre         01 about: text + features, figure plate (team photo, "16+" badge, event photos)
+      #pesquisa      02 research areas (data.areas), each cell links to its row on the research page
+      (publications) 03 latest + most cited papers (data.pubs)
+      #noticias      04 featured story + two more (data.featured_news, data.news)
+      #consultorias  05 R&D partners (data.projects.items)
+      join band      call to action → contact page
+    Legacy anchors whose content moved (#destaque, #faq) are redirected by the head_early script. -#}
 {% extends "base.njk" %}
+{%- from "_macros.njk" import icon, section_head, btn, link_arrow, chip, status_chip, stat with context -%}
+{%- set ui = data.ui or {} -%}
+
+{% block head_early %}
+<script>(function(m){m=m[location.hash];if(m)location.replace(m)})({"#destaque":{{ (urls.noticias ~ "#premios") | dump | replace("<", "\\u003c") | safe }},"#faq":{{ (urls.contato ~ "#faq") | dump | replace("<", "\\u003c") | safe }}})</script>
+{% endblock %}
 
 {% block head %}
-<style>
-  @keyframes globe-spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
-  .globe-spin-icon { animation: globe-spin 14s linear infinite; display:block; }
-  @media (max-width:900px) { .news-featured { grid-template-columns:1fr !important; } .news-cards-row { grid-template-columns:1fr 1fr !important; } }
-  @media (max-width:600px) { .news-cards-row { grid-template-columns:1fr !important; } }
-</style>
+<link rel="stylesheet" href="{{ base_path }}/css/pages/hero.css">
+<link rel="stylesheet" href="{{ base_path }}/css/pages/home.css">
+{% endblock %}
+
+{% block jsonld %}
+{%- set same_as = [] -%}
+{%- for id, s in (data.site.social or {}) %}{% if s and s.url %}{% set _ = same_as.push(s.url) %}{% endif %}{% endfor -%}
+{%- set inst = data.site.institutions or {} -%}
+{#- one organization in every language (same @id), part of DECOM, part of UFOP; the logo is the
+    opaque fingerprint mark (the white wordmark would vanish on the white of search results) -#}
+{%- set root = site_url ~ base_path ~ "/" -%}
+{%- set ld = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "ResearchOrganization",
+      "@id": root ~ "#organization",
+      "name": page.hero_title,
+      "alternateName": data.site.short_name or "CSI Lab",
+      "url": root,
+      "logo": site_url ~ base_path ~ "/apple-touch-icon.png",
+      "description": page.description,
+      "parentOrganization": {
+        "@type": "Organization",
+        "name": "Departamento de Computação",
+        "alternateName": "DECOM",
+        "url": inst.DECOM,
+        "parentOrganization": {
+          "@type": "CollegeOrUniversity",
+          "name": "Universidade Federal de Ouro Preto",
+          "alternateName": "UFOP",
+          "url": inst.UFOP
+        }
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Ouro Preto",
+        "addressRegion": "MG",
+        "addressCountry": "BR"
+      },
+      "sameAs": same_as
+    },
+    {
+      "@type": "WebSite",
+      "@id": root ~ "#website",
+      "name": data.site.short_name or "CSI Lab",
+      "url": root,
+      "inLanguage": lang_html,
+      "publisher": { "@id": root ~ "#organization" }
+    }
+  ]
+} %}
+<script type="application/ld+json">{{ ld | dump | replace("<", "\\u003c") | safe }}</script>
 {% endblock %}
 
 {% block content %}
+{% include "partials/home-hero.njk" %}
 
-<section id="inicio" class="hero-section">
-  <div class="hero-bg-overlay"></div>
+{#- ── #numeros · stats strip ─────────────────────────────────────────────── -#}
+<section class="home-stats" id="numeros" aria-labelledby="numeros-title">
+  <h2 class="sr-only" id="numeros-title">{{ page.stats_title }}</h2>
+  {%- if data.stats and data.stats.length %}
   <div class="container">
-    <div class="hero-inner">
-      <div class="hero-content">
-        <span class="hero-tag">{{ page.hero_tag }}</span>
-        <h1 class="hero-heading">{{ page.hero_title | safe }}</h1>
-        <p class="hero-sub">{{ page.hero_sub }}</p>
-        <div class="hero-ctas">
-          <a href="#pesquisa" class="btn-primary">{{ page.hero_cta_primary }}</a>
-          <a href="{{ base_url }}/contato" class="btn-outline">{{ page.hero_cta_secondary }}</a>
-        </div>
-      </div>
-      <div class="hero-card" data-aos="zoom-in">
-        <img src="{{ base_path }}/images/foto-equipe.png" alt="CSI Lab — Equipe" onerror="this.src='{{ base_path }}/images/about-image-1.jpg'" />
-        <div class="hero-card-body">
-          <h3>{{ data.site.name }}</h3>
-          <p>{{ page.hero_card_text }}</p>
-        </div>
-      </div>
+    <div class="ruled stats">
+      {%- for s in data.stats %}
+      {{ stat(s.value, s.suffix, s.label) }}
+      {%- endfor %}
     </div>
+  </div>
+  {%- endif %}
+</section>
+
+{#- ── #sobre · 01 ─────────────────────────────────────────────────────────── -#}
+{%- set years = (data.site.years or "") | string | trim -%}
+{%- set years_plus = years.length > 1 and years.slice(-1) == "+" -%}
+<section class="section home-sec home-about" id="sobre" aria-labelledby="sobre-title" data-home-lazy>
+  <div class="container home-about__grid">
+    <div class="home-about__head">{{ section_head(1, page.about_label, page.about_title, id="sobre-title") }}</div>
+    <div class="home-about__text">
+      <div class="home-about__body" data-reveal style="--i: 1">
+        <p class="home-about__lead">{{ page.about_p1 | mdi | safe }}</p>
+        <p>{{ page.about_p2 }}</p>
+      </div>
+      <ul class="home-features" role="list">
+        {%- for f in [
+          { icon: "book", title: page.about_feature1_title, text: page.about_feature1_text },
+          { icon: "briefcase", title: page.about_feature2_title, text: page.about_feature2_text }
+        ] %}
+        <li class="home-feature" data-reveal style="--i: {{ loop.index + 1 }}">
+          <span class="tile-icon">{{ icon(f.icon, 22) }}</span>
+          <div>
+            <h3 class="home-feature__title">{{ f.title }}</h3>
+            <p class="home-feature__text">{{ f.text }}</p>
+          </div>
+        </li>
+        {%- endfor %}
+      </ul>
+      {%- if page.about_cta %}
+      <p class="home-more" data-reveal style="--i: 4">{{ link_arrow(urls.equipe, page.about_cta) }}</p>
+      {%- endif %}
+    </div>
+
+    <figure class="home-about__media" data-reveal style="--i: 1">
+      <div class="home-about__plate">
+        <div class="home-about__photo">
+          <img src="{{ base_path }}/images/foto-equipe-960.webp"
+               srcset="{{ base_path }}/images/foto-equipe-640.webp 640w, {{ base_path }}/images/foto-equipe-960.webp 960w, {{ base_path }}/images/foto-equipe-1440.webp 1440w"
+               sizes="(min-width: 1320px) 680px, (min-width: 960px) 52vw, (min-width: 640px) 60vw, calc(100vw - 32px)"
+               width="1440" height="903" alt="{{ page.about_photo_alt }}" loading="lazy" decoding="async">
+        </div>
+        {%- if years %}
+        <p class="home-about__badge">
+          <span class="home-about__years">{{ years.slice(0, -1) if years_plus else years }}{% if years_plus %}<span class="home-about__plus">+</span>{% endif %}</span>
+          <span class="home-about__years-label">{{ page.about_years_label }}</span>
+        </p>
+        {%- endif %}
+      </div>
+      <div class="home-about__events">
+        {#- slots: half the plate on phones, a third of it beside the team photo on tablets, half of
+            the 6fr column from 960px (capped with the container) -#}
+        {%- set ev_sizes = "(min-width: 1320px) 310px, (min-width: 960px) 23vw, (min-width: 640px) 30vw, 44vw" %}
+        <img class="home-about__event home-about__event--2023" src="{{ base_path }}/images/evento-2023-crop-312.webp"
+             srcset="{{ base_path }}/images/evento-2023-crop-240.webp 240w, {{ base_path }}/images/evento-2023-crop-312.webp 312w"
+             sizes="{{ ev_sizes }}" width="312" height="371" alt="{{ page.about_event1_alt }}" loading="lazy" decoding="async">
+        <img class="home-about__event" src="{{ base_path }}/images/evento-2024-660.webp"
+             srcset="{{ base_path }}/images/evento-2024-400.webp 400w, {{ base_path }}/images/evento-2024-660.webp 660w"
+             sizes="{{ ev_sizes }}" width="660" height="371" alt="{{ page.about_event2_alt }}" loading="lazy" decoding="async">
+      </div>
+    </figure>
   </div>
 </section>
 
-<section id="sobre">
+{#- ── #pesquisa · 02 ──────────────────────────────────────────────────────── -#}
+<section class="section section--alt home-sec home-research" id="pesquisa" aria-labelledby="pesquisa-title" data-home-lazy>
   <div class="container">
-    <div class="about-grid">
-      <div class="about-images" data-aos="fade-right">
-        <img src="{{ base_path }}/images/csilab-marca.png" alt="CSI Lab" />
-        <img src="{{ base_path }}/images/evento-2023.png" alt="Evento CSI Lab 2023" onerror="this.src='{{ base_path }}/images/about-image-3.jpg'" />
-        <img src="{{ base_path }}/images/evento-2024.jpg" alt="CSI Lab 2024" onerror="this.src='{{ base_path }}/images/about-image-4.jpg'" />
-        <div class="about-counter-badge">
-          <div class="big">{{ data.site.years }}</div>
-          <div class="small">{{ page.about_years_label }}</div>
-        </div>
-      </div>
-      <div data-aos="fade-left">
-        <span class="section-label">{{ page.about_label }}</span>
-        <h2 class="d2c_title" style="margin-bottom:1.5rem;">{{ page.about_title }}</h2>
-        <p class="text-lavender" style="margin-bottom:1.25rem;font-size:1rem;line-height:1.75;">{{ page.about_p1 | safe }}</p>
-        <p class="text-lavender" style="margin-bottom:2rem;font-size:1rem;line-height:1.75;">{{ page.about_p2 }}</p>
-        <div class="about-features">
-          <div class="about-feature">
-            <h4>{{ page.about_feature1_title }}</h4>
-            <p>{{ page.about_feature1_text }}</p>
-          </div>
-          <div class="about-feature">
-            <h4>{{ page.about_feature2_title }}</h4>
-            <p>{{ page.about_feature2_text }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
+    {{ section_head(2, page.research_label, page.research_title, page.research_sub, id="pesquisa-title") }}
+    {%- if data.areas and data.areas.length %}
+    <ul class="ruled home-areas" role="list">
+      {%- for area in data.areas %}
+      <li class="home-area card--interactive" data-reveal style="--i: {{ loop.index0 % 4 }}">
+        <span class="tile-icon home-area__icon">{{ icon(area.icon, 22) }}</span>
+        <span class="home-area__index" aria-hidden="true">{{ ("0" ~ area.index) if area.index < 10 else area.index }}</span>
+        <h3 class="home-area__title"><a class="card__link" href="{{ urls.pesquisa }}#{{ area.id }}">{{ area.title }}&nbsp;{{ icon("arrow-right", 16, "home-area__arrow") }}</a></h3>
+        <p class="home-area__text">{{ area.text }}</p>
+      </li>
+      {%- endfor %}
+    </ul>
+    {%- endif %}
+    <p class="home-more" data-reveal>{{ link_arrow(urls.pesquisa, page.research_cta) }}</p>
   </div>
 </section>
 
-<section id="numeros">
+{#- ── publications · 03 ───────────────────────────────────────────────────── -#}
+{%- set pubs = data.pubs or {} -%}
+{%- if (pubs.latest and pubs.latest.length) or (pubs.most_cited and pubs.most_cited.length) %}
+{%- set top_cites = pubs.most_cited[0].cited_by_count if (pubs.most_cited and pubs.most_cited.length) else 0 -%}
+{%- macro pub_title(pub) -%}
+{#- the title's own language when it differs from the page's (lib/lang.js); "COVID-19" and the
+    like never break at their hyphen; Google Scholar opens in the page's language, as on the
+    publications page -#}
+{%- set hl_re = r/([?&])hl=[^&#]*/ -%}
+{%- set t = pub.title | escape | replace(r/(\w+-\d+)/g, '<span class="home-pub__nb">$1</span>') -%}
+<p class="home-pub__title"{% if pub.lang and pub.lang != lang %} lang="{{ pub.lang }}"{% endif %}>
+  {%- if pub.url %}<a href="{{ pub.url | replace(hl_re, '$1hl=' ~ lang_html) }}" target="_blank" rel="noopener"><span translate="no">{{ t | safe }}</span><span class="sr-only"> {{ ui.common.new_tab }}</span></a>
+  {%- else %}<span translate="no">{{ t | safe }}</span>{% endif -%}
+</p>
+{%- endmacro -%}
+{#- FIG. 03: papers per year as a strip of bars (no viewBox: x in % of the width, y in px, so the
+    mono labels keep their size); the running year is drawn as partial, as on the publications page -#}
+{%- set yrs = pubs.years or [] -%}
+{%- set gen_year = ((pubs.generated_at or "") | string).slice(0, 4) | int(0) -%}
+{%- set partial = pubs.last_year if (pubs.last_year and pubs.last_year == gen_year) else none -%}
+<section class="section home-sec home-pubs" id="publicacoes" aria-labelledby="publicacoes-title" data-home-lazy>
   <div class="container">
-    <div class="counter-grid">
-      {% for key, c in data.counters %}
-      <div class="counter-item" data-aos="fade-up" data-aos-delay="{{ loop.index0 * 100 }}">
-        <div class="number" id="c-{{ key }}" data-target="{{ c.target }}" data-suffix="{{ c.suffix }}">0{{ c.suffix }}</div>
-        <div class="label">{{ c.label }}</div>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-
-<section id="pesquisa">
-  <div class="container">
-    <div style="text-align:center;margin-bottom:1rem;" data-aos="fade-down">
-      <span class="section-label">{{ page.research_label }}</span>
-      <h2 class="d2c_title">{{ page.research_title }}</h2>
-      <p class="text-lavender" style="max-width:600px;margin:0.75rem auto 0;font-size:1rem;">{{ page.research_sub }}</p>
-    </div>
-    <div class="research-grid">
-      {% for key, area in data.research %}
-      <div class="research-card scroll-Zoom">
-        <div class="research-icon">{{ icon(area.icon) }}</div>
-        <h3>{{ area.title }}</h3>
-        <p>{{ area.text }}</p>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-
-<section id="destaque">
-  <div class="container">
-    <div class="cta-video-inner">
-      <div data-aos="fade-right">
-        <span class="section-label" style="display:block;margin-bottom:1.25rem;">{{ data.awards.label }}</span>
-        <h2 class="d2c_title" style="font-size:1.6rem;margin-bottom:1.75rem;">{{ data.awards.title }}</h2>
-        <div style="display:flex;flex-direction:column;gap:1rem;">
-          {% for award in data.awards.items %}
-          <div style="display:flex;gap:1rem;align-items:flex-start;padding:1.25rem 1.5rem;background:var(--color-surface);border-radius:10px;border-left:3px solid var(--color-accent);">
-            <span style="flex-shrink:0;display:flex;align-items:center;margin-top:1px;">{{ icon("trophy", 22, "var(--color-accent)", "2") }}</span>
-            <div>
-              <strong style="color:var(--color-text);display:block;margin-bottom:0.3rem;">{{ award.title }}</strong>
-              <span class="text-lavender" style="font-size:0.875rem;">{{ award.event }}</span>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-      <div data-aos="fade-left">
-        <span class="section-label">{{ data.awards.about_label }}</span>
-        <h2 class="d2c_title" style="margin-bottom:1.25rem;">{{ data.awards.about_title }}</h2>
-        <p class="text-lavender" style="font-size:1rem;line-height:1.75;margin-bottom:2rem;">{{ data.awards.about_text }}</p>
-        <div style="display:flex;gap:1rem;flex-wrap:wrap;">
-          <a href="{{ base_url }}/publicacoes" class="btn-primary">{{ data.awards.cta_publications }}</a>
-          <a href="{{ data.site.social.github.url }}" target="_blank" class="btn-outline">{{ data.awards.cta_github }}</a>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section id="consultorias">
-  <div class="container">
-    <div class="dual-accordion-grid">
-
-      <div>
-        <div style="margin-bottom:2rem;" data-aos="fade-down">
-          <span class="section-label">{{ data.consultorias.label }}</span>
-          <h2 class="d2c_title" style="margin-top:0.5rem;">{{ data.consultorias.title }}</h2>
-          <p class="text-lavender" style="margin-top:0.75rem;font-size:0.95rem;line-height:1.7;">{{ data.consultorias.sub }}</p>
-        </div>
-        <div class="consult-accordion" data-aos="fade-up">
-          {% for item in data.consultorias.items %}
-          <div class="accordion-item">
-            <button class="accordion-header">
-              {{ item.title }}
-              <span class="accordion-icon">&#8964;</span>
-            </button>
-            <div class="accordion-body">
-              <div class="accordion-body-inner">{{ item.content | safe }}</div>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-
-      <div>
-        <div style="margin-bottom:2rem;" data-aos="fade-down">
-          <span class="section-label">{{ data.faq.label }}</span>
-          <h2 class="d2c_title" style="margin-top:0.5rem;">{{ data.faq.title }}</h2>
-          <p class="text-lavender" style="margin-top:0.75rem;font-size:0.95rem;line-height:1.7;">{{ data.faq.sub }}</p>
-        </div>
-        <div id="faq" data-aos="fade-up">
-          {% for item in data.faq.items %}
-          <div class="faq-item accordion-item">
-            <button class="accordion-header faq-header">
-              {{ item.question }}
-              <span class="accordion-icon">&#8964;</span>
-            </button>
-            <div class="accordion-body faq-body">
-              <div class="accordion-body-inner faq-body-inner">{{ item.answer | safe }}</div>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<section id="noticias">
-  <div class="container">
-    <div style="text-align:center;margin-bottom:3rem;" data-aos="fade-down">
-      <span class="section-label">{{ data.news.label }}</span>
-      <h2 class="d2c_title">{{ data.news.title }}</h2>
-      <p class="text-lavender" style="max-width:560px;margin:0.75rem auto 0;font-size:1rem;line-height:1.7;">{{ data.news.sub }}</p>
-    </div>
-
-    <div class="news-featured" data-aos="fade-up" style="background:var(--color-surface);border:1px solid rgba(255,255,255,0.07);border-radius:16px;overflow:hidden;display:grid;grid-template-columns:1fr 1fr;gap:0;margin-bottom:2rem;min-height:340px;">
-      <div style="padding:3rem 2.5rem;display:flex;flex-direction:column;justify-content:space-between;">
-        <div>
-          <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;">
-            <span class="blog-tag" style="font-size:0.8rem;">{{ data.news.featured.tag }}</span>
-            <span style="color:var(--color-muted);font-size:0.82rem;">{{ data.news.featured.date }}</span>
-          </div>
-          <h3 style="font-size:1.5rem;line-height:1.3;margin-bottom:1rem;color:var(--color-text);">{{ data.news.featured.title }}</h3>
-          <p class="text-lavender" style="font-size:0.95rem;line-height:1.7;margin-bottom:1.5rem;">{{ data.news.featured.text | safe }}</p>
-        </div>
-        <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:0.6rem;">
-          {% for paper in data.news.featured.papers %}
-          <li style="display:flex;gap:0.5rem;align-items:flex-start;font-size:0.875rem;color:var(--color-muted);">
-            <span style="color:var(--color-accent);margin-top:2px;">▸</span>
-            <span><strong style="color:var(--color-text);">{{ paper.title }}</strong> — {{ paper.author }}</span>
+    {{ section_head(3, page.pubs_label, page.pubs_title, page.pubs_sub, id="publicacoes-title") }}
+    <div class="home-pubs__grid">
+      {%- if pubs.latest and pubs.latest.length %}
+      <div class="home-pubs__col" data-reveal>
+        <h3 class="home-pubs__heading">{{ page.pubs_latest }}</h3>
+        <ol class="home-publist" role="list">
+          {%- for pub in pubs.latest %}
+          {%- set venue = (pub.journal or "") | replace(r/[\s,]+\d[\d\s(),\-–]*$/, "") | trim %}
+          <li class="home-pub">
+            <p class="home-pub__meta"><span class="home-pub__year">{{ pub.year }}</span>{% if venue %}<span class="home-pub__venue">{{ venue }}</span>{% endif %}</p>
+            {{ pub_title(pub) }}
+            {%- if pub.authors %}
+            <p class="home-pub__authors" translate="no">{{ pub.authors }}</p>
+            {%- endif %}
           </li>
-          {% endfor %}
-        </ul>
+          {%- endfor %}
+        </ol>
       </div>
-      <div style="background:linear-gradient(135deg,#1a2840 0%,#0d1a2e 100%);display:flex;align-items:center;justify-content:center;padding:2.5rem;">
-        <div style="text-align:center;">
-          <div style="margin-bottom:1rem;display:flex;justify-content:center;">{{ icon("globe", 64, "var(--color-accent)", "1.2") }}</div>
-          <div style="font-size:0.8rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--color-accent);font-weight:600;margin-bottom:0.5rem;">{{ data.news.featured.badge_text }}</div>
-          <div style="font-size:1.1rem;font-weight:700;color:var(--color-text);">{{ data.news.featured.badge_count }}</div>
-          <div style="font-size:0.85rem;color:var(--color-muted);margin-top:0.4rem;">{{ data.news.featured.badge_sub }}</div>
-        </div>
+      {%- endif %}
+      {#- totals + source + link: closes the right column (its foot lines up with the end of the
+          left one from 960px), or follows the grid when there is no most-cited list #}
+      {%- set pubs_foot %}
+      <div class="home-pubs__foot">
+        {%- if yrs.length > 1 %}
+        {%- set top_year = yrs | sort(true, false, "count") | first -%}
+        {%- set ymax = top_year.count if top_year.count > 0 else 1 -%}
+        {%- set n = yrs.length -%}
+        {%- set CH = 64 -%}
+        {%- set series = [] -%}
+        {%- for r in yrs %}{% set _ = series.push(r.year ~ ": " ~ (r.count | num)) %}{% endfor %}
+        <figure class="home-pubs__fig">
+          <svg class="home-pubs__chart" width="100%" height="{{ CH + 22 }}" role="img" aria-label="{{ series.join(', ') }}">
+            <line class="home-pubs__base" x1="0" x2="100%" y1="{{ CH + 0.5 }}" y2="{{ CH + 0.5 }}"/>
+            {%- for r in yrs %}
+            {%- set i = loop.index0 %}
+            {%- set h = ((r.count / ymax) * (CH - 16)) | round(1) %}
+            <rect class="home-pubs__bar{% if r.year == top_year.year %} is-peak{% endif %}{% if r.year == partial %} is-partial{% endif %}" x="{{ ((i + 0.2) / n * 100) | round(3) }}%" y="{{ CH - h }}" width="{{ (60 / n) | round(3) }}%" height="{{ h }}" rx="1.5" style="--i: {{ i }}"/>
+            {%- if r.year == top_year.year %}
+            <text class="home-pubs__val" x="{{ ((i + 0.5) / n * 100) | round(3) }}%" y="{{ CH - h - 6 }}">{{ r.count | num }}</text>
+            {%- endif %}
+            {%- endfor %}
+            <text class="home-pubs__tick" x="{{ (0.5 / n * 100) | round(3) }}%" y="{{ CH + 17 }}">{{ yrs[0].year }}</text>
+            <text class="home-pubs__tick" x="{{ ((n - 0.5) / n * 100) | round(3) }}%" y="{{ CH + 17 }}">{{ yrs[n - 1].year }}</text>
+          </svg>
+          <figcaption class="home-pubs__figcap">
+            {%- if page.pubs_fig_label %}<span class="home-pubs__figlabel">{{ page.pubs_fig_label }}</span>{% endif %}
+            <span>{{ page.pubs_fig_caption | replace("{first}", yrs[0].year) | replace("{last}", yrs[n - 1].year) }}</span>
+            {%- if partial %}<span class="home-pubs__partial"><span class="home-pubs__key" aria-hidden="true"></span>{{ page.pubs_fig_partial | replace("{year}", partial) }}</span>{% endif %}
+          </figcaption>
+        </figure>
+        {%- endif %}
+        <p class="home-pubs__totals">
+          <span class="home-pubs__total"><strong>{{ pubs.total | num }}</strong> {{ page.pubs_papers }}</span>
+          <span class="home-pubs__total"><strong>{{ pubs.citations | num }}</strong> {{ page.pubs_citations }}</span>
+        </p>
+        {%- if pubs.updated_label %}
+        <p class="home-pubs__source">{{ page.pubs_source | replace("{date}", pubs.updated_label) }}</p>
+        {%- endif %}
+        {{ link_arrow(urls.publicacoes, page.pubs_cta) }}
       </div>
+      {%- endset %}
+      {%- if pubs.most_cited and pubs.most_cited.length %}
+      <div class="home-pubs__col home-pubs__col--cited" data-reveal style="--i: 1">
+        <h3 class="home-pubs__heading">{{ page.pubs_cited }}</h3>
+        <ol class="home-publist" role="list">
+          {%- for pub in pubs.most_cited %}
+          {%- set venue = (pub.journal or "") | replace(r/[\s,]+\d[\d\s(),\-–]*$/, "") | trim %}
+          <li class="home-pub home-pub--cited" style="--share: {{ ((pub.cited_by_count / top_cites) | round(3)) if top_cites > 0 else 0 }}">
+            <p class="home-pub__count"><span class="home-pub__num">{{ pub.cited_by_count | num }}</span> <span class="home-pub__unit">{{ page.pubs_citations }}</span></p>
+            {{ pub_title(pub) }}
+            <p class="home-pub__meta">{% if venue %}<span class="home-pub__venue">{{ venue }}</span>{% endif %}<span class="home-pub__year">{{ pub.year }}</span></p>
+          </li>
+          {%- endfor %}
+        </ol>
+        {{ pubs_foot | safe }}
+      </div>
+      {%- endif %}
     </div>
+    {%- if not (pubs.most_cited and pubs.most_cited.length) %}
+    <div data-reveal>{{ pubs_foot | safe }}</div>
+    {%- endif %}
+  </div>
+</section>
+{%- endif %}
 
-    <div class="news-cards-row" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;" data-aos="fade-up" data-aos-delay="100">
-      {% for key, card in data.news.cards %}
-      <div style="background:var(--color-surface);border:1px solid rgba(255,255,255,0.07);border-radius:12px;padding:2rem;border-top:3px solid {% if card.accent %}var(--color-accent){% else %}var(--color-steel){% endif %};">
-        <span class="blog-tag" style="font-size:0.78rem;margin-bottom:1rem;display:inline-block;{% if not card.accent %}background:rgba(86,101,115,0.2);color:var(--color-steel);{% endif %}">{{ card.tag }}</span>
-        <h4 style="font-size:1.1rem;line-height:1.4;margin-bottom:0.75rem;color:var(--color-text);">{{ card.title }}</h4>
-        <p class="text-lavender" style="font-size:0.9rem;line-height:1.65;">{{ card.text | safe }}{% if card.github_link %} <a href="{{ data.site.social.github.url }}" target="_blank" style="color:var(--color-accent);">github.com/{{ data.site.social.github.handle }}</a>.{% endif %}</p>
-      </div>
-      {% endfor %}
+{#- ── #noticias · 04 ──────────────────────────────────────────────────────── -#}
+{%- set featured = data.featured_news -%}
+{%- set more_news = [] -%}
+{%- for n in (data.news or []) %}{% if (not featured or n.slug != featured.slug) and more_news.length < 2 %}{% set _ = more_news.push(n) %}{% endif %}{% endfor %}
+<section class="section section--alt home-sec home-news" id="noticias" aria-labelledby="noticias-title" data-home-lazy>
+  <div class="container">
+    {{ section_head(4, page.news_label, page.news_title, page.news_sub, id="noticias-title") }}
+    {%- if featured or more_news.length %}
+    <div class="home-news__grid home-news__grid--{{ more_news.length }}">
+      {%- if featured %}
+      {%- set hl = (featured.highlight or "") | string | trim -%}
+      {%- set hl_parts = hl.split(" ") -%}
+      {%- set hl_n = hl_parts[0] | int(-1) -%}
+      {%- set hl_is_num = hl_parts.length > 1 and hl_n >= 0 and (hl_n | string) == hl_parts[0] %}
+      <article class="card card--interactive home-news__card home-news__card--featured" data-reveal>
+        <span class="home-news__deco" aria-hidden="true"></span>
+        <div class="home-news__meta">
+          {{ chip(featured.category_label) }}
+          <time datetime="{{ featured.date }}">{{ featured.date_label }}</time>
+          {%- if featured.location %}<span class="home-news__place">{{ icon("location", 14) }}{{ featured.location }}</span>{% endif %}
+        </div>
+        <h3 class="home-news__title"><a class="card__link" href="{{ featured.url }}">{{ featured.title }}</a></h3>
+        <p class="home-news__summary">{{ featured.summary_html | safe }}</p>
+        {#- the story's body joins the teaser only when it is a list (LACCI: its papers, titles in
+            English); prose bodies stay on the news page, and CSS shows at most four items #}
+        {%- set fbody = (featured.body_html or "") | trim %}
+        {%- if fbody.indexOf("<ul") == 0 or fbody.indexOf("<ol") == 0 %}
+        <div class="home-news__body" translate="no">{{ fbody | safe }}</div>
+        {%- endif %}
+        <div class="home-news__foot">
+          {%- if hl %}
+          <p class="home-news__hl">
+            {%- if hl_is_num %}<span class="home-news__hl-num">{{ hl_parts[0] }}</span> <span class="home-news__hl-label">{{ hl_parts.slice(1).join(" ") }}{% if featured.event %}<span class="home-news__hl-event" translate="no">{{ featured.event }}</span>{% endif %}</span>
+            {%- else %}<span class="badge badge--red">{{ hl }}</span>{% endif -%}
+          </p>
+          {%- endif %}
+          <span class="link-arrow" aria-hidden="true"><span class="link-arrow__text">{{ ui.common.read_more }}</span>{{ icon("arrow-right", 18) }}</span>
+        </div>
+      </article>
+      {%- endif %}
+      {%- for item in more_news %}
+      <article class="card card--interactive home-news__card" data-reveal style="--i: {{ loop.index }}">
+        <div class="home-news__meta">
+          {{ chip(item.category_label) }}
+          <time datetime="{{ item.date }}">{{ item.date_label }}</time>
+        </div>
+        <h3 class="home-news__title"><a class="card__link" href="{{ item.url }}">{{ item.title }}</a></h3>
+        <p class="home-news__summary">{{ item.summary_html | safe }}</p>
+        <div class="home-news__foot">
+          {%- if item.highlight %}<span class="badge badge--red">{{ item.highlight }}</span>{% endif %}
+          <span class="link-arrow" aria-hidden="true"><span class="link-arrow__text">{{ ui.common.read_more }}</span>{{ icon("arrow-right", 18) }}</span>
+        </div>
+      </article>
+      {%- endfor %}
     </div>
+    {%- endif %}
+    <p class="home-more" data-reveal>{{ link_arrow(urls.noticias, page.news_cta) }}</p>
   </div>
 </section>
 
+{#- ── #consultorias · 05 ──────────────────────────────────────────────────── -#}
+<section class="section home-sec home-partners" id="consultorias" aria-labelledby="consultorias-title" data-home-lazy>
+  <div class="container">
+    {{ section_head(5, page.partners_label, page.partners_title, page.partners_sub, id="consultorias-title") }}
+    {%- set partners = data.projects.items if (data.projects and data.projects.items) else [] %}
+    {%- if partners.length %}
+    <ul class="home-partners__list" role="list">
+      {%- for p in partners %}
+      {#- no line may start with the slash of "Embrapii / Escola de Minas" #}
+      {%- set pname = p.partner | escape | replace(" / ", "&nbsp;/ ") %}
+      <li class="home-partner" data-reveal style="--i: {{ loop.index0 }}">
+        <h3 class="home-partner__name" translate="no">
+          {%- if p.link %}<a href="{{ p.link }}" target="_blank" rel="noopener">{{ pname | safe }}<span class="sr-only"> {{ ui.common.new_tab }}</span></a>
+          {%- else %}{{ pname | safe }}{% endif -%}
+        </h3>
+        <p class="home-partner__title">{{ p.title }}</p>
+        {%- if p.status_label %}
+        {{ status_chip(p.status, p.status_label) }}
+        {%- endif %}
+      </li>
+      {%- endfor %}
+    </ul>
+    {%- endif %}
+    <p class="home-more" data-reveal>{{ link_arrow(urls.pesquisa ~ "#consultorias", page.partners_cta) }}</p>
+  </div>
+</section>
+
+{#- ── join band ───────────────────────────────────────────────────────────── -#}
+<section class="home-sec home-join" aria-labelledby="join-title">
+  <div class="container">
+    <div class="cta-band home-join__band" data-reveal>
+      <div>
+        <h2 class="cta-band__title" id="join-title">{{ page.join_title }}</h2>
+        <p class="cta-band__text">{{ page.join_text }}</p>
+      </div>
+      {{ btn(urls.contato, page.join_cta, "primary", "arrow-right") }}
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{{ base_path }}/js/hero.js"></script>
+{#- [data-home-lazy] sections skip rendering until needed (content-visibility in home.css). Each is
+    released for good once it comes within a viewport of the screen, so it is laid out once and
+    never skipped again (full-page captures after a scroll-through, find-in-page); all of them at
+    once for a #fragment (exact anchor position; Safari has no scroll anchoring) or for printing -#}
+<script>(function(s){function off(e){e.removeAttribute("data-home-lazy")}function all(){s.forEach(off)}if(location.hash||!window.IntersectionObserver)return all();var io=new IntersectionObserver(function(es){es.forEach(function(x){if(x.isIntersecting){io.unobserve(x.target);off(x.target)}})},{rootMargin:"100% 0px"});s.forEach(function(e){io.observe(e)});addEventListener("hashchange",all);addEventListener("beforeprint",all)})([].slice.call(document.querySelectorAll("[data-home-lazy]")))</script>
 {% endblock %}

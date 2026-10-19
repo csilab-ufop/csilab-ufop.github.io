@@ -1,0 +1,787 @@
+/* =============================================================================
+   Home page sections (views/index.njk): #numeros, #sobre, #pesquisa, publications,
+   #noticias, #consultorias and the join band. The hero (#inicio) is styled by hero.css.
+   Unlayered, so these rules win over site.css. Everything is scoped under .page-index and
+   uses the design tokens only (alpha mixes via color-mix of a token).
+   ============================================================================= */
+
+.page-index {
+  --home-gap: clamp(12px, 1.6vw, 20px);
+  --home-rule: 1px solid var(--line);
+}
+
+/* The numbered sections sit below the fold: they skip layout and paint until the inline script
+   in index.njk releases each one for good as it comes within a viewport of the screen (all at
+   once for a #fragment or printing). Measured at 1440px: first style + layout 41 → 19 ms warm,
+   82 → 62 ms cold; FCP about 25 % earlier. JS only: without it they render normally. The heights
+   (measured per breakpoint, pt/es) stand in until then. Nothing in these sections paints outside
+   them (content-visibility implies paint containment). */
+html.js .page-index [data-home-lazy] {
+  content-visibility: auto;
+  contain-intrinsic-size: auto var(--home-cis, 1100px);
+}
+.page-index .home-about { --home-cis: 1500px; }
+.page-index .home-research { --home-cis: 1820px; }
+.page-index .home-pubs { --home-cis: 1780px; }
+.page-index .home-news { --home-cis: 1640px; }
+.page-index .home-partners { --home-cis: 840px; }
+@media (min-width: 640px) {
+  .page-index .home-about { --home-cis: 1190px; }
+  .page-index .home-research { --home-cis: 1350px; }
+  .page-index .home-pubs { --home-cis: 1440px; }
+  .page-index .home-news { --home-cis: 1150px; }
+  .page-index .home-partners { --home-cis: 680px; }
+}
+@media (min-width: 960px) {
+  .page-index .home-about { --home-cis: 1090px; }
+  .page-index .home-research { --home-cis: 1090px; }
+  .page-index .home-pubs { --home-cis: 1020px; }
+  .page-index .home-news { --home-cis: 1090px; }
+  .page-index .home-partners { --home-cis: 690px; }
+}
+.page-index .home-more { margin-block-start: clamp(20px, 2.6vw, 32px); }
+
+/* =============================================================================
+   #numeros — stats strip right under the hero: the foundation's .ruled.stats (2 × 2 on
+   phones, one row from 768px) between full-bleed hairlines. The grid has no block padding,
+   so the cells' rings fall on the section's own top and bottom rules; the hero's registration
+   ticks stand on the top one.
+   ============================================================================= */
+.page-index .home-stats {
+  position: relative;
+  border-block: var(--home-rule);
+  background: var(--bg);
+}
+.page-index .home-stats .ruled.stats { padding-block: 0; }
+/* the strip's height is what hero.css budgets for above 1200px tall (≈170px) */
+.page-index .home-stats .stat { padding-block: clamp(22px, 3vw, 38px); }
+
+/* =============================================================================
+   #sobre — head across the page, then text column + figure plate
+   ============================================================================= */
+.page-index .home-about__grid {
+  display: grid;
+  column-gap: clamp(48px, 6vw, 96px);
+}
+@media (min-width: 960px) {
+  .page-index .home-about__grid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+    align-items: start;
+  }
+  .page-index .home-about__head { grid-column: 1 / -1; }
+}
+.page-index .home-about__body {
+  display: grid;
+  gap: 1.1em;
+  max-inline-size: 60ch;
+  color: var(--fg-2);
+}
+.page-index .home-about__lead {
+  color: var(--fg-2);
+  font-size: var(--fs-lead);
+  line-height: 1.6;
+}
+.page-index .home-about__lead strong { color: var(--fg); font-weight: 500; }
+
+/* two features as a ruled list */
+.page-index .home-features {
+  margin-block-start: clamp(28px, 3.4vw, 44px);
+  border-block-start: var(--home-rule);
+  max-inline-size: 60ch;
+}
+.page-index .home-feature {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 18px;
+  padding-block: clamp(18px, 2.2vw, 24px);
+  border-block-end: var(--home-rule);
+}
+.page-index .home-feature .tile-icon { inline-size: 44px; block-size: 44px; }
+.page-index .home-feature__title {
+  padding-block-start: 2px;
+  font-size: 1.125rem;
+  line-height: 1.3;
+  letter-spacing: -.012em;
+}
+.page-index .home-feature__text {
+  margin-block-start: 6px;
+  color: var(--fg-2);
+  font-size: .9375rem;
+  line-height: 1.6;
+}
+
+/* figure plate: team photo with registration marks and the years badge, two event photos,
+   one mono caption */
+.page-index .home-about__media {
+  display: grid;
+  gap: 12px;
+  min-inline-size: 0;
+  margin: clamp(48px, 7vw, 64px) 0 0;
+}
+@media (min-width: 960px) {
+  .page-index .home-about__media { margin-block-start: 6px; }
+}
+.page-index .home-about__plate { position: relative; }
+.page-index .home-about__plate::before {
+  --c: var(--fg-3);
+  --l: 14px;
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: .55;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--c), var(--c)) left top / var(--l) 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) left top / 1px var(--l) no-repeat,
+    linear-gradient(var(--c), var(--c)) right top / var(--l) 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) right top / 1px var(--l) no-repeat,
+    linear-gradient(var(--c), var(--c)) left bottom / var(--l) 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) left bottom / 1px var(--l) no-repeat,
+    linear-gradient(var(--c), var(--c)) right bottom / var(--l) 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) right bottom / 1px var(--l) no-repeat;
+}
+/* the marks sit on the column's edge (where every other block ends); the photo, the event
+   photos and the caption are inset 9px inside them */
+.page-index .home-about__photo {
+  position: relative;
+  margin: 9px;
+  overflow: hidden;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-lg);
+  background: var(--bg-2);
+}
+/* settles the bright photo into the dark page and gives the badge a calm corner */
+.page-index .home-about__photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to top, color-mix(in srgb, var(--bg) 72%, transparent), transparent 46%),
+    linear-gradient(to right, color-mix(in srgb, var(--bg) 35%, transparent), transparent 40%);
+  pointer-events: none;
+}
+.page-index .home-about__photo img,
+.page-index .home-about__events img {
+  inline-size: 100%;
+  block-size: auto;
+  object-fit: cover;
+}
+.page-index .home-about__photo img { aspect-ratio: 1440 / 903; }
+
+.page-index .home-about__badge {
+  position: absolute;
+  z-index: 2;
+  inset-inline-start: calc(9px + clamp(10px, 2vw, 20px));
+  inset-block-end: calc(9px + clamp(10px, 2vw, 20px));
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--bg) 84%, transparent);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+.page-index .home-about__years {
+  color: var(--fg);
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -.045em;
+  font-variant-numeric: tabular-nums;
+}
+.page-index .home-about__plus { margin-inline-start: .04em; color: var(--red-300); font-weight: 500; }
+.page-index .home-about__years-label {
+  color: var(--fg-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label-sm);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+@media (min-width: 640px) {
+  .page-index .home-about__badge {
+    display: grid;
+    gap: 8px;
+    padding: clamp(12px, 1.6vw, 16px) clamp(14px, 1.8vw, 20px);
+  }
+  .page-index .home-about__years { font-size: clamp(2rem, 1.5rem + 1.6vw, 2.75rem); line-height: .95; }
+}
+
+.page-index .home-about__events {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-inline: 9px;
+}
+.page-index .home-about__events img {
+  aspect-ratio: 660 / 371;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--bg-2);
+}
+/* the 2023 photo is a portrait crop: keep her face, the certificate and the trophy in frame */
+.page-index .home-about__event--2023 { object-position: 50% 14%; }
+/* tablets: the event photos stand beside the team photo, so the plate is not a tall column */
+@media (min-width: 640px) and (max-width: 959.98px) {
+  .page-index .home-about__media {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    column-gap: 12px;
+  }
+  .page-index .home-about__events {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    margin: 9px 9px 9px 0;
+    contain: size;   /* the team photo sets the row's height; the portrait 2023 crop must not */
+  }
+  .page-index .home-about__events img { block-size: 100%; aspect-ratio: auto; }
+  .page-index .home-about__event--2023 { object-position: 50% 18%; }
+}
+
+/* =============================================================================
+   #pesquisa — research areas as a ruled grid of whole-cell links
+   phones: icon beside the text (compact rows) · 640: 2 columns · 960: 4 × 2
+   ============================================================================= */
+.page-index .home-areas { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 640px) {
+  .page-index .home-areas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 960px) {
+  .page-index .home-areas { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.page-index .home-area {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "icon title index"
+    "icon text  text";
+  align-content: start;
+  gap: 6px 16px;
+  padding: 20px 18px 22px;
+  background: var(--bg-1);
+  transition: background-color var(--dur-ui) var(--ease-out);
+}
+@media (min-width: 640px) {
+  .page-index .home-area {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "icon  index"
+      "title title"
+      "text  text";
+    gap: 10px 16px;
+    padding: clamp(20px, 2.2vw, 28px);
+  }
+  .page-index .home-area__icon { margin-block-end: clamp(10px, 1.4vw, 18px); }
+}
+.page-index .home-area__icon { grid-area: icon; inline-size: 44px; block-size: 44px; }
+@media (min-width: 640px) {
+  .page-index .home-area__icon { inline-size: 48px; block-size: 48px; }
+}
+.page-index .home-area__index { grid-area: index; align-self: start; padding-block-start: 2px; }
+@media (min-width: 640px) {
+  .page-index .home-area__index { align-self: center; padding-block-start: 0; }
+}
+.page-index .home-area__title { grid-area: title; }
+.page-index .home-area__text { grid-area: text; }
+
+/* a cell of a ruled grid never lifts: its hairline ring would leave the grid */
+.page-index .home-area.card--interactive:hover {
+  transform: none;
+  box-shadow: 0 0 0 1px var(--line);
+  background: var(--bg-2);
+}
+.page-index .home-area:has(.card__link:focus-visible) {
+  z-index: 1;
+  outline: 2px solid var(--red-300);
+  outline-offset: -2px;
+}
+.page-index .home-area__index {
+  color: var(--fg-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  letter-spacing: var(--tracking-label);
+  font-variant-numeric: tabular-nums;
+  transition: color var(--dur-micro);
+}
+.page-index .home-area:is(:hover, :focus-within) .home-area__index { color: var(--fg-2); }
+.page-index .home-area__title {
+  font-size: clamp(1.0625rem, 1rem + .3vw, 1.2rem);
+  line-height: 1.3;
+  letter-spacing: -.015em;
+}
+.page-index .home-area__arrow {
+  color: var(--fg-3);
+  vertical-align: -.1em;
+  transition: translate var(--dur-ui) var(--ease-out), color var(--dur-micro);
+}
+.page-index .home-area:is(:hover, :focus-within) .home-area__arrow { color: var(--red-300); translate: 3px 0; }
+.page-index .home-area__text {
+  color: var(--fg-2);
+  font-size: .9rem;
+  line-height: 1.6;
+}
+
+/* =============================================================================
+   Publications — latest and most cited, side by side from 960px
+   ============================================================================= */
+.page-index .home-pubs__grid {
+  display: grid;
+  gap: clamp(44px, 5vw, 72px);
+}
+@media (min-width: 960px) {
+  .page-index .home-pubs__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.page-index .home-pubs__col { min-inline-size: 0; }
+.page-index .home-pubs__col--cited { display: flex; flex-direction: column; }
+.page-index .home-pubs__heading {
+  padding-block-end: 14px;
+  color: var(--fg-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+.page-index .home-publist { border-block-start: 1px solid var(--line-2); }
+.page-index .home-pub {
+  position: relative;
+  padding-block: 18px 20px;
+  border-block-end: var(--home-rule);
+}
+.page-index .home-pub__meta {
+  min-inline-size: 0;
+  color: var(--fg-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label-sm);
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: var(--tracking-mono);
+}
+.page-index .home-pub__year { color: var(--fg-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* venue and year run as text and wrap word by word: nothing is cut, also under user text
+   spacing (WCAG 1.4.12). The dot hangs on the item before it, so no line starts with it. */
+.page-index .home-pub__meta > :not(:last-child)::after { content: "\00a0· "; color: var(--fg-3); }
+.page-index .home-pub__title {
+  margin-block-start: 8px;
+  color: var(--fg);
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: -.01em;
+}
+.page-index .home-pub__title a {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: .22em;
+  transition: text-decoration-color var(--dur-micro), color var(--dur-micro);
+}
+.page-index .home-pub__title a:hover { text-decoration-color: var(--red-300); }
+.page-index .home-pub__authors {
+  margin-block-start: 6px;
+  color: var(--fg-3);
+  font-size: .8125rem;
+  line-height: 1.5;
+}
+.page-index .home-pub__nb { white-space: nowrap; }
+
+/* most cited: the count on the left, over a small meter of its citations relative to the
+   most cited paper (--share, 0–1, set in the markup) */
+.page-index .home-pub--cited { display: grid; gap: 8px; }
+.page-index .home-pub--cited .home-pub__title { margin-block-start: 0; }
+.page-index .home-pub__count {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+}
+.page-index .home-pub__count::after {
+  content: "";
+  flex: 0 0 100%;
+  max-inline-size: 6.25rem;
+  block-size: 2px;
+  margin-block-start: 6px;
+  background:
+    linear-gradient(var(--red-400), var(--red-400)) left center / calc(var(--share, 0) * 100%) 100% no-repeat,
+    var(--line-2);
+  transition: background-size 1.1s var(--ease-out) .3s;
+}
+html.js .page-index .home-pubs__col:not(.is-in) .home-pub__count::after { background-size: 0 100%, auto; }
+.page-index .home-pub__num {
+  color: var(--fg);
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 1.35rem + 1.1vw, 2.25rem);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -.04em;
+  font-variant-numeric: tabular-nums;
+}
+.page-index .home-pub__unit {
+  color: var(--fg-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label-sm);
+  font-weight: 500;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+@media (min-width: 480px) {
+  .page-index .home-pub--cited {
+    grid-template-columns: 6.25rem minmax(0, 1fr);
+    column-gap: clamp(16px, 2vw, 24px);
+    row-gap: 8px;
+  }
+  .page-index .home-pub--cited > :not(.home-pub__count) { grid-column: 2; }
+  .page-index .home-pub__count {
+    grid-row: 1 / span 2;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    align-content: start;
+    gap: 6px;
+  }
+  .page-index .home-pub__count::after { flex: none; margin-block-start: 6px; }
+}
+
+/* totals, source and the link close the right column; from 960px they sit at its foot,
+   level with the end of the left column */
+.page-index .home-pubs__foot {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+  margin-block-start: clamp(28px, 3vw, 36px);
+}
+.page-index .home-pubs__col--cited .home-pubs__foot { margin-block-start: auto; padding-block-start: clamp(28px, 3vw, 36px); }
+.page-index .home-pubs__totals {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 28px;
+  color: var(--fg-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label-sm);
+  font-weight: 500;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+.page-index .home-pubs__total strong {
+  margin-inline-end: 8px;
+  color: var(--fg);
+  font-family: var(--font-display);
+  font-size: clamp(1.375rem, 1.15rem + .6vw, 1.625rem);
+  font-weight: 600;
+  letter-spacing: -.03em;
+  text-transform: none;
+  font-variant-numeric: tabular-nums;
+}
+.page-index .home-pubs__source {
+  color: var(--fg-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label-sm);
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: var(--tracking-mono);
+}
+.page-index .home-pubs__foot .link-arrow { margin-block-start: 6px; }
+
+/* FIG. 03: papers per year, the publications chart's look in miniature (red-400 bars, a
+   --line-2 baseline, mono labels; the running year lighter and dashed) */
+.page-index .home-pubs__fig {
+  display: grid;
+  justify-self: stretch;
+  gap: 10px;
+  margin: 0 0 clamp(20px, 2.4vw, 28px);
+}
+.page-index .home-pubs__chart {
+  display: block;
+  overflow: visible;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+.page-index .home-pubs__base { stroke: var(--line-2); shape-rendering: crispEdges; }
+.page-index .home-pubs__bar {
+  fill: var(--red-400);
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+.page-index .home-pubs__bar.is-partial {
+  fill-opacity: .3;
+  stroke: var(--red-400);
+  stroke-width: 1.5px;
+  stroke-dasharray: 3 2.5;
+}
+.page-index .home-pubs__val { fill: var(--fg); font-weight: 600; text-anchor: middle; }
+.page-index .home-pubs__tick { fill: var(--fg-3); text-anchor: middle; }
+.page-index .home-pubs__figcap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+  color: var(--fg-3);
+  font-size: .8125rem;
+  line-height: 1.55;
+}
+.page-index .home-pubs__figlabel {
+  flex: none;
+  color: var(--fg-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label-sm);
+  font-weight: 500;
+  letter-spacing: var(--tracking-label);
+}
+.page-index .home-pubs__partial {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.page-index .home-pubs__key {
+  flex: none;
+  inline-size: 10px;
+  block-size: 10px;
+  border: 1.5px dashed var(--red-400);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--red-400) 30%, transparent);
+}
+@media (prefers-reduced-motion: no-preference) {
+  html.js .page-index .home-pubs__col:not(.is-in) .home-pubs__bar { scale: 1 0; }
+  .page-index .home-pubs__bar { transition: scale .9s var(--ease-out) calc(300ms + var(--i, 0) * 40ms); }
+}
+@media (forced-colors: active) {
+  .page-index .home-pubs__bar { fill: CanvasText; stroke: CanvasText; }
+  .page-index .home-pubs__key { forced-color-adjust: none; border-color: CanvasText; background: Canvas; }
+}
+
+/* =============================================================================
+   #noticias — featured story + two more
+   ============================================================================= */
+.page-index .home-news__grid {
+  display: grid;
+  gap: var(--home-gap);
+}
+@media (min-width: 640px) {
+  .page-index .home-news__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .page-index .home-news__card--featured,
+  .page-index .home-news__grid--1 > .home-news__card { grid-column: 1 / -1; }
+}
+@media (min-width: 960px) {
+  .page-index .home-news__grid { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); }
+  .page-index .home-news__grid--1 > .home-news__card { grid-column: auto; }
+  .page-index .home-news__card--featured { grid-column: 1; grid-row: span 2; }
+  .page-index .home-news__grid--0 > .home-news__card--featured,
+  .page-index .home-news__grid--1 > .home-news__card--featured { grid-row: auto; }
+  .page-index .home-news__grid--0 > .home-news__card--featured { grid-column: 1 / -1; }
+}
+.page-index .home-news__card { gap: 14px; }
+.page-index .home-news__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  color: var(--fg-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label-sm);
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: var(--tracking-mono);
+}
+.page-index .home-news__place { display: inline-flex; align-items: center; gap: 6px; }
+.page-index .home-news__title { font-size: clamp(1.15rem, 1.05rem + .45vw, 1.35rem); }
+.page-index .home-news__summary {
+  color: var(--fg-2);
+  font-size: .9375rem;
+  line-height: 1.65;
+}
+.page-index .home-news__summary strong { color: var(--fg); font-weight: 500; }
+.page-index .home-news__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px 24px;
+  margin-block-start: auto;
+  padding-block-start: 8px;
+}
+.page-index .home-news__foot > .link-arrow { margin-inline-start: auto; }
+
+.page-index .home-news__card--featured {
+  --card-pad: clamp(24px, 3.4vw, 44px);
+  gap: 18px;
+}
+.page-index .home-news__card--featured .home-news__title {
+  max-inline-size: 24ch;
+  font-size: clamp(1.5rem, 1.1rem + 1.5vw, 2.35rem);
+  line-height: 1.1;
+  letter-spacing: -.03em;
+}
+.page-index .home-news__card--featured .home-news__summary { max-inline-size: 58ch; font-size: 1rem; }
+/* the story's list (body_html: <ul><li><em>title</em> — author</li>…): a teaser, so only the
+   first list and at most four of its items; the whole story is on the news page */
+.page-index .home-news__body {
+  max-inline-size: 62ch;
+  color: var(--fg-3);
+  font-size: .875rem;
+  line-height: 1.5;
+}
+.page-index .home-news__body > :not(:first-child),
+.page-index .home-news__body li:nth-child(n + 5) { display: none; }
+.page-index .home-news__body :is(ul, ol) {
+  padding: 0;
+  list-style: none;
+  border-block-start: var(--home-rule);
+}
+.page-index .home-news__body li {
+  position: relative;
+  padding-block: 10px;
+  padding-inline-start: 18px;
+  border-block-end: var(--home-rule);
+  text-wrap: pretty;   /* "— Dênis Oliveira" moves down whole rather than leaving a lone surname */
+}
+.page-index .home-news__body li::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  inset-block-start: calc(10px + .75em - 2.5px);
+  inline-size: 5px;
+  block-size: 5px;
+  background: var(--red-400);
+}
+.page-index .home-news__body :is(em, strong) { color: var(--fg); font-style: normal; font-weight: 500; }
+.page-index .home-news__body li :is(ul, ol) { display: none; }
+
+/* featured story: a red glow and a masked grid in its top corner */
+.page-index .home-news__deco {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  border-radius: inherit;
+  background: radial-gradient(ellipse 55% 70% at 100% 0%, color-mix(in srgb, var(--red-700) 38%, transparent), transparent 72%);
+  pointer-events: none;
+}
+.page-index .home-news__deco::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--grid);
+  background-size: 44px 44px;
+  background-position: -1px -1px;
+  -webkit-mask-image: radial-gradient(ellipse 60% 75% at 100% 0%, #000 15%, transparent 70%);
+  mask-image: radial-gradient(ellipse 60% 75% at 100% 0%, #000 15%, transparent 70%);
+}
+.page-index .home-news__hl {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+}
+.page-index .home-news__hl-num {
+  color: var(--fg);
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 2.2rem + 2.6vw, 4.5rem);
+  font-weight: 600;
+  line-height: .82;
+  letter-spacing: -.05em;
+  font-variant-numeric: tabular-nums;
+}
+.page-index .home-news__hl-label {
+  display: grid;
+  gap: 4px;
+  color: var(--fg-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+.page-index .home-news__hl-event {
+  color: var(--fg-3);
+  font-size: var(--fs-label-sm);
+  letter-spacing: var(--tracking-mono);
+  text-transform: none;
+}
+
+/* =============================================================================
+   #consultorias — partner "wordmarks" in a ruled strip
+   Rows always fill and dividers line up: 1 per row on phones, 2 per row from 640px (an odd last
+   cell takes the whole row: 5 → 2 + 2 + 1), 5 from 1200px.
+   A cell: the name as a wordmark with its project right below, the status (if any) pinned to
+   the foot so the chips of a row line up. Phones: the status shares the name's line, so each
+   partner is a compact two-line row.
+   ============================================================================= */
+.page-index .home-partners__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1px;
+  padding: 1px;
+}
+.page-index .home-partner {
+  display: grid;
+  flex: 1 1 100%;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "name  status"
+    "title title";
+  align-items: start;
+  gap: 8px 16px;
+  min-inline-size: 0;
+  padding: 18px 20px 20px;
+  box-shadow: 0 0 0 1px var(--line);
+}
+.page-index .home-partner__name { grid-area: name; }
+.page-index .home-partner__title { grid-area: title; }
+/* centred on the name's first line (a 28px pill beside a ~24px line) */
+.page-index .home-partner > .chip--status { grid-area: status; margin-block-start: -2px; }
+@media (min-width: 640px) {
+  .page-index .home-partner {
+    flex-basis: calc(50% - 1px);
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas: "name" "title" "status";
+    gap: 10px;
+    padding: clamp(22px, 2.4vw, 28px);
+  }
+  .page-index .home-partner > .chip--status { align-self: end; justify-self: start; margin-block-start: 18px; }
+}
+.page-index .home-partner__name {
+  color: var(--fg);
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 1.05rem + 1.1vw, 1.85rem);
+  font-weight: 600;
+  line-height: 1.06;
+  letter-spacing: -.035em;
+}
+.page-index .home-partner__name a {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: 2px;
+  text-underline-offset: .16em;
+  transition: text-decoration-color var(--dur-micro);
+}
+.page-index .home-partner__name a:hover { text-decoration-color: var(--red-300); }
+/* five in a row: the name scales with its cell, so a long one ("Embrapii / Escola de Minas")
+   takes two lines, not three */
+@media (min-width: 1200px) {
+  .page-index .home-partner { flex-basis: calc(20% - 1px); padding-inline: 22px; }
+  .page-index .home-partner__name { font-size: min(2.05vw, 1.75rem); }
+}
+.page-index .home-partner__title {
+  max-inline-size: 30ch;
+  color: var(--fg-3);
+  font-size: .875rem;
+  line-height: 1.5;
+}
+
+/* =============================================================================
+   Join band
+   ============================================================================= */
+.page-index .home-join { padding-block: 0 var(--section-y); }

@@ -1,0 +1,396 @@
+/* =============================================================================
+   Research page (views/pesquisa.njk): owned by the research page builder.
+   Unlayered, so it wins over site.css: every rule is scoped under .page-pesquisa
+   and uses the site.css tokens only (alpha variants are color-mix() of tokens).
+   ============================================================================= */
+
+/* --- contents panel ---------------------------------------------------------
+   The areas as a ruled index in the page header's aside slot (page_header aside=true; the
+   foundation puts it in a column on the right from 1100px). Wide screens only: below 1100px the
+   sticky page_toc and the area list right below the header are enough. */
+.page-pesquisa .page-header__aside { display: none; }
+@media (min-width: 1100px) {
+  .page-pesquisa .page-header__aside { display: block; }
+  .page-pesquisa .rs-index {
+    padding: 4px 20px 6px;
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    background: color-mix(in srgb, var(--bg-1) 80%, transparent);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+}
+.page-pesquisa .rs-index__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-block: 14px 12px;
+  border-block-end: 1px solid var(--line-2);
+}
+.page-pesquisa .rs-index__count,
+.page-pesquisa .rs-index__num {
+  color: var(--fg-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label-sm);
+  font-weight: 500;
+  letter-spacing: var(--tracking-mono);
+  font-variant-numeric: tabular-nums;
+}
+.page-pesquisa .rs-index__link {
+  display: grid;
+  grid-template-columns: 2.1rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-block-size: 40px;
+  padding-block: 6px;
+  border-block-end: 1px solid var(--line);
+  color: var(--fg-2);
+  font-size: .9375rem;
+  line-height: 1.3;
+  text-decoration: none;
+  transition: color var(--dur-micro);
+}
+.page-pesquisa .rs-index__list > li:last-child .rs-index__link { border-block-end: 0; }
+@media (pointer: coarse) {
+  .page-pesquisa .rs-index__link { min-block-size: 44px; }
+}
+.page-pesquisa .rs-index__link:focus-visible { outline-offset: -2px; border-radius: 6px; }
+.page-pesquisa .rs-index__link .icon {
+  color: var(--red-300);
+  rotate: 90deg;
+  opacity: 0;
+  transition: opacity var(--dur-micro), translate var(--dur-ui) var(--ease-out);
+}
+.page-pesquisa .rs-index__link:is(:hover, :focus-visible) { color: var(--fg); }
+.page-pesquisa .rs-index__link:is(:hover, :focus-visible) .rs-index__num { color: var(--red-300); }
+.page-pesquisa .rs-index__link:is(:hover, :focus-visible) .icon { opacity: 1; translate: 0 2px; }
+
+/* --- 01 research areas: one ruled row per area ---------------------------- */
+.page-pesquisa .rs-area-list { border-block-end: 1px solid var(--line); }
+
+.page-pesquisa .rs-area {
+  --rs-mark: clamp(6rem, 11.5vw - 1rem, 9.5rem);
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  padding-block: clamp(28px, 3.8vw, 52px);
+  border-block-start: 1px solid var(--line);
+}
+/* hover, focus inside and #target (home page and footer link to /pesquisa/#<area id>): the
+   foundation .row-hover draws a red rule along the top hairline and turns the index red */
+.page-pesquisa .rs-area__mark {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.page-pesquisa .rs-area__index {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: .4rem;
+  font-family: var(--font-mono);
+  line-height: 1;
+}
+/* large text (≥ 24px): --red-400 is 4.5:1 on --bg, above the 3:1 large-text minimum. Face,
+   figures and side-bearing compensation come from the foundation .numeral. */
+.page-pesquisa .rs-area__num {
+  color: var(--red-400);
+  font-size: clamp(2.75rem, 1.9rem + 3vw, 4.5rem);
+  line-height: .8;
+}
+.page-pesquisa .rs-area__of {
+  color: var(--fg-3);
+  font-size: var(--fs-label-sm);
+  font-weight: 500;
+  letter-spacing: var(--tracking-label);
+}
+.page-pesquisa .rs-area:is(:hover, :focus-within, :target) .rs-area__icon {
+  border-color: color-mix(in srgb, var(--red-400) 45%, transparent);
+  color: var(--red-300);
+}
+
+.page-pesquisa .rs-area__title {
+  font-size: clamp(1.5rem, 1.15rem + 1.3vw, 2.25rem);
+  line-height: 1.1;
+  letter-spacing: -.028em;
+}
+.page-pesquisa .rs-area__text {
+  margin-block-start: clamp(12px, 1.2vw, 16px);
+  color: var(--fg-2);
+  font-size: clamp(1rem, .96rem + .18vw, 1.09375rem);
+  line-height: 1.65;
+  max-inline-size: 56ch;
+}
+.page-pesquisa .rs-area__group { display: grid; align-content: start; gap: 12px; }
+.page-pesquisa .rs-area__body .rs-area__group { margin-block-start: clamp(22px, 2.4vw, 30px); }
+
+/* researchers: avatar + role + name, each a link to the person on the people page (the avatar
+   ring on hover/focus comes from the foundation [data-person] rule). The name comes first in the
+   source; the role shows above it (D1 person identity). */
+.page-pesquisa .rs-people {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 232px), 1fr));
+  gap: 2px 24px;
+}
+.page-pesquisa .rs-person {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-block-size: 48px;
+  padding-block: 4px;
+  border-radius: var(--r-sm);
+  color: var(--fg);
+  text-decoration: none;
+}
+.page-pesquisa .rs-person__text { display: flex; flex-direction: column; gap: 3px; min-inline-size: 0; }
+.page-pesquisa .rs-person__name {
+  font-size: .9375rem;
+  font-weight: 500;
+  line-height: 1.3;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-decoration-thickness: 1px;
+  text-underline-offset: .25em;
+  transition: text-decoration-color var(--dur-micro);
+}
+.page-pesquisa .rs-person:hover .rs-person__name { text-decoration-color: var(--red-300); }
+.page-pesquisa .rs-person__role {
+  order: -1;
+  color: var(--fg-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label-sm);
+  line-height: 1.35;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+/* tablet: index column + content; researchers under the text */
+@media (min-width: 768px) {
+  .page-pesquisa .rs-area {
+    grid-template-columns: var(--rs-mark) minmax(0, 1fr);
+    column-gap: clamp(28px, 4vw, 56px);
+    row-gap: 28px;
+  }
+  .page-pesquisa .rs-area__mark {
+    grid-row: 1 / span 2;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 24px;
+  }
+  .page-pesquisa .rs-area__people { grid-column: 2; }
+}
+/* desktop: index · content · researchers */
+@media (min-width: 1024px) {
+  .page-pesquisa .rs-area { grid-template-columns: var(--rs-mark) minmax(0, 1.3fr) minmax(0, 1fr); }
+  .page-pesquisa .rs-area__mark { grid-row: auto; }
+  .page-pesquisa .rs-area__people { grid-column: auto; }
+}
+
+/* --- 02 R&D projects ------------------------------------------------------- */
+.page-pesquisa .rs-project-list {
+  display: grid;
+  gap: clamp(12px, 1.6vw, 20px);
+  grid-template-columns: minmax(0, 1fr);
+}
+/* the template marks the first project so no row is left with a gap (spans set per layout) */
+@media (min-width: 640px) {
+  .page-pesquisa .rs-project-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 640px) and (max-width: 1023.98px) {
+  .page-pesquisa .rs-project--span-sm { grid-column: 1 / -1; --rs-feature: 1; }
+}
+@media (min-width: 1024px) {
+  .page-pesquisa .rs-project-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .page-pesquisa .rs-project--span-lg { grid-column: span 2; --rs-feature: 1; }
+  .page-pesquisa .rs-project--full-lg { grid-column: 1 / -1; --rs-feature: 1; }
+}
+
+.page-pesquisa .rs-project { gap: 12px; }
+/* cards in a row share three row tracks (head, title, text + foot), so a partner name that wraps
+   ("Embrapii / Escola de Minas") moves every head hairline and title of that row together. The
+   spanning first card keeps its own "cover" layout. */
+@media (min-width: 640px) {
+  .page-pesquisa .rs-project-list > .rs-project { grid-row: span 3; }
+  .page-pesquisa .rs-project-list > .rs-project:has(> .card__foot) { grid-row: span 4; }
+  .page-pesquisa .rs-project-list > .rs-project:not([class*="rs-project--span"], .rs-project--full-lg) {
+    display: grid;
+    grid-template-rows: subgrid;
+    row-gap: 12px;
+  }
+}
+/* a spanning first project gets a faint grid and a glow in its top corner */
+.page-pesquisa .rs-project__deco {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  opacity: var(--rs-feature, 0);
+  background: radial-gradient(ellipse 55% 95% at 100% 0%, color-mix(in srgb, var(--red-800) 42%, transparent), transparent 70%);
+  pointer-events: none;
+}
+.page-pesquisa .rs-project__deco::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-image: var(--grid);
+  background-size: 48px 48px;
+  background-position: -1px -1px;
+  -webkit-mask-image: radial-gradient(ellipse 55% 100% at 100% 0%, #000, transparent 78%);
+  mask-image: radial-gradient(ellipse 55% 100% at 100% 0%, #000, transparent 78%);
+}
+/* in a spanning card that is taller than its content, the head grows (a "cover" with the
+   wordmark, grid and glow) and the title and text sit at the bottom */
+.page-pesquisa .rs-project__head {
+  display: flex;
+  flex-wrap: wrap;
+  flex-grow: var(--rs-feature, 0);
+  align-content: flex-start;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px 16px;
+  margin-block-end: 8px;
+  padding-block-end: clamp(16px, 2vw, 22px);
+  border-block-end: 1px solid var(--line);
+}
+.page-pesquisa .rs-project__partner {
+  color: var(--fg);
+  font-family: var(--font-display);
+  font-size: calc(var(--rs-feature, 0) * clamp(.5rem, .2rem + 1.2vw, 1rem) + clamp(1.5rem, 1.2rem + 1vw, 2rem));
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -.03em;
+  text-wrap: balance;
+}
+.page-pesquisa .rs-project__text { max-inline-size: 64ch; }
+.page-pesquisa .rs-project__text strong { color: var(--fg); font-weight: 600; }
+
+/* --- 03 open science -------------------------------------------------------- */
+.page-pesquisa .rs-open__grid {
+  display: grid;
+  gap: clamp(40px, 6vw, 80px);
+  align-items: center;
+}
+@media (min-width: 960px) {
+  .page-pesquisa .rs-open__grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+}
+.page-pesquisa .rs-open__intro .section-head { margin-block-end: clamp(24px, 3vw, 36px); }
+
+.page-pesquisa .rs-open__panel {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  overflow: clip;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--fg) 2.5%, transparent), transparent 40%), var(--bg-2);
+}
+.page-pesquisa .rs-open__cell {
+  position: relative;
+  min-inline-size: 0;
+  padding: clamp(20px, 2.6vw, 32px);
+  border-block-start: 1px solid var(--line);
+}
+.page-pesquisa .rs-open__cell--main,
+.page-pesquisa .rs-open__cell--chart { grid-column: 1 / -1; }
+.page-pesquisa .rs-open__cell--main {
+  border-block-start: 0;
+  background: radial-gradient(ellipse 70% 120% at 100% 0%, color-mix(in srgb, var(--red-800) 38%, transparent), transparent 70%);
+}
+.page-pesquisa .rs-open__cell--main .stat { gap: 16px; padding: 0; }
+/* display digits sit .03–.08em inside their box: -.05em brings any first digit onto the cell edge */
+.page-pesquisa .rs-open__cell--main .stat__value { margin-inline-start: -.05em; }
+/* the foundation .ruled.stats row (publications, citations), edge to edge in the panel: the outer
+   rings fall on the panel border (clipped) and the top/bottom ones are the dividers */
+.page-pesquisa .rs-open__stats { grid-column: 1 / -1; padding: 0; }
+.page-pesquisa .rs-open__stats + .rs-open__cell { border-block-start: 0; }
+.page-pesquisa .rs-open__glyph {
+  position: absolute;
+  inset-block-start: clamp(20px, 2.6vw, 32px);
+  inset-inline-end: clamp(20px, 2.6vw, 32px);
+  color: var(--fg-3);
+}
+
+/* papers per year: neutral bars, the peak year in red with its value */
+.page-pesquisa .rs-chart { display: grid; gap: 14px; margin: 0; }
+.page-pesquisa .rs-chart__bars {
+  --bars-h: clamp(64px, 6vw, 88px);
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(3px, .45vw, 6px);
+  block-size: calc(var(--bars-h) + 24px);
+  padding-block-start: 24px;
+  box-shadow: 0 1px 0 var(--line-2);
+}
+.page-pesquisa .rs-chart__bar {
+  position: relative;
+  flex: 1 1 0;
+  block-size: calc(var(--h) * 100%);
+  min-block-size: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--line-ui);
+  transform-origin: 50% 100%;
+}
+.page-pesquisa .rs-chart__bar.is-peak {
+  background: var(--red-400);
+  box-shadow: 0 0 18px -2px color-mix(in srgb, var(--red-400) 60%, transparent);
+}
+/* the current year is still in progress: hatched and lighter (year to date, said in the axis) */
+.page-pesquisa .rs-chart__bar.is-partial {
+  background: repeating-linear-gradient(-45deg, var(--line-ui) 0 2px, transparent 2px 5px);
+  box-shadow: inset 0 0 0 1px var(--line-ui);
+}
+.page-pesquisa .rs-chart__value {
+  position: absolute;
+  inset-block-end: calc(100% + 6px);
+  inset-inline-start: 50%;
+  translate: -50% 0;
+  color: var(--red-300);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label-sm);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: var(--tracking-mono);
+}
+.page-pesquisa .rs-chart__axis {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  color: var(--fg-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label-sm);
+  letter-spacing: var(--tracking-mono);
+}
+.page-pesquisa .rs-chart__partial { white-space: nowrap; }
+/* forced colours drop backgrounds: the bars keep system colours (peak in Highlight) */
+@media (forced-colors: active) {
+  .page-pesquisa .rs-chart__bar { forced-color-adjust: none; background: CanvasText; box-shadow: none; }
+  .page-pesquisa .rs-chart__bar.is-peak { background: Highlight; box-shadow: none; }
+  .page-pesquisa .rs-chart__bar.is-partial {
+    background: repeating-linear-gradient(-45deg, CanvasText 0 2px, Canvas 2px 5px);
+    box-shadow: inset 0 0 0 1px CanvasText;
+  }
+  .page-pesquisa .rs-chart__value { forced-color-adjust: none; color: CanvasText; }
+}
+/* bars rise once the panel is revealed (JS + motion only; static otherwise); the peak value
+   (inside its bar) appears once that bar has grown, so it is never seen squashed */
+@media (prefers-reduced-motion: no-preference) {
+  html.js .page-pesquisa .rs-open__panel:not(.is-in) .rs-chart__bar { transform: scaleY(0); }
+  html.js .page-pesquisa .rs-open__panel:not(.is-in) .rs-chart__value { opacity: 0; }
+  html.js .page-pesquisa .rs-open__panel.is-in .rs-chart__bar {
+    transition: transform .9s var(--ease-out);
+    transition-delay: calc(300ms + var(--i, 0) * 45ms);
+  }
+  html.js .page-pesquisa .rs-open__panel.is-in .rs-chart__value {
+    transition: opacity .4s var(--ease-out);
+    transition-delay: calc(1000ms + var(--i, 0) * 45ms);
+  }
+}
+
+/* --- collaborate band ------------------------------------------------------- */
+.page-pesquisa .rs-cta { padding-block-start: 0; }

@@ -1,167 +1,140 @@
 artificial_intelligence:
   pt: "Inteligência Artificial"
   en: "Artificial Intelligence"
-  es: "Inteligencia Artificial"
-  it: "Intelligenza Artificiale"
-
+  es: "Inteligencia artificial"
+  it: "Intelligenza artificiale"
 multiobjective_optimization:
   pt: "Otimização Multi-objetivo"
   en: "Multi-objective Optimization"
-  es: "Optimización Multiobjetivo"
-  it: "Ottimizzazione Multi-obiettivo"
-
+  es: "Optimización multiobjetivo"
+  it: "Ottimizzazione multiobiettivo"
 spatial_analysis:
   pt: "Análise Espacial"
   en: "Spatial Analysis"
-  es: "Análisis Espacial"
-  it: "Analisi Spaziale"
-
+  es: "Análisis espacial"
+  it: "Analisi spaziale"
 cluster_detection:
   pt: "Detecção de Clusters"
   en: "Cluster Detection"
-  es: "Detección de Clústeres"
-  it: "Rilevamento di Cluster"
-
+  es: "Detección de clústeres"
+  it: "Rilevamento di cluster"
 computer_vision:
   pt: "Visão Computacional"
   en: "Computer Vision"
-  es: "Visión Computacional"
-  it: "Visione Artificiale"
-
+  es: "Visión computacional"
+  it: "Visione artificiale"
 biometrics:
   pt: "Biometria"
   en: "Biometrics"
   es: "Biometría"
   it: "Biometria"
-
 pattern_recognition:
   pt: "Reconhecimento de Padrões"
   en: "Pattern Recognition"
-  es: "Reconocimiento de Patrones"
-  it: "Riconoscimento di Pattern"
-
+  es: "Reconocimiento de patrones"
+  it: "Riconoscimento di pattern"
 biomedical_signals:
   pt: "Sinais Biomédicos"
   en: "Biomedical Signals"
-  es: "Señales Biomédicas"
-  it: "Segnali Biomedici"
-
+  es: "Señales biomédicas"
+  it: "Segnali biomedici"
 machine_learning:
   pt: "Aprendizado de Máquina"
   en: "Machine Learning"
-  es: "Aprendizaje Automático"
-  it: "Machine Learning"
-
+  es: "Aprendizaje automático"
+  it: "Machine learning"
 nlp:
   pt: "Processamento de Linguagem Natural"
   en: "Natural Language Processing"
-  es: "Procesamiento del Lenguaje Natural"
-  it: "Elaborazione del Linguaggio Naturale"
-
+  es: "Procesamiento del lenguaje natural"
+  it: "Elaborazione del linguaggio naturale"
 time_series:
   pt: "Séries Temporais"
   en: "Time Series"
-  es: "Series Temporales"
-  it: "Serie Temporali"
-
+  es: "Series temporales"
+  it: "Serie temporali"
 periocular_biometrics:
   pt: "Biometria Periocular"
   en: "Periocular Biometrics"
-  es: "Biometría Periocular"
-  it: "Biometria Perioculare"
-
+  es: "Biometría periocular"
+  it: "Biometria perioculare"
 deep_learning:
   pt: "Deep Learning"
   en: "Deep Learning"
-  es: "Deep Learning"
-  it: "Deep Learning"
-
+  es: "Deep learning"
+  it: "Deep learning"
 metric_learning:
   pt: "Metric Learning"
   en: "Metric Learning"
-  es: "Metric Learning"
-  it: "Metric Learning"
-
+  es: "Metric learning"
+  it: "Metric learning"
 databases:
   pt: "Banco de Dados"
   en: "Databases"
-  es: "Bases de Datos"
-  it: "Basi di Dati"
-
+  es: "Bases de datos"
+  it: "Basi di dati"
 biological_signal_analysis:
   pt: "Análise de Sinais Biológicos"
   en: "Biological Signal Analysis"
-  es: "Análisis de Señales Biológicas"
-  it: "Analisi di Segnali Biologici"
-
+  es: "Análisis de señales biológicas"
+  it: "Analisi di segnali biologici"
 text_classification:
   pt: "Classificação de Texto"
   en: "Text Classification"
-  es: "Clasificación de Texto"
-  it: "Classificazione del Testo"
-
+  es: "Clasificación de texto"
+  it: "Classificazione del testo"
 data_science:
   pt: "Ciência de Dados"
   en: "Data Science"
-  es: "Ciencia de Datos"
-  it: "Data Science"
-
+  es: "Ciencia de datos"
+  it: "Data science"
 applied_ml:
   pt: "Aprendizado de Máquina Aplicado"
   en: "Applied Machine Learning"
-  es: "Aprendizaje Automático Aplicado"
-  it: "Machine Learning Applicato"
-
+  es: "Aprendizaje automático aplicado"
+  it: "Machine learning applicato"
 statistical_methods:
   pt: "Métodos Estatísticos"
   en: "Statistical Methods"
-  es: "Métodos Estadísticos"
-  it: "Metodi Statistici"
-
+  es: "Métodos estadísticos"
+  it: "Metodi statistici"
 sequential_tests:
   pt: "Testes Sequenciais Não-paramétricos"
   en: "Non-parametric Sequential Tests"
-  es: "Tests Secuenciales No-paramétricos"
-  it: "Test Sequenziali Non-parametrici"
-
+  es: "Tests secuenciales no paramétricos"
+  it: "Test sequenziali non parametrici"
 sampler_convergence:
   pt: "Convergência de Amostradores"
   en: "Sampler Convergence"
-  es: "Convergencia de Muestreadores"
-  it: "Convergenza di Campionatori"
-
+  es: "Convergencia de muestreadores"
+  it: "Convergenza di campionatori"
 social_network_analysis:
   pt: "Análise de Redes Sociais"
   en: "Social Network Analysis"
-  es: "Análisis de Redes Sociales"
-  it: "Social Network Analysis"
-
+  es: "Análisis de redes sociales"
+  it: "Social network analysis"
 community_detection:
   pt: "Detecção de Comunidades"
   en: "Community Detection"
-  es: "Detección de Comunidades"
-  it: "Community Detection"
-
+  es: "Detección de comunidades"
+  it: "Community detection"
 evolutionary_algorithms:
   pt: "Algoritmos Evolutivos"
   en: "Evolutionary Algorithms"
-  es: "Algoritmos Evolutivos"
-  it: "Algoritmi Evolutivi"
-
+  es: "Algoritmos evolutivos"
+  it: "Algoritmi evolutivi"
 computational_intelligence:
   pt: "Inteligência Computacional"
   en: "Computational Intelligence"
-  es: "Inteligencia Computacional"
-  it: "Intelligenza Computazionale"
-
+  es: "Inteligencia computacional"
+  it: "Intelligenza computazionale"
 network_science:
   pt: "Ciência de Redes"
   en: "Network Science"
-  es: "Ciencia de Redes"
-  it: "Scienza delle Reti"
-
+  es: "Ciencia de redes"
+  it: "Scienza delle reti"
 computational_social_science:
   pt: "Ciência Social Computacional"
   en: "Computational Social Science"
-  es: "Ciencias Sociales Computacionales"
-  it: "Scienza Sociale Computazionale"
+  es: "Ciencias sociales computacionales"
+  it: "Scienza sociale computazionale"

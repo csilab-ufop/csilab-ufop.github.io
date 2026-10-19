@@ -1,24 +1,66 @@
 ai:
-  title: "Inteligencia Artificial"
+  icon: "cpu"
+  tags:
+    - "artificial_intelligence"
+    - "computational_intelligence"
+    - "applied_ml"
+  title: "Inteligencia artificial"
   text: "Modelos de IA aplicados a problemas de alta complejidad en salud, finanzas, lenguaje y percepción ambiental."
 vision:
-  title: "Visión Computacional"
+  icon: "eye"
+  tags:
+    - "computer_vision"
+    - "biometrics"
+    - "periocular_biometrics"
+    - "pattern_recognition"
+  title: "Visión computacional"
   text: "Reconocimiento de patrones visuales, clasificación de imágenes, detección de deepfakes e identificación biométrica."
 ml:
-  title: "Aprendizaje Automático"
+  icon: "layers"
+  tags:
+    - "machine_learning"
+    - "deep_learning"
+    - "metric_learning"
+    - "applied_ml"
+  title: "Aprendizaje automático"
   text: "Redes neuronales profundas, aprendizaje por transferencia, self-supervised learning y arquitecturas eficientes (NAS)."
 nlp:
-  title: "Procesamiento del Lenguaje Natural"
+  icon: "message"
+  tags:
+    - "nlp"
+    - "text_classification"
+  title: "Procesamiento del lenguaje natural"
   text: "Modelos de lenguaje para el portugués, clasificación de texto tóxico, reconocimiento de voz y optimización de prompts."
 data_science:
-  title: "Ciencia de Datos"
+  icon: "bar-chart"
+  tags:
+    - "data_science"
+    - "statistical_methods"
+    - "time_series"
+    - "databases"
+    - "network_science"
+  title: "Ciencia de datos"
   text: "Análisis de riesgo crediticio, detección de fraude, predicción de churn y series temporales epidemiológicas."
 spatial:
-  title: "Análisis Espacial y Epidemiológico"
+  icon: "map"
+  tags:
+    - "spatial_analysis"
+    - "cluster_detection"
+  title: "Análisis espacial y epidemiológico"
   text: "Detección de clústeres espaciales, modelado de COVID-19 con redes GNN y movilidad urbana, vigilancia epidemiológica."
 biosignals:
-  title: "Señales Biomédicas"
+  icon: "activity"
+  tags:
+    - "biomedical_signals"
+    - "biological_signal_analysis"
+  title: "Señales biomédicas"
   text: "Clasificación de ECG, detección de arritmias, segmentación de latidos y señales cardíacas remotas por video (rPPG)."
 optimization:
-  title: "Optimización Multiobjetivo"
+  icon: "sliders"
+  tags:
+    - "multiobjective_optimization"
+    - "evolutionary_algorithms"
+    - "community_detection"
+    - "social_network_analysis"
+  title: "Optimización multiobjetivo"
   text: "Algoritmos evolutivos, detección de comunidades en redes sociales y optimización de dispersión/concentración de soluciones Pareto."

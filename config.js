@@ -9,5 +9,6 @@ module.exports = {
     it: { html: 'it',    name: 'Italiano' },
   },
   DEFAULT_LANG: 'pt',
-  PAGES: ['index', 'equipe', 'publicacoes', 'contato'],
+  // Page keys = template names (views/<key>.njk) = URL slugs (Portuguese in every language).
+  PAGES: ['index', 'pesquisa', 'equipe', 'publicacoes', 'noticias', 'contato'],
 };

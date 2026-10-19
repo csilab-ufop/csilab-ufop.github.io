@@ -1,0 +1,943 @@
+/* =============================================================================
+   Publications page (views/publicacoes.njk): owned by the publications page builder.
+   Unlayered, so it wins over site.css: every rule is scoped under .page-publicacoes and
+   uses the site.css tokens only (alpha variants are color-mix() of tokens).
+   Structure: header provenance line + stats strip · 01 panorama (two SVG bar charts, a link
+   to the raw data) · 02 arquivo (sticky toolbar with a filters disclosure, filter chips, year
+   groups with a sticky year or one list by citations, papers with a citation column on the
+   right from 768px) · code CTA.
+   ============================================================================= */
+
+.page-publicacoes {
+  --pubs-bar-h: 0px;              /* sticky toolbar, measured by publications.js once shown */
+  --pubs-head-h: calc(1.5rem + 16px); /* sticky year heading above the papers (below 1200px) */
+  --pubs-cite-w: 0px;             /* citation column on the right of each paper */
+  --pubs-mark: color-mix(in srgb, var(--red-400) 32%, transparent);
+  --pubs-i-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 17 17 7M7 7h10v10'/%3E%3C/svg%3E");
+  --pubs-i-chev: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+@media (min-width: 640px) {
+  .page-publicacoes { --pubs-head-h: calc(2rem + 20px); }
+}
+@media (min-width: 768px) {
+  .page-publicacoes { --pubs-cite-w: 10.5rem; }
+}
+@media (min-width: 1200px) {
+  .page-publicacoes { --pubs-head-h: 0px; }
+}
+/* This page runs to ~40 000px and its year groups render lazily (content-visibility): a smooth
+   scroll to a year (chart bars, #ano-YYYY links) would cross the whole archive and stop short as
+   the groups it passes take their real height. Jumps here are instant. */
+:root:has(> body.page-publicacoes) { scroll-behavior: auto; }
+
+/* =============================================================================
+   Page header: provenance line + stats strip
+   ============================================================================= */
+.page-publicacoes .pubs-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px clamp(20px, 3vw, 36px);
+  color: var(--fg-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label-sm);
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: var(--tracking-mono);
+}
+.page-publicacoes .pubs-meta > li { display: flex; align-items: flex-start; gap: 10px; min-inline-size: 0; }
+.page-publicacoes .pubs-meta :is(.icon, .brand) { flex: none; margin-block-start: .05em; color: var(--fg-2); }
+.page-publicacoes .pubs-meta time { color: var(--fg-2); }
+.page-publicacoes .pubs-meta .link { overflow-wrap: anywhere; }
+
+/* three numbers in the foundation's ruled stats row (.ruled.stats: 2 + 1 on phones, 3 columns
+   from 640px), small size; only the space above it is the page's */
+.page-publicacoes .pubs-stats { margin-block-start: clamp(32px, 4.5vw, 56px); }
+
+/* =============================================================================
+   01 Panorama: two bar charts, side by side from 640px
+   ============================================================================= */
+.page-publicacoes .pubs-charts { display: grid; gap: clamp(16px, 2vw, 24px); align-items: start; }
+@media (min-width: 640px) {
+  .page-publicacoes .pubs-charts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.page-publicacoes .pubs-chart {
+  container-type: inline-size;
+  display: grid;
+  gap: 14px;
+  min-inline-size: 0;
+  margin: 0;
+  padding: clamp(18px, 2.2vw, 28px) clamp(16px, 2.2vw, 28px) clamp(8px, 1vw, 12px);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--bg);
+}
+.page-publicacoes .pubs-chart__head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+/* the series key: a swatch in the bar colour leads the title (one series per chart) */
+.page-publicacoes .pubs-chart__title {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  font-size: clamp(1.0625rem, 1rem + .3vw, 1.25rem);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -.015em;
+}
+.page-publicacoes .pubs-chart__title::before {
+  content: "";
+  flex: none;
+  inline-size: 10px;
+  block-size: 10px;
+  border-radius: 2px;
+  background: var(--red-400);
+  translate: 0 -.05em;
+}
+.page-publicacoes .pubs-chart--cites .pubs-chart__title::before { background: var(--line-ui); }
+
+.page-publicacoes .pubs-chart__svg {
+  display: block;
+  overflow: visible;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  -webkit-tap-highlight-color: transparent;
+}
+.page-publicacoes .pubs-chart__grid line { stroke: var(--line); shape-rendering: crispEdges; }
+.page-publicacoes .pubs-chart__grid .is-base { stroke: var(--line-2); }
+.page-publicacoes .pubs-chart__grid text { fill: var(--fg-3); text-anchor: end; }
+
+.page-publicacoes .pubs-chart__bar { cursor: pointer; outline: none; }
+.page-publicacoes .pubs-chart__hit { fill: transparent; transition: fill var(--dur-micro); }
+.page-publicacoes .pubs-chart__col {
+  fill: var(--red-400);
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transition: fill var(--dur-micro), opacity var(--dur-ui) var(--ease-out);
+}
+.page-publicacoes .pubs-chart--cites .pubs-chart__col { fill: var(--line-ui); }
+.page-publicacoes .pubs-chart__x { fill: var(--fg-3); text-anchor: middle; transition: fill var(--dur-micro); }
+/* values: the peak is labelled, every other bar shows its value on hover and focus */
+.page-publicacoes .pubs-chart__value {
+  fill: var(--fg);
+  font-weight: 600;
+  text-anchor: middle;
+  opacity: 0;
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+  pointer-events: none;
+  transition: opacity var(--dur-micro);
+}
+.page-publicacoes .pubs-chart__bar.is-peak .pubs-chart__value { opacity: 1; }
+
+.page-publicacoes .pubs-chart__bar:is(:hover, :focus-visible) .pubs-chart__hit { fill: color-mix(in srgb, var(--fg) 4%, transparent); }
+.page-publicacoes .pubs-chart__bar:focus-visible .pubs-chart__hit { stroke: var(--red-300); stroke-width: 2px; }
+.page-publicacoes .pubs-chart__bar:is(:hover, :focus-visible) .pubs-chart__value { opacity: 1; }
+.page-publicacoes .pubs-chart__bar:is(:hover, :focus-visible) .pubs-chart__x { fill: var(--fg); }
+.page-publicacoes .pubs-chart--papers .pubs-chart__bar:is(:hover, :focus-visible) .pubs-chart__col { fill: var(--red-300); }
+.page-publicacoes .pubs-chart--cites .pubs-chart__bar:is(:hover, :focus-visible) .pubs-chart__col { fill: var(--fg-2); }
+/* focus + context: the other bars step back, the peak label yields to the active one */
+.page-publicacoes .pubs-chart__svg:has(.pubs-chart__bar:is(:hover, :focus-visible)) .pubs-chart__bar:not(:hover, :focus-visible) .pubs-chart__col { opacity: .4; }
+.page-publicacoes .pubs-chart__svg:has(.pubs-chart__bar:not(.is-peak):is(:hover, :focus-visible)) .pubs-chart__bar.is-peak:not(:hover, :focus-visible) .pubs-chart__value { opacity: 0; }
+
+/* the running year is incomplete: a lighter, dashed bar, explained in the note below */
+.page-publicacoes .pubs-chart__bar.is-partial .pubs-chart__col {
+  fill-opacity: .3;
+  stroke: var(--red-400);
+  stroke-width: 1.5px;
+  stroke-dasharray: 3 2.5;
+}
+.page-publicacoes .pubs-chart--cites .pubs-chart__bar.is-partial .pubs-chart__col { stroke: var(--line-ui); }
+.page-publicacoes .pubs-chart__bar.is-partial:is(:hover, :focus-visible) .pubs-chart__col { fill-opacity: .5; }
+
+/* narrow charts: every other year label (the newest always stays), hovered years show theirs */
+@container (max-width: 440px) {
+  .page-publicacoes .pubs-chart__x.is-alt { display: none; }
+  .page-publicacoes .pubs-chart__bar:is(:hover, :focus-visible) .pubs-chart__x.is-alt { display: inline; }
+  /* while a bar is active only its year is labelled: its neighbours would collide with it */
+  .page-publicacoes .pubs-chart__svg:has(.pubs-chart__bar:is(:hover, :focus-visible)) .pubs-chart__bar:not(:hover, :focus-visible) .pubs-chart__x { opacity: 0; }
+}
+
+/* bars rise from the baseline when the chart scrolls in (site.js adds .is-in) */
+@media (prefers-reduced-motion: no-preference) {
+  html.js .page-publicacoes .pubs-chart:not(.is-in) .pubs-chart__col { scale: 1 0; }
+  .page-publicacoes .pubs-chart__col {
+    transition:
+      scale 1s var(--ease-out) calc(180ms + var(--i, 0) * 45ms),
+      fill var(--dur-micro),
+      opacity var(--dur-ui) var(--ease-out);
+  }
+  html.js .page-publicacoes .pubs-chart.is-in .is-peak .pubs-chart__value { animation: pubs-fade .6s var(--ease-out) 1.1s backwards; }
+}
+@keyframes pubs-fade { from { opacity: 0; } }
+
+/* the partial-year note and the keyboard hint share one cell: the hint replaces the note while
+   a bar has keyboard focus, so nothing below moves */
+.page-publicacoes .pubs-chart__foot { display: grid; }
+.page-publicacoes .pubs-chart__foot > * { grid-area: 1 / 1; }
+.page-publicacoes .pubs-chart__hint {
+  visibility: hidden;
+  color: var(--fg-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label-sm);
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: var(--tracking-mono);
+}
+.page-publicacoes .pubs-chart:has(.pubs-chart__bar:focus-visible) .pubs-chart__hint { visibility: visible; }
+.page-publicacoes .pubs-chart:has(.pubs-chart__bar:focus-visible) .pubs-chart__note { visibility: hidden; }
+.page-publicacoes .pubs-chart__note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--fg-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label-sm);
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: var(--tracking-mono);
+}
+.page-publicacoes .pubs-chart__key {
+  flex: none;
+  inline-size: 12px;
+  block-size: 12px;
+  border: 1.5px dashed var(--red-400);
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--red-400) 30%, transparent);
+}
+.page-publicacoes .pubs-chart--cites .pubs-chart__key {
+  border-color: var(--line-ui);
+  background: color-mix(in srgb, var(--line-ui) 30%, transparent);
+}
+
+/* under both charts: where to get the data behind them */
+.page-publicacoes .pubs-data {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-block-start: clamp(16px, 2vw, 24px);
+  color: var(--fg-3);
+  font-size: .875rem;
+  line-height: 1.5;
+}
+.page-publicacoes .pubs-data .icon { flex: none; margin-block-start: .15em; color: var(--fg-2); }
+.page-publicacoes .pubs-data .link { color: var(--fg-2); }
+
+/* smooth disclosure where ::details-content exists (instant elsewhere) */
+@media (prefers-reduced-motion: no-preference) {
+  .page-publicacoes .pub__cites::details-content {
+    block-size: 0;
+    overflow-y: clip;
+    transition: block-size .4s var(--ease-out), content-visibility .4s allow-discrete;
+  }
+  .page-publicacoes .pub__cites[open]::details-content { block-size: auto; }
+}
+
+/* =============================================================================
+   02 Arquivo: sticky toolbar
+   ============================================================================= */
+/* publications.js measures the toolbar (ResizeObserver) into --pubs-bar-measured, so the sticky
+   year heading and the scroll margins follow it at any font size; the fallbacks are its
+   height at the default font size */
+.page-publicacoes .pubs-archive.is-enhanced { --pubs-bar-h: var(--pubs-bar-measured, 61px); }
+@media (min-width: 768px) {
+  .page-publicacoes .pubs-archive.is-enhanced { --pubs-bar-h: var(--pubs-bar-measured, 73px); }
+}
+
+/* full-bleed, under the site header; once stuck (.is-stuck, publications.js) it takes the
+   header's glass and hairline, at rest the controls sit on the page */
+.page-publicacoes .pubs-bar {
+  position: sticky;
+  inset-block-start: var(--header-h);
+  z-index: 90;
+  border-block-end: 1px solid transparent;
+  background-color: transparent;
+  transition: background-color var(--dur-ui) var(--ease-out), border-color var(--dur-ui) var(--ease-out);
+}
+.page-publicacoes .pubs-bar.is-stuck {
+  border-color: var(--line);
+  background-color: color-mix(in srgb, var(--bg) 86%, transparent);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  backdrop-filter: blur(16px) saturate(140%);
+}
+/* stuck detector (publications.js): leaves the viewport when the bar reaches the header */
+.page-publicacoes .pubs-bar__sentinel {
+  position: relative;
+  inset-block-start: calc(-1 * var(--header-h) - 1px);
+  block-size: 1px;
+  margin-block-end: -1px;
+  pointer-events: none;
+}
+/* its controls sit in the html scroll padding while stuck: focusing one must not scroll the page */
+.page-publicacoes .pubs-bar :is(a, button, input, select) { scroll-margin-block: calc(-1 * var(--scroll-pad)) var(--scroll-pad); }
+.page-publicacoes .pubs-bar__inner { display: flex; align-items: center; gap: 8px; padding-block: 6px; }
+@media (min-width: 768px) {
+  .page-publicacoes .pubs-bar__inner { gap: 12px; padding-block: 12px; }
+}
+
+.page-publicacoes .pubs-bar__search { position: relative; flex: 1 1 auto; min-inline-size: 0; max-inline-size: 36rem; }
+.page-publicacoes .pubs-bar__icon {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 14px;
+  translate: 0 -50%;
+  color: var(--fg-3);
+  pointer-events: none;
+  transition: color var(--dur-micro);
+}
+.page-publicacoes .pubs-bar__search:focus-within .pubs-bar__icon { color: var(--red-300); }
+.page-publicacoes .pubs-bar__input { padding-inline: 42px .75rem; text-overflow: ellipsis; }
+/* the cancel button only takes room once there is something to clear */
+.page-publicacoes .pubs-bar__input:placeholder-shown::-webkit-search-cancel-button { display: none; }
+.page-publicacoes .pubs-bar__input::placeholder { font-size: .875rem; text-overflow: ellipsis; }
+@media (min-width: 640px) {
+  .page-publicacoes .pubs-bar__input::placeholder { font-size: .9375rem; }
+}
+.page-publicacoes .pubs-archive.has-query .pubs-bar__input { border-color: color-mix(in srgb, var(--red-400) 55%, transparent); }
+
+.page-publicacoes .pubs-bar__year { position: relative; flex: none; }
+.page-publicacoes .pubs-bar__select {
+  -webkit-appearance: none;
+  appearance: none;
+  inline-size: 100%;
+  min-block-size: 48px;
+  padding: .6rem 2.6rem .6rem 1rem;
+  border: 1px solid var(--line-ui);
+  border-radius: var(--r-sm);
+  background: var(--bg-2);
+  color: var(--fg);
+  font-size: .9375rem;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: border-color var(--dur-micro), background-color var(--dur-micro);
+}
+.page-publicacoes .pubs-bar__select:hover { border-color: var(--fg-3); }
+.page-publicacoes .pubs-bar__select:focus-visible { outline: 2px solid var(--red-300); outline-offset: 1px; background-color: var(--bg-3); }
+.page-publicacoes .pubs-bar__select option { background: var(--bg-2); color: var(--fg); }
+.page-publicacoes .pubs-archive.has-year .pubs-bar__select {
+  border-color: color-mix(in srgb, var(--red-400) 55%, transparent);
+  background-color: var(--red-950);
+}
+.page-publicacoes .pubs-bar__chev {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-end: 14px;
+  translate: 0 -50%;
+  color: var(--fg-3);
+  pointer-events: none;
+}
+.page-publicacoes .pubs-archive.has-year .pubs-bar__chev { color: var(--red-300); }
+/* phones: the closed select shows a short label ("Ano" or the chosen year) over its own text,
+   so the search field keeps its width; the list itself still offers "all years" */
+.page-publicacoes .pubs-bar__year-text { display: none; }
+@media (max-width: 639px) {
+  .page-publicacoes .pubs-bar__year { inline-size: 5.5rem; }
+  .page-publicacoes .pubs-bar__year .pubs-bar__select { color: transparent; }
+  .page-publicacoes .pubs-bar__year-text {
+    display: block;
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline: .9rem 2.3rem;
+    translate: 0 -50%;
+    overflow: hidden;
+    color: var(--fg);
+    font-size: .9375rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    pointer-events: none;
+  }
+}
+
+.page-publicacoes .pubs-count {
+  color: var(--fg-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label-sm);
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: var(--tracking-mono);
+  font-variant-numeric: tabular-nums;
+}
+.page-publicacoes .pubs-count b { color: var(--fg); font-weight: 600; }
+.page-publicacoes .pubs-clear {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  min-block-size: 44px;
+  padding-inline: 12px;
+  border-radius: var(--r-sm);
+  color: var(--fg-2);
+  font-size: .875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: color var(--dur-micro), background-color var(--dur-micro);
+}
+.page-publicacoes .pubs-clear .icon { color: var(--red-300); }
+.page-publicacoes .pubs-clear:hover { color: var(--fg); background: color-mix(in srgb, var(--fg) 6%, transparent); }
+.page-publicacoes .pubs-clear:focus-visible { outline-offset: -2px; }
+/* nothing to clear: the button keeps its place (no shift) but is gone for everyone */
+.page-publicacoes .pubs-archive:not(.is-filtered) .pubs-clear { visibility: hidden; }
+
+/* --- filters disclosure --------------------------------------------------------
+   The Filtros button (aria-expanded) opens a second row inside the sticky bar with the person,
+   venue, type and citation filters and the sort; on phones the button shows its icon and the
+   number of active filters only (its name stays in the accessibility tree). */
+.page-publicacoes .pubs-more {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-block-size: 48px;
+  min-inline-size: 48px;
+  padding: .6rem 1rem;
+  border: 1px solid var(--line-ui);
+  border-radius: var(--r-sm);
+  background: var(--bg-2);
+  color: var(--fg);
+  font-size: .9375rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  transition: border-color var(--dur-micro), background-color var(--dur-micro);
+}
+.page-publicacoes .pubs-more .icon { flex: none; color: var(--fg-3); transition: color var(--dur-micro); }
+.page-publicacoes .pubs-more:hover { border-color: var(--fg-3); }
+.page-publicacoes .pubs-more:focus-visible { outline: 2px solid var(--red-300); outline-offset: 1px; background-color: var(--bg-3); }
+.page-publicacoes .pubs-more[aria-expanded="true"] { background-color: var(--bg-3); }
+.page-publicacoes .pubs-more[aria-expanded="true"] .icon { color: var(--red-300); }
+.page-publicacoes .pubs-archive.has-more .pubs-more {
+  border-color: color-mix(in srgb, var(--red-400) 55%, transparent);
+  background-color: var(--red-950);
+}
+.page-publicacoes .pubs-archive.has-more .pubs-more .icon { color: var(--red-300); }
+.page-publicacoes .pubs-more__badge {
+  display: inline-grid;
+  place-items: center;
+  min-inline-size: 20px;
+  block-size: 20px;
+  padding-inline: 5px;
+  border-radius: var(--r-pill);
+  background: var(--red-500);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: .7rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.page-publicacoes .pubs-more__badge[hidden] { display: none; }
+@media (max-width: 639px) {
+  .page-publicacoes .pubs-more { padding-inline: 0; }
+  .page-publicacoes .pubs-more__text {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .page-publicacoes .pubs-more__badge { position: absolute; inset-block-start: -7px; inset-inline-end: -7px; }
+}
+
+.page-publicacoes .pubs-filters {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 8px;
+  padding-block: 2px 12px;
+}
+.page-publicacoes .pubs-filters[hidden] { display: none; }
+.page-publicacoes .pubs-field { display: grid; gap: 6px; min-inline-size: 0; }
+.page-publicacoes .pubs-field--wide,
+.page-publicacoes .pubs-field:last-child { grid-column: span 2; }
+@media (min-width: 640px) {
+  .page-publicacoes .pubs-filters { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
+  .page-publicacoes .pubs-field { grid-column: span 2; }
+  .page-publicacoes .pubs-field--wide { grid-column: span 3; }
+}
+@media (min-width: 768px) {
+  .page-publicacoes .pubs-filters { padding-block-end: 16px; }
+}
+@media (min-width: 1100px) {
+  .page-publicacoes .pubs-filters { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1.75fr) repeat(3, minmax(0, 1fr)); }
+  .page-publicacoes .pubs-field,
+  .page-publicacoes .pubs-field--wide,
+  .page-publicacoes .pubs-field:last-child { grid-column: auto; }
+}
+.page-publicacoes .pubs-field__label {
+  color: var(--fg-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label-sm);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+.page-publicacoes .pubs-pick { position: relative; min-inline-size: 0; }
+.page-publicacoes .pubs-pick .pubs-bar__select { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.page-publicacoes .pubs-bar__select.is-active {
+  border-color: color-mix(in srgb, var(--red-400) 55%, transparent);
+  background-color: var(--red-950);
+}
+.page-publicacoes .pubs-pick:has(.is-active) .pubs-bar__chev { color: var(--red-300); }
+
+/* --- active filters as chips, under the bar ------------------------------------ */
+.page-publicacoes .pubs-chips[hidden] { display: none; }
+.page-publicacoes .pubs-chips__list { display: flex; flex-wrap: wrap; gap: 8px; padding-block: 10px 2px; }
+.page-publicacoes .pubs-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  max-inline-size: 100%;
+  min-block-size: 36px;
+  padding-inline: 12px 10px;
+  border: 1px solid color-mix(in srgb, var(--red-400) 45%, transparent);
+  border-radius: var(--r-pill);
+  background: var(--red-950);
+  color: var(--fg);
+  font-size: .8125rem;
+  line-height: 1.3;
+  text-align: start;
+  transition: border-color var(--dur-micro), background-color var(--dur-micro);
+}
+.page-publicacoes .pubs-chip__text { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.page-publicacoes .pubs-chip__text b { color: var(--fg-2); font-weight: 500; }
+.page-publicacoes .pubs-chip .icon { flex: none; color: var(--red-300); }
+.page-publicacoes .pubs-chip:hover { border-color: var(--red-300); background: var(--red-900); }
+.page-publicacoes .pubs-chip:focus-visible { outline: 2px solid var(--red-300); outline-offset: 2px; }
+
+/* the count and the clear button live in the bar from 960px, in a line under it below */
+.page-publicacoes .pubs-bar__count,
+.page-publicacoes .pubs-bar__clear { display: none; }
+.page-publicacoes .pubs-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-block-size: 44px;
+  margin-block-start: 8px;
+}
+.page-publicacoes .pubs-status .pubs-clear { margin-inline-end: -12px; }
+@media (min-width: 960px) {
+  .page-publicacoes .pubs-bar__clear { display: inline-flex; }
+  .page-publicacoes .pubs-bar__count { display: block; margin-inline-start: auto; }
+  .page-publicacoes .pubs-status { display: none; }
+}
+
+/* =============================================================================
+   02 Arquivo: year groups
+   ============================================================================= */
+/* a flex column: the gap only opens between groups that are shown */
+.page-publicacoes .pubs-years {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(48px, 6vw, 88px);
+  margin-block-start: clamp(16px, 2.4vw, 32px);
+}
+/* Off-screen groups skip rendering (content-visibility) and reserve an estimate that the
+   browser replaces with the real size once seen. The 16px of padding on each side keeps hover
+   ticks and focus rings inside the paint containment; the text stays on the page axis. */
+.page-publicacoes .pubs-year {
+  --pubs-item-h: 210px;                          /* average paper height, measured per breakpoint */
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto calc(var(--n, 10) * var(--pubs-item-h) + 60px);
+  margin-inline: -16px;
+  padding-inline: 16px;
+  /* a jump to a year docks its heading right under the toolbar, where it then sticks (the
+     html scroll padding already adds the header and 24px) */
+  scroll-margin-block-start: max(0px, var(--pubs-bar-h) - 25px);
+}
+@media (min-width: 768px) {
+  .page-publicacoes .pubs-year { --pubs-item-h: 150px; }
+}
+@media (min-width: 1024px) {
+  .page-publicacoes .pubs-year { --pubs-item-h: 135px; }
+}
+
+.page-publicacoes .pubs-year__head {
+  position: sticky;
+  inset-block-start: calc(var(--header-h) + var(--pubs-bar-h) - 1px);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-sizing: border-box;
+  block-size: var(--pubs-head-h);
+  margin-inline: -16px;
+  padding: 0 16px;
+  border-block-end: 1px solid var(--line-2);
+  background: var(--bg);
+}
+/* from 640px the band and its rule line up with the papers (the group's 16px of padding only
+   keeps hover rules and focus rings inside its paint containment) */
+@media (min-width: 640px) {
+  .page-publicacoes .pubs-year__head { margin-inline: 0; padding-inline: 0; }
+}
+/* the year: the foundation's mono numeral (.numeral), sized here */
+.page-publicacoes .pubs-year__title { font-size: 1.5rem; }
+@media (min-width: 640px) {
+  .page-publicacoes .pubs-year__title { font-size: 2rem; }
+}
+.page-publicacoes .pubs-year__count {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--fg-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+.page-publicacoes .pubs-year__count::before {
+  content: "";
+  flex: none;
+  inline-size: 6px;
+  block-size: 6px;
+  background: var(--red-400);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--red-400) 70%, transparent);
+}
+
+/* the year jumped to (chart bar, #ano-YYYY link) flashes once */
+.page-publicacoes .pubs-year:target .pubs-year__title { animation: pubs-target 1.6s var(--ease-out); }
+@keyframes pubs-target {
+  0%, 30% { color: var(--red-300); text-shadow: 0 0 28px color-mix(in srgb, var(--red-400) 60%, transparent); }
+}
+
+/* wide screens: the year holds a column of its own and stays in view beside its papers */
+@media (min-width: 1200px) {
+  .page-publicacoes .pubs-year {
+    position: relative;
+    display: grid;
+    grid-template-columns: 10.5rem minmax(0, 1fr);
+    column-gap: clamp(32px, 3.5vw, 56px);
+    scroll-margin-block-start: calc(var(--pubs-bar-h) + 4px);
+  }
+  /* the year's top rule, on the page axis (the group itself reaches 16px past it) */
+  .page-publicacoes .pubs-year::before {
+    content: "";
+    position: absolute;
+    inset: 0 16px auto;
+    block-size: 1px;
+    background-color: var(--line-2);
+  }
+  .page-publicacoes .pubs-year__head {
+    inset-block-start: calc(var(--header-h) + var(--pubs-bar-h) + 24px);
+    align-self: start;
+    display: grid;
+    justify-items: start;
+    gap: 14px;
+    block-size: auto;
+    margin: 0;
+    padding: 26px 0 0;
+    border: 0;
+    background: none;
+  }
+  .page-publicacoes .pubs-year__title { font-size: 3.25rem; }
+}
+
+/* --- papers ----------------------------------------------------------------- */
+.page-publicacoes .pub {
+  position: relative;
+  padding-block: 16px 18px;
+  padding-inline-end: var(--pubs-cite-w);
+  border-block-end: 1px solid var(--line);
+}
+.page-publicacoes .pub:last-child { border-block-end: 0; }
+@media (min-width: 768px) {
+  .page-publicacoes .pub { padding-block: 20px 22px; }
+}
+/* the paper under the pointer or holding focus: the foundation's .row-hover rule along its top */
+
+.page-publicacoes .pub__title {
+  color: var(--fg);
+  font-family: var(--font-display);
+  font-size: clamp(1.0625rem, 1rem + .25vw, 1.1875rem);
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: -.012em;
+  text-wrap: pretty;
+}
+.page-publicacoes .pub__title a {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: .24em;
+  transition: text-decoration-color var(--dur-micro);
+}
+.page-publicacoes .pub__title a:hover { text-decoration-color: var(--red-300); }
+/* "opens elsewhere" arrow, drawn with a mask (no SVG repeated 300 times) */
+.page-publicacoes .pub__title a::after {
+  content: "";
+  display: inline-block;
+  inline-size: .62em;
+  block-size: .62em;
+  margin-inline-start: .35em;
+  background: var(--red-300);
+  -webkit-mask: var(--pubs-i-arrow) center / contain no-repeat;
+  mask: var(--pubs-i-arrow) center / contain no-repeat;
+  opacity: 0;
+  translate: -3px 3px;
+  transition: opacity var(--dur-micro), translate var(--dur-ui) var(--ease-out);
+}
+.page-publicacoes .pub__title a:is(:hover, :focus-visible)::after { opacity: 1; translate: 0 0; }
+
+.page-publicacoes .pub__authors { margin-block-start: 6px; color: var(--fg-2); font-size: .875rem; line-height: 1.55; }
+.page-publicacoes .pub__venue {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin-block-start: 8px;
+  color: var(--fg-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label-sm);
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: var(--tracking-mono);
+}
+.page-publicacoes .pub__venue .badge { padding: .14rem .45rem; font-size: .66rem; }
+
+/* "Cited by N": a pill under the paper on phones, a right-aligned column from 768px. A link
+   to Google Scholar, or the summary of the list of citing papers when the data has it. */
+.page-publicacoes .pub__cite {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: .45em;
+  min-block-size: 32px;
+  margin-block-start: 10px;
+  padding-inline: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--bg-2);
+  list-style: none;
+  color: var(--fg-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label-sm);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: var(--tracking-mono);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color var(--dur-micro), border-color var(--dur-micro), background-color var(--dur-micro);
+}
+.page-publicacoes .pub__cite::-webkit-details-marker { display: none; }
+.page-publicacoes .pub__cite b { color: var(--fg); font-weight: 600; font-variant-numeric: tabular-nums; }
+.page-publicacoes :is(a, summary).pub__cite { cursor: pointer; }
+/* 44px touch target around the 32px pill */
+.page-publicacoes :is(a, summary).pub__cite::before { content: ""; position: absolute; inset: -6px -2px; }
+.page-publicacoes :is(a, summary).pub__cite::after {
+  content: "";
+  flex: none;
+  inline-size: 12px;
+  block-size: 12px;
+  background: currentColor;
+  -webkit-mask: var(--pubs-i-arrow) center / contain no-repeat;
+  mask: var(--pubs-i-arrow) center / contain no-repeat;
+  transition: translate var(--dur-ui) var(--ease-out), rotate var(--dur-ui) var(--ease-out);
+}
+.page-publicacoes summary.pub__cite::after { -webkit-mask-image: var(--pubs-i-chev); mask-image: var(--pubs-i-chev); }
+.page-publicacoes :is(a, summary).pub__cite:hover { border-color: var(--line-2); color: var(--fg-2); }
+.page-publicacoes :is(a, summary).pub__cite:hover::after { color: var(--red-300); }
+.page-publicacoes a.pub__cite:hover::after { translate: 2px -2px; }
+.page-publicacoes .pub__cites[open] > .pub__cite { border-color: color-mix(in srgb, var(--red-400) 55%, transparent); color: var(--fg-2); }
+.page-publicacoes .pub__cites[open] > .pub__cite::after { rotate: 180deg; color: var(--red-300); }
+@media (min-width: 768px) {
+  .page-publicacoes .pub__cite {
+    position: absolute;
+    inset-block-start: 18px;
+    inset-inline-end: 0;
+    justify-content: flex-end;
+    margin: 0;
+    padding-inline: 10px 0;
+    border: 0;
+    border-radius: var(--r-sm);
+    background: none;
+  }
+  .page-publicacoes :is(a, summary).pub__cite::before { inset: -6px -8px; }
+  .page-publicacoes .pub__cites[open] > .pub__cite { background: none; }
+}
+
+/* citing papers (only where publications.json lists them) */
+.page-publicacoes .pub__panel {
+  margin-block-start: 14px;
+  padding: 14px clamp(14px, 2vw, 20px) 6px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--bg-1);
+}
+.page-publicacoes .cites__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+  padding-block-end: 10px;
+  border-block-end: 1px solid var(--line-2);
+  color: var(--fg-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label-sm);
+  font-weight: 500;
+  line-height: 1.45;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+.page-publicacoes .cites__count { color: var(--fg-2); font-variant-numeric: tabular-nums; }
+.page-publicacoes .cites__item { padding-block: 12px; border-block-end: 1px solid var(--line); }
+.page-publicacoes .cites__item:last-child { border-block-end: 0; }
+.page-publicacoes .cites__title { color: var(--fg); font-size: .9375rem; line-height: 1.45; }
+.page-publicacoes .cites__title a {
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: .22em;
+  transition: text-decoration-color var(--dur-micro);
+}
+.page-publicacoes .cites__title a:hover { text-decoration-color: var(--red-300); }
+.page-publicacoes .cites__meta {
+  margin-block-start: 4px;
+  color: var(--fg-3);
+  font-size: .8125rem;
+  line-height: 1.5;
+}
+/* the dot sticks to the item before it (no-break space), so a wrapped line never starts with one */
+.page-publicacoes .cites__meta > span:not(:last-child)::after { content: "\a0\a0·"; padding-inline-end: .2em; }
+.page-publicacoes .cites__more { border-block-start: 1px solid var(--line); }
+.page-publicacoes .cites__more .link-arrow { font-size: .875rem; }
+
+/* sorted by citations: one ranked list out of the year groups (publications.js moves the
+   papers into it), each paper showing its year at the start of its venue line */
+.page-publicacoes .pub__year { display: none; color: var(--fg-2); font-weight: 600; }
+.page-publicacoes .pub__venue--bare { display: none; }
+.page-publicacoes .pubs-archive.is-ranked .pub__year { display: inline; }
+.page-publicacoes .pubs-archive.is-ranked .pub__venue--bare { display: flex; }
+.page-publicacoes .pubs-ranked {
+  --pubs-item-h: 230px;
+  border-block-start: 1px solid var(--line-2);
+}
+@media (min-width: 768px) {
+  .page-publicacoes .pubs-ranked { --pubs-item-h: 160px; }
+}
+@media (min-width: 1024px) {
+  .page-publicacoes .pubs-ranked { --pubs-item-h: 145px; }
+}
+/* with JS, every paper also skips rendering off-screen: showing 300 papers at once (sort by
+   citations, a filter removed) then lays out only the ones in view. The clip margin keeps the
+   hover rule (1px above the paper) and focus rings painted. */
+.page-publicacoes .pubs-archive.is-enhanced .pub {
+  content-visibility: auto;
+  contain-intrinsic-block-size: auto var(--pubs-item-h);
+  overflow-clip-margin: 8px;
+}
+.page-publicacoes .pubs-ranked[hidden] { display: none; }
+.page-publicacoes .pubs-ranked .pub:last-child { border-block-end: 0; }
+
+/* search matches */
+.page-publicacoes .pub mark {
+  padding-inline: .06em;
+  border-radius: 3px;
+  background: var(--pubs-mark);
+  color: var(--fg);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* focused links and summaries are scrolled clear of the toolbar and the sticky year */
+.page-publicacoes .pubs-years :is(a, summary, button) {
+  scroll-margin-block: calc(var(--pubs-bar-h) + var(--pubs-head-h) + 12px) 24px;
+}
+
+/* --- empty states ------------------------------------------------------------ */
+.page-publicacoes .pubs-empty {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  padding-block: clamp(28px, 4vw, 48px) 8px;
+  border-block-start: 1px solid var(--line-2);
+}
+.page-publicacoes .pubs-empty__title {
+  color: var(--fg);
+  font-family: var(--font-display);
+  font-size: clamp(1.375rem, 1.1rem + 1vw, 1.875rem);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -.025em;
+}
+.page-publicacoes .pubs-empty__text { max-inline-size: 52ch; color: var(--fg-2); }
+.page-publicacoes .pubs-empty .btn { margin-block-start: 8px; }
+.page-publicacoes .pubs-unavailable { color: var(--fg-2); font-size: var(--fs-lead); max-inline-size: 60ch; }
+
+/* =============================================================================
+   Code CTA
+   ============================================================================= */
+.page-publicacoes .pubs-code { padding-block-start: 0; }
+
+/* =============================================================================
+   Short viewports: the year headings stop sticking up to 640px tall (1024x600 laptops), the
+   toolbar too up to 540px (landscape phones, 400% zoom), where only the site header stays pinned
+   ============================================================================= */
+@media (max-height: 640px) {
+  .page-publicacoes .pubs-year__head { position: static; block-size: auto; padding-block: 12px 10px; }
+  .page-publicacoes { --pubs-head-h: 0px; }
+}
+@media (max-height: 540px) {
+  .page-publicacoes .pubs-bar { position: static; }
+  .page-publicacoes .pubs-archive.is-enhanced { --pubs-bar-h: 0px; }
+  .page-publicacoes .pubs-bar.is-stuck {
+    border-color: transparent;
+    background-color: transparent;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .page-publicacoes .pubs-bar :is(a, button, input, select) { scroll-margin-block: 0; }
+}
+
+/* =============================================================================
+   Forced colours: the SVG chart keeps system colours (Chromium does not force SVG paint);
+   the phone year select's overlay label covers the select's own (forced) text
+   ============================================================================= */
+@media (forced-colors: active) {
+  .page-publicacoes .pubs-chart__svg text { fill: CanvasText; stroke: none; }
+  .page-publicacoes .pubs-chart__grid line { stroke: GrayText; }
+  .page-publicacoes .pubs-chart__col,
+  .page-publicacoes .pubs-chart--cites .pubs-chart__col { fill: CanvasText; stroke: CanvasText; }
+  .page-publicacoes .pubs-chart--papers .pubs-chart__col { fill: Highlight; stroke: Highlight; }
+  .page-publicacoes .pubs-chart__bar:is(:hover, :focus-visible) .pubs-chart__col { fill: LinkText; }
+  .page-publicacoes .pubs-chart__bar:focus-visible .pubs-chart__hit { stroke: Highlight; }
+  .page-publicacoes .pubs-chart__title::before,
+  .page-publicacoes .pubs-chart__key,
+  .page-publicacoes .pubs-year__count::before { forced-color-adjust: none; background: CanvasText; box-shadow: none; }
+  .page-publicacoes .pubs-chart--papers .pubs-chart__title::before { background: Highlight; }
+  .page-publicacoes .pubs-chart__bar.is-partial .pubs-chart__col { fill-opacity: .35; stroke: CanvasText; }
+  .page-publicacoes .pubs-chart--papers .pubs-chart__bar.is-partial .pubs-chart__col { stroke: Highlight; }
+  .page-publicacoes .pubs-chart__key { border-color: CanvasText; background: Canvas; }
+  /* the select's own text is forced visible: the overlay label gets an opaque backplate (the
+     select's Field colour) so only "Ano" or the chosen year shows */
+  .page-publicacoes .pubs-bar__year-text { background-color: Field; color: FieldText; }
+}
+
+/* =============================================================================
+   Reduced motion, print
+   ============================================================================= */
+@media (prefers-reduced-motion: reduce) {
+  .page-publicacoes .pub__title a::after,
+  .page-publicacoes a.pub__cite:hover::after { translate: none; }
+}
+
+@media print {
+  .page-publicacoes :is(.pubs-bar, .pubs-status, .pubs-chips, .pubs-data, .pubs-code) { display: none !important; }
+  /* charts on paper: dark ink for text and rules (site.css prints text black on white) */
+  .page-publicacoes .pubs-chart__svg text { fill: currentColor; }
+  .page-publicacoes .pubs-chart__value { stroke: none; }
+  .page-publicacoes .pubs-chart__grid line { stroke: currentColor; stroke-opacity: .25; }
+  .page-publicacoes .pubs-year { content-visibility: visible; display: block; }
+  .page-publicacoes .pubs-year__head { position: static; padding-inline: 0; margin: 12pt 0 0; }
+  .page-publicacoes .pub { padding-inline-end: 0; break-inside: avoid; }
+  .page-publicacoes .pub__cite { position: static; margin-block-start: 4pt; padding: 0; border: 0; }
+  .page-publicacoes .pub::after,
+  .page-publicacoes :is(a, summary).pub__cite::after,
+  .page-publicacoes .pub__title a::after { display: none; }
+}

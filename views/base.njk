@@ -1,162 +1,81 @@
-{% from "_macros.njk" import icon, brand, wordmark %}
-{% set home = base_url or "/" %}
-{% set github = data.site.social.github %}
-{% set nav = [
-  { key: "home",         href: home },
-  { key: "research",     href: home + "#pesquisa" },
-  { key: "team",         href: base_url + "/equipe",      page: "equipe" },
-  { key: "publications", href: base_url + "/publicacoes", page: "publicacoes" },
-  { key: "consulting",   href: home + "#consultorias" }
-] %}
+{#-
+  Base layout. Pages: {% extends "base.njk" %} and fill the blocks
+    head        page stylesheet (<link rel="stylesheet" href="{{ base_path }}/css/pages/x.css">), preloads
+    jsonld      structured data (<script type="application/ld+json">…</script>), e.g. on the home page
+    content     everything inside <main id="main">
+    scripts     page scripts (<script type="module" src="{{ base_path }}/js/x.js"></script>)
+    head_early  inline scripts that must run before any stylesheet (the 404 legacy redirect)
+  SEO title/description come from page.title / page.description (front matter).
+-#}
+{%- from "_macros.njk" import icon, brand with context -%}
+{%- set ui = data.ui or {} -%}
+{%- set indexable = currentPage not in ["404", "_styleguide"] -%}
+{#- es_LA: the Spanish copy is Latin American (pregrado, postularte, video) -#}
+{%- set og_locales = { pt: "pt_BR", en: "en_US", es: "es_LA", it: "it_IT" } -%}
 <!DOCTYPE html>
-<html lang="{{ lang_html }}">
+<html lang="{{ lang_html }}" dir="ltr" class="no-js">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="{{ page.description }}" />
-  <title>{{ page.title }}</title>
-  <link rel="canonical" href="{{ site_url }}{{ lang_urls[lang] }}" />
-  {%- for l, url in lang_urls %}
-  <link rel="alternate" hreflang="{{ l }}" href="{{ site_url }}{{ url }}" />
-  {%- endfor %}
-  <link rel="alternate" hreflang="x-default" href="{{ site_url }}{{ lang_urls.pt }}" />
-  <link rel="icon" href="{{ base_path }}/favicon.ico" sizes="32x32" />
-  <link rel="icon" href="{{ base_path }}/favicon.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="{{ base_path }}/apple-touch-icon.png" />
-  <link rel="stylesheet" href="{{ base_path }}/css/main.css" />
-  <link rel="stylesheet" href="{{ base_path }}/css/dropdown.css" />
-  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css" />
-  {% block head %}{% endblock %}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(e){e.classList.remove("no-js");e.classList.add("js");setTimeout(function(){if(!e.classList.contains("is-ready")){e.classList.remove("js");e.classList.add("no-js")}},4000)})(document.documentElement)</script>
+{%- block head_early %}{% endblock %}
+<title>{{ page.title or data.site.name }}</title>
+{%- if page.description %}
+<meta name="description" content="{{ page.description }}">
+{%- endif %}
+{%- if indexable %}
+<link rel="canonical" href="{{ site_url }}{{ lang_urls[lang] }}">
+{%- for code, l in languages %}
+<link rel="alternate" hreflang="{{ l.html }}" href="{{ site_url }}{{ lang_urls[code] }}">
+{%- endfor %}
+<link rel="alternate" hreflang="x-default" href="{{ site_url }}{{ lang_urls[default_lang or 'pt'] }}">
+{%- else %}
+<meta name="robots" content="noindex">
+{%- endif %}
+<meta name="theme-color" content="#060607">
+<meta name="color-scheme" content="dark">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="{{ data.site.name }}">
+<meta property="og:title" content="{{ page.title or data.site.name }}">
+{%- if page.description %}
+<meta property="og:description" content="{{ page.description }}">
+{%- endif %}
+{%- if indexable %}
+<meta property="og:url" content="{{ site_url }}{{ lang_urls[lang] }}">
+{%- endif %}
+{#- one card per language (the lab name is written in the image): og-card-pt.jpg, og-card-en.jpg … -#}
+<meta property="og:image" content="{{ site_url }}{{ base_path }}/images/og-card-{{ lang }}.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="{{ data.site.short_name or data.site.name }} — {{ ui.footer.description }}">
+<meta property="og:locale" content="{{ og_locales[lang] or (lang_html | replace('-', '_')) }}">
+{#- data-lang: the 404 page swaps the locales client-side for the language of the URL -#}
+{%- for code, l in languages %}{% if code != lang %}
+<meta property="og:locale:alternate" content="{{ og_locales[code] or (l.html | replace('-', '_')) }}" data-lang="{{ code }}">
+{%- endif %}{% endfor %}
+<meta name="twitter:card" content="summary_large_image">
+{%- if data.site.social and data.site.social.twitter %}
+<meta name="twitter:site" content="{{ data.site.social.twitter.handle }}">
+{%- endif %}
+<link rel="icon" href="{{ base_path }}/favicon.ico" sizes="32x32">
+<link rel="icon" href="{{ base_path }}/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="{{ base_path }}/apple-touch-icon.png">
+<link rel="preload" href="{{ base_path }}/fonts/83afe278b6a6bb3c.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="{{ base_path }}/fonts/fc566e733948aae3.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="{{ base_path }}/css/site.css">
+{%- block head %}{% endblock %}
+{%- block jsonld %}{% endblock %}
 </head>
-<body>
-
-<div id="page-loader">
-  <div style="font-family:'Funnel Sans',sans-serif;font-size:1.75rem;font-weight:800;letter-spacing:-0.02em;">{{ wordmark() }}</div>
-</div>
-
-<div class="d2c_background" aria-hidden="true">
-  <span></span><span></span><span></span><span></span>
-  <span></span><span></span><span></span>
-</div>
-
-<nav id="navbar">
-  <div class="container">
-    <div class="nav-inner">
-      <a href="{{ home }}" class="nav-logo">
-        <img src="{{ base_path }}/images/logo-csilab.png" alt="CSI Lab" style="height:36px;"
-             onerror="this.style.display='none';this.nextElementSibling.style.display='inline'" />
-        <span style="display:none;font-family:'Funnel Sans',sans-serif;font-size:1.25rem;font-weight:800;letter-spacing:-0.02em;">{{ wordmark() }}</span>
-      </a>
-      <ul class="nav-links">
-        {% for item in nav %}
-        <li><a href="{{ item.href }}"{% if item.page == currentPage %} style="color:var(--color-accent);"{% endif %}>{{ data.nav[item.key] }}</a></li>
-        {% endfor %}
-      </ul>
-      <div class="nav-actions">
-        <a href="{{ base_url }}/contato" class="btn-contact">{{ data.nav.contact_btn }}</a>
-        <div class="lang-dropdown" id="lang-dropdown">
-          <button class="lang-trigger" type="button" id="lang-trigger" aria-haspopup="true" aria-expanded="false">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
-            <span>{{ lang | upper }}</span>
-            <svg class="lang-chevron" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
-          </button>
-          <div class="lang-menu" role="menu">
-            {% for code, l in languages %}
-            <a href="{{ lang_urls[code] }}" class="lang-item{% if code == lang %} active{% endif %}" role="menuitem">
-              <span class="lang-item-code">{{ code | upper }}</span><span class="lang-item-name">{{ l.name }}</span>
-            </a>
-            {% endfor %}
-          </div>
-        </div>
-        <a href="{{ github.url }}" target="_blank" rel="noopener" class="nav-github" aria-label="{{ github.name }}">{{ brand("github", 18) }}</a>
-      </div>
-      <div class="hamburger" id="hamburger" aria-label="{{ data.nav.open_menu }}">
-        <span></span><span></span><span></span>
-      </div>
-    </div>
-  </div>
-</nav>
-
-<div class="nav-overlay" id="nav-overlay"></div>
-<div class="mobile-nav" id="mobile-nav">
-  <span class="mobile-close" id="mobile-close">&#x2715;</span>
-  {% for item in nav %}
-  <a href="{{ item.href }}">{{ data.nav[item.key] }}</a>
-  {% endfor %}
-  <a href="{{ github.url }}" target="_blank" rel="noopener">{{ github.name }}</a>
-  <a href="{{ base_url }}/contato">{{ data.nav.contact_btn }}</a>
-  <div class="lang-switcher--mobile">
-    {% for code, l in languages %}
-    <a href="{{ lang_urls[code] }}" class="lang-mobile-item{% if code == lang %} active{% endif %}">
-      <span style="font-weight:800;font-size:0.75rem;letter-spacing:0.06em;min-width:26px;">{{ code | upper }}</span>
-      <span>{{ l.name }}</span>
-    </a>
-    {% endfor %}
-  </div>
-</div>
-
+<body class="page-{{ currentPage }}" id="top">
+<a class="skip-link" href="#main" data-nf="skip_link">{{ ui.skip_link }}</a>
+{% include "partials/header.njk" %}
+<main id="main" tabindex="-1">
 {% block content %}{% endblock %}
-
-<footer>
-  <div class="container">
-    {% block footer_top %}
-    <div class="footer-top">
-      <div class="footer-brand">
-        <img src="{{ base_path }}/images/logo-csilab.png" alt="CSI Lab" style="height:48px;margin-bottom:1rem;"
-             onerror="this.style.display='none';this.nextElementSibling.style.display='block'" />
-        <div style="display:none;font-family:'Funnel Sans',sans-serif;font-size:1.5rem;font-weight:800;letter-spacing:-0.02em;margin-bottom:1rem;">{{ wordmark() }}</div>
-        <p>{{ data.footer.brand_text }}</p>
-        <div style="margin-top:1rem;">
-          <img src="{{ base_path }}/images/logo-ufop.png" alt="UFOP" style="height:36px;opacity:0.7;"
-               onerror="this.style.display='none'" />
-        </div>
-      </div>
-      <div class="footer-col">
-        <h4>{{ data.footer.nav_heading }}</h4>
-        <ul>
-          {% for item in nav %}
-          <li><a href="{{ item.href }}" class="d2c_footer_link">{{ data.nav[item.key] }}</a></li>
-          {% endfor %}
-          <li><a href="{{ home }}#noticias" class="d2c_footer_link">{{ data.nav.news }}</a></li>
-          <li><a href="{{ base_url }}/contato" class="d2c_footer_link">{{ data.nav.contact_btn }}</a></li>
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>{{ data.footer.team_heading }}</h4>
-        <ul>
-          {% for anchor, text in data.footer.team_links %}
-          <li><a href="{{ base_url }}/equipe#{{ anchor }}" class="d2c_footer_link">{{ text }}</a></li>
-          {% endfor %}
-        </ul>
-      </div>
-      <div class="footer-col">
-        <h4>{{ data.footer.social_heading }}</h4>
-        <ul>
-          {% for key, s in data.site.social %}
-          <li><a href="{{ s.url }}" target="_blank" class="d2c_footer_link">{{ s.name }} — {{ s.handle }}</a></li>
-          {% endfor %}
-          <li><a href="{{ site_url }}" target="_blank" class="d2c_footer_link">{{ data.footer.official_site }}</a></li>
-        </ul>
-        <div class="social-links" style="margin-top:1.25rem;">
-          {% for key, s in data.site.social %}
-          <a href="{{ s.url }}" target="_blank" class="d2c_social_link" title="{{ s.name }}">{{ brand(key) }}</a>
-          {% endfor %}
-        </div>
-      </div>
-    </div>
-    {% endblock %}
-    <div class="footer-bottom">
-      <p>{{ data.footer.copyright }}</p>
-      <div class="footer-bottom-links">
-        {% for name, url in data.site.institutions %}
-        <a href="{{ url }}" target="_blank">{{ name }}</a>
-        {% endfor %}
-      </div>
-    </div>
-  </div>
-</footer>
-
-<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
-<script src="{{ base_path }}/js/main.js"></script>
+</main>
+{% include "partials/footer.njk" %}
+<div id="site-live" class="sr-only" role="status" aria-live="polite" aria-atomic="true" data-copied="{{ ui.common.copied }}"></div>
+<script type="module" src="{{ base_path }}/js/site.js"></script>
+{%- block scripts %}{% endblock %}
 </body>
 </html>

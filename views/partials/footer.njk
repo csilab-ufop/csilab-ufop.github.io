@@ -1,0 +1,73 @@
+{#- Global footer (ia.md "Global chrome"). The data-nf / data-nf-alt (paths into not_found_i18n),
+    data-nav-key and data-nav-page / data-nav-hash attributes let the 404 page switch the footer
+    to the language of the URL client-side (views/404.njk). -#}
+{%- from "_macros.njk" import icon, brand with context -%}
+{%- set ui = data.ui or {} -%}
+{%- set nav_items = [
+  { key: "research", page: "pesquisa" },
+  { key: "people", page: "equipe" },
+  { key: "publications", page: "publicacoes" },
+  { key: "news", page: "noticias" },
+  { key: "contact", page: "contato" }
+] -%}
+{%- set institutions = data.site.institutions or {} -%}
+{%- set location = data.contact.location if data.contact else none -%}
+<footer class="site-footer">
+  <div class="container">
+    <div class="site-footer__top">
+      <div class="site-footer__brand">
+        <a class="site-footer__logo" href="{{ urls.index }}" data-nav-page="index"><img src="{{ base_path }}/images/logo-csilab-compact.svg" width="121" height="36" alt="CSI Lab" loading="lazy" decoding="async"></a>
+        {%- if ui.footer.description %}
+        <p class="site-footer__desc" data-nf="footer.description">{{ ui.footer.description }}</p>
+        {%- endif %}
+        {%- if location %}
+        <address class="site-footer__address">
+          {%- for key in ["room", "dept", "univ"] %}{% if location[key] %}<span data-nf="location.{{ key }}">{{ location[key] }}</span>{% if not loop.last %}<br>{% endif %}{% endif %}{% endfor -%}
+        </address>
+        {%- endif %}
+      </div>
+      <div class="site-footer__col">
+        <h2 class="site-footer__heading" data-nf="footer.lab_heading">{{ ui.footer.lab_heading }}</h2>
+        <ul class="site-footer__list" role="list">
+          {%- for item in nav_items %}
+          <li><a class="site-footer__link" href="{{ urls[item.page] }}" data-nav-page="{{ item.page }}"><span data-nav-key="{{ item.key }}">{{ ui.nav[item.key] }}</span></a></li>
+          {%- endfor %}
+        </ul>
+      </div>
+      <div class="site-footer__col">
+        <h2 class="site-footer__heading" data-nf="footer.people_heading">{{ ui.footer.people_heading }}</h2>
+        <ul class="site-footer__list" role="list">
+          {%- for anchor, label in ui.footer.people_links %}
+          <li><a class="site-footer__link" href="{{ urls.equipe }}#{{ anchor }}" data-nav-page="equipe" data-nav-hash="{{ anchor }}"><span data-nf="footer.people_links.{{ anchor }}">{{ label }}</span></a></li>
+          {%- endfor %}
+        </ul>
+      </div>
+      <div class="site-footer__col">
+        <h2 class="site-footer__heading" data-nf="footer.social_heading">{{ ui.footer.social_heading }}</h2>
+        <ul class="site-footer__list" role="list">
+          {%- for key, s in data.site.social %}
+          <li><a class="site-footer__link" href="{{ s.url }}" target="_blank" rel="noopener">{{ brand(key, 16) }}<span translate="no">{{ s.name }}</span><span class="sr-only" data-nf="common.new_tab"> {{ ui.common.new_tab }}</span></a></li>
+          {%- endfor %}
+        </ul>
+      </div>
+      <div class="site-footer__col">
+        <h2 class="site-footer__heading" data-nf="footer.institutions_heading">{{ ui.footer.institutions_heading }}</h2>
+        <ul class="site-footer__list" role="list">
+          {%- for name, url in institutions %}
+          <li><a class="site-footer__link" href="{{ url }}" target="_blank" rel="noopener"><span translate="no">{{ name }}</span>{{ icon("arrow-up-right", 14) }}<span class="sr-only" data-nf="common.new_tab"> {{ ui.common.new_tab }}</span></a></li>
+          {%- endfor %}
+        </ul>
+      </div>
+      <div class="site-footer__mark" aria-hidden="true"></div>
+    </div>
+    <div class="site-footer__bottom">
+      <div class="site-footer__legal">
+        {%- if institutions.UFOP %}
+        <a class="site-footer__ufop" href="{{ institutions.UFOP }}" target="_blank" rel="noopener"><img src="{{ base_path }}/images/ufop-crest.svg" width="25" height="44" alt="{{ ui.footer.official_site }}" loading="lazy" decoding="async" data-nf-alt="footer.official_site"><span class="sr-only" data-nf="common.new_tab"> {{ ui.common.new_tab }}</span></a>
+        {%- endif %}
+        <p class="site-footer__copy">© 2024–{{ build_year }} <span data-nf="footer.copyright">{{ ui.footer.copyright }}</span></p>
+      </div>
+      <a class="site-footer__totop" href="#top"><span data-nf="footer.back_to_top">{{ ui.footer.back_to_top }}</span>{{ icon("arrow-up", 16) }}</a>
+    </div>
+  </div>
+</footer>

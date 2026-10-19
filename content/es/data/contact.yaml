@@ -1,16 +1,17 @@
-info_title: "Información de Contacto"
 location:
   room: "Sala 281 — ICEB II"
   dept: "Departamento de Computación (DECOM)"
   univ: "UFOP · Ouro Preto, MG · Brasil"
-join_title: "Cómo Ingresar al CSI Lab"
 join_items:
   undergrad_research:
-    title: "Investigación de Pregrado"
+    icon: "graduation"
+    title: "Investigación de pregrado"
     text: "Los estudiantes de pregrado pueden solicitar becas de investigación vía CNPq y FAPEMIG. Envía tu CV y área de interés."
   graduate:
-    title: "Maestría y Doctorado"
+    icon: "book"
+    title: "Maestría y doctorado"
     text: "Consulta las convocatorias del PPGCC-UFOP. Contacta al profesor de tu línea de investigación de interés antes de postularte."
   industry:
-    title: "Alianzas Empresariales"
+    icon: "briefcase"
+    title: "Alianzas empresariales"
     text: "Realizamos proyectos de I+D mediante convenio UFOP/Embrapii o contrato directo. Describe tu demanda y programaremos una reunión."

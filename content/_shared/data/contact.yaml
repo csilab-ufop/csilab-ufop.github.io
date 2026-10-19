@@ -1,8 +1,0 @@
-# Texts are in content/{lang}/data/contact.yaml under the same keys.
-join_items:
-  undergrad_research:
-    icon: graduation
-  graduate:
-    icon: book
-  industry:
-    icon: briefcase
