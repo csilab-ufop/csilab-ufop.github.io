@@ -5,6 +5,7 @@ coordinators:
       role: "coordinator"
       email: "gladston@ufop.edu.br"
       scholar_id: "L4nnrk8AAAAJ"
+      photo: "/images/team/citations-1.webp"
       tags:
         - "artificial_intelligence"
         - "multiobjective_optimization"
