@@ -24,7 +24,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SITE_URL: https://csilab.ufop.br
-      SCHOLAR_SSH_HOST: jackal
     steps:
       - uses: actions/checkout@v7
 
@@ -36,7 +35,8 @@ jobs:
       - run: npm ci
 
       # Scholar blocks GitHub's servers, so its requests run on a machine in the
-      # UFOP network (see SCHOLAR_SSH_HOST); host, key and host keys are secrets.
+      # UFOP network (SCHOLAR_SSH_HOST, set on that step only, so the build's cached
+      # download of the published data goes direct); host, key and host keys are secrets.
       - name: Set up SSH to the UFOP network
         if: github.event_name == 'schedule'
         env:
@@ -52,6 +52,8 @@ jobs:
 
       - name: Refresh publications from Google Scholar
         if: github.event_name == 'schedule'
+        env:
+          SCHOLAR_SSH_HOST: jackal
         run: npm run fetch:pubs
 
       - run: npm run build
