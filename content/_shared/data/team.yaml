@@ -106,29 +106,17 @@ collaborators:
         - "deep_learning"
 phd_students:
   members:
-    - name: "Pedro Castro"
+    - name: "Pedro Henrique Nascimento Castro"
       since: 2022
       lattes: "1648427683361371"
-    - name: "Lauro Moraes"
+    - name: "Lauro Ângelo Gonçalves de Moraes"
       since: 2022
       lattes: "7273329679145458"
-    - name: "Dênis Xavier"
-      since: 2022
-    - name: "Gabriel Souza"
-      since: 2019
-      lattes: "1276963014476347"
-    - name: "Marcus Almeida"
+    - name: "Marcus Daniel de Almeida"
       since: 2023
       lattes: "9750853239897719"
-    - name: "Guilherme Silva"
-      since: 2023
-      scholar_id: "DqnrCA8AAAAJ"
-      lattes: "4755584696921241"
     - name: "Andressa Oliveira"
       since: 2023
-    - name: "Fernando Duarte"
-      since: 2022
-      lattes: "9331617052785818"
     - name: "Glauber Soares dos Santos"
       since: 2026
       lattes: "3017858960714380"
@@ -138,63 +126,47 @@ phd_students:
     - name: "Roger Corneille Ndjeumou Ngassi"
       since: 2024
       lattes: "3456825411540893"
-    - name: "Marcus Daniel de Almeida"
-      since: 2023
-      lattes: "9750853239897719"
 masters_students:
   members:
-    - name: "Jean Pinheiro"
-      since: 2021
-      lattes: "1201524358960754"
-    - name: "Gabriel Ferreira"
-      since: 2023
-    - name: "Amanda Oliveira"
-      since: 2022
-      lattes: "7187644478574662"
+    - name: "Gustavo Vieira Nascimento"
+      since: 2025
+      lattes: "1403595054540584"
 undergrads:
   members:
     - name: "Guilherme Santos"
       since: 2024
       scholar_id: "hAxFeikAAAAJ"
       photo: "/images/team/citations.webp"
-    - name: "Rafael Alto"
-      since: 2022
-    - name: "Artur Bermond"
-      since: 2023
-    - name: "Luísa Cizilio"
-      since: 2021
-      lattes: "0273287843002956"
-    - name: "Gustavo Vieira"
-      since: 2023
-    - name: "Vinicius Silva"
-      since: 2021
-      lattes: "6046796826385547"
-    - name: "João Zenóbio"
-      since: 2021
-      lattes: "6135972089163105"
-    - name: "Suleimane Ducure"
-      since: 2021
-      lattes: "4547014379251202"
+    - name: "Fábio Tavares Pinto"
+      since: 2025
 alumni_grad:
   members:
     - "Rafael Oliveira"
     - "João Alvarenga"
-    - "Pedro Silva"
+    - "Pedro Henrique Lopes Silva"
     - "Thiago Schons"
     - "Felipe de Oliveira Mota"
+    - "Sara Pinheiro Câmara"
+    - "Gabriel Lima de Souza"
+    - "Dênis Ricardo Xavier de Oliveira"
+    - "Fernando Henrique Oliveira Duarte"
+    - "Guilherme Augusto Lopes Silva"
 alumni_undergrad:
   members:
-    - "Carlos Freitas"
-    - "Filipe Ramos"
-    - "Mariana Mota"
-    - "Gabriel Ferreira"
+    - "Carlos Gabriel de Freitas"
+    - "Filipe Ramos de Souza Santos"
+    - "Mariana Regina Ferreira Mota"
+    - "Gabriel Bicalho Ferreira"
     - "Alan Santandrea"
     - "Kleuber Nascimento"
-    - "Guilherme Silva"
-    - "Gabriel Garcia"
+    - "Guilherme Augusto Lopes Silva"
+    - "Gabriel Carvalho Garcia"
     - "Fernando Torres Bernardo"
     - "Henrique Alvares"
     - "Dayane Morais"
     - "Renata Lisboa"
     - "Vinícius Zanini"
     - "Vinícius Augusto Pereira Queiroz"
+    - "Luísa Calegari de Barros Cizilio"
+    - "Artur Bermond Torres"
+    - "Gustavo Vieira Nascimento"
