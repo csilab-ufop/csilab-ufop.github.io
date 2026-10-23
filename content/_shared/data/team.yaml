@@ -5,6 +5,8 @@ coordinators:
       role: "coordinator"
       email: "gladston@ufop.edu.br"
       scholar_id: "L4nnrk8AAAAJ"
+      lattes: "9902619084565293"
+      website: "http://www.decom.ufop.br/moreira/"
       photo: "/images/team/citations-1.webp"
       tags:
         - "artificial_intelligence"
@@ -88,6 +90,7 @@ collaborators:
     - name: "Elizabeth Wanner"
       gender: "f"
       role: "collaborating_researcher"
+      scholar_id: "R0dNQAAAAJ"
       tags:
         - "multiobjective_optimization"
         - "evolutionary_algorithms"
@@ -95,6 +98,7 @@ collaborators:
     - name: "David Menotti"
       gender: "m"
       role: "collaborating_researcher"
+      scholar_id: "Ipu5_-gAAAAJ"
       tags:
         - "computer_vision"
         - "biometrics"
