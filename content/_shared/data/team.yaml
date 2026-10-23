@@ -129,6 +129,18 @@ phd_students:
     - name: "Fernando Duarte"
       since: 2022
       lattes: "9331617052785818"
+    - name: "Glauber Soares dos Santos"
+      since: 2026
+      lattes: "3017858960714380"
+    - name: "Leonardo Macedo Freire"
+      since: 2025
+      lattes: "1503796256134642"
+    - name: "Roger Corneille Ndjeumou Ngassi"
+      since: 2024
+      lattes: "3456825411540893"
+    - name: "Marcus Daniel de Almeida"
+      since: 2023
+      lattes: "9750853239897719"
 masters_students:
   members:
     - name: "Jean Pinheiro"
