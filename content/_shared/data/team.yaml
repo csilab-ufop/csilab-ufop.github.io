@@ -141,11 +141,31 @@ phd_students:
     - name: "Roger Corneille Ndjeumou Ngassi"
       since: 2024
       lattes: "3456825411540893"
+    - name: "Augusto Ferreira Guilarducci"
+      since: 2024
+      lattes: "9823635539204337"
+      photo: "/images/team/augusto.webp"
 masters_students:
   members:
     - name: "Gustavo Vieira Nascimento"
       since: 2025
       lattes: "1403595054540584"
+    - name: "Romulo Junio Vieira Rocha"
+      since: 2023
+      lattes: "9303669619338385"
+      photo: "/images/team/romulo.webp"
+    - name: "Gabriel Ferreira da Costa"
+      since: 2023
+      lattes: "6533107458311261"
+      photo: "/images/team/gabriel.webp"
+    - name: "Suleimane Ducure"
+      since: 2021
+      lattes: "4547014379251202"
+      photo: "/images/team/suleimane.webp"
+    - name: "António Pedro"
+      since: 2023
+      lattes: "8694754850783505"
+      photo: "/images/team/antonio_pedro.webp"
 undergrads:
   members:
     - name: "Guilherme Santos"
@@ -154,6 +174,14 @@ undergrads:
       photo: "/images/team/citations.webp"
     - name: "Fábio Tavares Pinto"
       since: 2025
+    - name: "Samara Paloma Lopes Augusto Ribeiro"
+      since: 2026
+      lattes: "6124468652188759"
+      photo: "/images/team/samara.webp"
+    - name: "Cecília Peret Paulino Ataide"
+      since: 2026
+      lattes: "8044307943214977"
+      photo: "/images/team/cecilia.webp"
 alumni_grad:
   members:
     - "Rafael Francisco de Oliveira"
@@ -169,6 +197,8 @@ alumni_grad:
     - "Adriano Figueiredo de Andrade"
     - "Amanda da Silva Oliveira"
     - "Jean Christopher de Oliveira Pinheiro"
+    - "Carlos Eduardo Gonzaga Romaniello de Souza"
+    - "Carlos Eduardo Silva de Oliveira"
 alumni_undergrad:
   members:
     - "Carlos Gabriel de Freitas"
@@ -188,3 +218,8 @@ alumni_undergrad:
     - "Luísa Calegari de Barros Cizilio"
     - "Artur Bermond Torres"
     - "Gustavo Vieira Nascimento"
+    - "Guilherme Silva de Souza"
+    - "Pablo Vinicius dos Reis e Silva"
+    - "Niege Marryany dos Reis da Silva"
+    - "Douglas Meneses Barbosa"
+    - "Iuri da Silva Diniz"
