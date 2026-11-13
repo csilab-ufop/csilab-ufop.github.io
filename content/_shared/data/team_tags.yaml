@@ -138,3 +138,8 @@ computational_social_science:
   en: "Computational Social Science"
   es: "Ciencias sociales computacionales"
   it: "Scienza sociale computazionale"
+graph_learning:
+  pt: "Aprendizado de máquina em grafos"
+  en: "Graph Learning"
+  es: "Aprendizaje en Grafos"
+  it: "Machine learning su grafi"
