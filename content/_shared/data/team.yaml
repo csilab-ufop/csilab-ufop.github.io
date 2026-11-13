@@ -85,6 +85,16 @@ professors:
         - "network_science"
         - "data_science"
         - "computational_social_science"
+    - name: "Racyus Delano G. Pacífico"
+      gender: "m"
+      role: "associate_professor"
+      email: "racyus.pacifico@ufop.edu.br"
+      lattes: "9594901380554916"
+    - name: "Luiz C. Bambirra Torres"
+      gender: "m"
+      role: "associate_professor"
+      email: "luiz.torres@ufop.edu.br"
+      lattes: "8559513813180335"
 collaborators:
   members:
     - name: "Elizabeth Wanner"
