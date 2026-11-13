@@ -188,6 +188,22 @@ masters_students:
     - name: "MATHEUS PEIXOTO RIBEIRO VIEIRA"
       since: 2026
       photo: "/images/team/matheuys.webp"
+    - name: "Ederson Naves Fernandes Gonçalves Júnior"
+      since: 2025
+      lattes: "5637317345802712"
+      photo: "/images/team/ederson.webp"
+    - name: "Guilherme Salim Monteiro de Castro Paes"
+      since: 2025
+      lattes: "9182801929479078"
+      photo: "/images/team/salim.webp"
+    - name: "Arthur Henrique Santos Celestino"
+      since: 2026
+      lattes: "1713352890063554"
+      photo: "/images/team/celestino.webp"
+    - name: "Pedro Henrique Rabelo Leão de Oliveira"
+      since: 2026
+      lattes: "8782315586721359"
+      photo: "/images/team/pedroleao.webp"
 undergrads:
   members:
     - name: "Guilherme Santos"
