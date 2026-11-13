@@ -226,14 +226,19 @@ undergrads:
       since: 2026
     - name: "Maria Paula Miranda de Souza Montovani Gasparini"
       since: 2024
+      photo: "/images/team/image_2026-11-13_180124545.webp"
     - name: "Maria Clara Anunciação Rocha"
       since: 2026
+      photo: "/images/team/mariaclara.webp"
     - name: "Pedro Souza Goularte"
       since: 2026
+      photo: "/images/team/pedrogoularte.webp"
     - name: "Valter dos Santos Simão Júnior"
       since: 2026
+      photo: "/images/team/valterjunior.webp"
     - name: "Guilherme Augusto Figueiredo Gonçalves"
       since: 2026
+      photo: "/images/team/guilhermefigueiredo.webp"
 alumni_grad:
   members:
     - "Rafael Francisco de Oliveira"
@@ -281,4 +286,4 @@ alumni_undergrad:
     - "Niege Marryany dos Reis da Silva"
     - "Douglas Meneses Barbosa"
     - "Iuri da Silva Diniz"
-    - "ARTHUR NEGRÃO DE FARIA MARTINS DA COSTA"
+    - "Arthur Negrão de Faria Martins da Costa"
