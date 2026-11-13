@@ -35,10 +35,10 @@ professors:
       website: "https://vanderfreitas.github.io/"
       photo: "/images/team/citations-3.webp"
       tags:
-        - "machine_learning"
         - "time_series"
         - "network_science"
         - "deep_learning"
+        - "graph_learning"
     - name: "Pedro Silva"
       gender: "m"
       role: "associate_professor"
