@@ -145,6 +145,9 @@ phd_students:
       since: 2024
       lattes: "9823635539204337"
       photo: "/images/team/augusto.webp"
+    - name: "Sammuel Ramos da Silva"
+      since: 2026
+      photo: "/images/team/sammuel.webp"
 masters_students:
   members:
     - name: "Gustavo Vieira Nascimento"
@@ -166,6 +169,21 @@ masters_students:
       since: 2023
       lattes: "8694754850783505"
       photo: "/images/team/antonio_pedro.webp"
+    - name: "ALESSANDRO D'ANGELO"
+      since: 2025
+      photo: "/images/team/alessandro.webp"
+    - name: "ICARO LUIZ LAGE VASCONCELOS."
+      since: 2025
+      photo: "/images/team/icaross.webp"
+    - name: "Thiago de Carvalho Cecote"
+      since: 2026
+      photo: "/images/team/cecotee.webp"
+    - name: "LUISA CALEGARI DE BARROS CIZILIO"
+      since: 2026
+      photo: "/images/team/luisaa.webp"
+    - name: "MATHEUS PEIXOTO RIBEIRO VIEIRA"
+      since: 2026
+      photo: "/images/team/matheuys.webp"
 undergrads:
   members:
     - name: "Guilherme Santos"
@@ -182,6 +200,10 @@ undergrads:
       since: 2026
       lattes: "8044307943214977"
       photo: "/images/team/cecilia.webp"
+    - name: "MATHEUS RENATO MARQUES ALBIERI"
+      since: 2026
+    - name: "FABIO DANIEL MIRANDA PEDROSA"
+      since: 2026
 alumni_grad:
   members:
     - "Rafael Francisco de Oliveira"
@@ -199,6 +221,7 @@ alumni_grad:
     - "Jean Christopher de Oliveira Pinheiro"
     - "Carlos Eduardo Gonzaga Romaniello de Souza"
     - "Carlos Eduardo Silva de Oliveira"
+    - "ARTHUR NEGRÃO DE FARIA MARTINS DA COSTA"
 alumni_undergrad:
   members:
     - "Carlos Gabriel de Freitas"
@@ -223,3 +246,4 @@ alumni_undergrad:
     - "Niege Marryany dos Reis da Silva"
     - "Douglas Meneses Barbosa"
     - "Iuri da Silva Diniz"
+    - "ARTHUR NEGRÃO DE FARIA MARTINS DA COSTA"
