@@ -56,6 +56,9 @@ professors:
     - name: "Jadson Castro"
       gender: "m"
       role: "associate_professor"
+      email: "jadson.castro@ufop.edu.br"
+      lattes: "2870519332050607"
+      photo: "/images/team/jadson.webp"
       tags:
         - "databases"
         - "pattern_recognition"
