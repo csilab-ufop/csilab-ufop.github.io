@@ -66,6 +66,9 @@ professors:
     - name: "Valéria Santos"
       gender: "f"
       role: "associate_professor"
+      email: "valeriacs@ufop.edu.br"
+      lattes: "1153044237982775"
+      photo: "/images/team/valeira.webp"
       tags:
         - "nlp"
         - "machine_learning"
@@ -82,6 +85,9 @@ professors:
     - name: "Ivair Silva"
       gender: "m"
       role: "associate_professor"
+      email: "ivair@ufop.edu.br"
+      lattes: "7969497765428744"
+      photo: "/images/team/ivair.webp"
       tags:
         - "statistical_methods"
         - "sequential_tests"
@@ -136,18 +142,21 @@ phd_students:
     - name: "Marcus Daniel de Almeida"
       since: 2023
       lattes: "9750853239897719"
+      photo: "/images/team/marcus_.webp"
     - name: "Andressa Oliveira Souza"
       since: 2023
       lattes: "7110338258727215"
     - name: "Glauber Soares dos Santos"
       since: 2026
       lattes: "3017858960714380"
+      photo: "/images/team/glauber.webp"
     - name: "Leonardo Macedo Freire"
       since: 2025
       lattes: "1503796256134642"
     - name: "Roger Corneille Ndjeumou Ngassi"
       since: 2024
       lattes: "3456825411540893"
+      photo: "/images/team/corneille.webp"
     - name: "Augusto Ferreira Guilarducci"
       since: 2024
       lattes: "9823635539204337"
